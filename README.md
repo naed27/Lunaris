@@ -1,0 +1,2 @@
+# Lunaris
+ A discord bot
