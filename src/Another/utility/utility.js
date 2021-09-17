@@ -16,3 +16,20 @@ util.createEmbed = ({author='',title='',body='',footer=''})=>{
 util.wrap = (message)=>{
   return `${Lwrap}${message}${Rwrap}`
 }
+
+util.arrangeActions=(actions)=>{
+  for(let i=1;i<actions.length;i++){
+      const second = actions[i].getCommand().getPriority();
+      for (let j = i-1; j >= 0 ; j--) {
+          const first = actions[j].getCommand().getPriority();
+          if(second<first){
+              let temp = actions[i];
+              actions[i] = actions[j];
+              actions[j] = temp;
+              i-=2;
+          }
+          break;
+      }
+  }
+  return actions;
+}
