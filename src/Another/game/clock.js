@@ -258,7 +258,7 @@ class Clock{
       this.addTime(this.calcDuration);
       switch(this.previousPhase){
         case "Night":
-          this.game.processActions();
+          this.game.getFunctions().processActions();
           this.nextPhase = "Reporting";
           break;
         case "Reporting":
