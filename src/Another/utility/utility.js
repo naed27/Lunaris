@@ -19,9 +19,9 @@ util.wrap = (message)=>{
 
 util.arrangeActions=(actions)=>{
   for(let i=1;i<actions.length;i++){
-      const second = actions[i].getCommand().getPriority();
+      const second = actions[i].command.Priority;
       for (let j = i-1; j >= 0 ; j--) {
-          const first = actions[j].getCommand().getPriority();
+          const first = actions[j].command.Priority;
           if(second<first){
               let temp = actions[i];
               actions[i] = actions[j];
