@@ -211,7 +211,11 @@ class Channel{
 
         // find target from the given keyword
         const performer = this.owner;
-        const targetables = command.Targetables(this.owner,this.game);
+        const targetables = command.Targetables({
+          user:this.owner,
+          game:this.game
+        });
+        
         const {response,target,args} = this.owner.parseArguments(command,ARGUMENTS,targetables);
 
         // if target is not found or invalid, escape out of function
