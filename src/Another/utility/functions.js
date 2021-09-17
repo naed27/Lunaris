@@ -1,6 +1,6 @@
 const {containsKeyword,containsInitials, stringifyArrayOfNamesEmbed} = require('../../Helpers/toolbox')
 const {wrap} = require('./utility')
-const respond = require('../misc/reponses');
+const respond = require('../misc/responses');
 
 class Functions{
 
@@ -9,6 +9,7 @@ class Functions{
   constructor(game){
     this.game = game;
   }
+
 
   parseArguments(command,commandArguments,targetables){
     // returns an element

@@ -1,6 +1,6 @@
 const {splitComma} = require('../../Helpers/toolbox')
 const {wrap} = require('../utility/utility')
-const  res = require('../misc/reponses')
+const  res = require('./responses')
 
 module.exports = [
 
