@@ -235,16 +235,14 @@ class Clock{
     async playNight(){
       
       // set some stuff
-      let message;
       this.remindTime=true;
       this.game.clearVotes();
-      this.game.resetNight();
       this.nextPhase = "Calculation";
       this.addTime(this.nightDuration);
       await this.game.getFunctions().lockStudentChannels();
 
       // phase notification
-      message = `Night ${this.round}.\nDuration: ${this.hourSand}s`;
+      const message = `Night ${this.round}.\nDuration: ${this.hourSand}s`;
       await this.game.getFunctions().gameMessage(message);
 
       await this.game.getFunctions().unlockStudentChannels();
