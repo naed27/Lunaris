@@ -303,7 +303,7 @@ module.exports = [
                 user.setUsername( args );
                 user.getPersonalChannel().messageChannel( res.nicknameChanged(args) );
             }else{
-                user.getPersonalChannel().messageChannel( res.pleaseProvideAnArgument(command.Guide) );
+                user.getPersonalChannel().messageChannel( res.pleaseProvideAnArgument(command) );
             }   
         }
     },
