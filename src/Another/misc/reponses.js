@@ -128,3 +128,22 @@ res.commandListOpen = (player)=>{
     duration:0
   }
 }
+
+res.nicknameChanged = (newName)=>{
+  return{
+    embed: createEmbed({
+      body:`You have set your nickname to **${newName}**!`
+    }),
+    duration:0
+  }
+}
+
+res.pleaseProvideAnArgument = (commandGuide)=>{
+  return{
+    embed: createEmbed({
+      body:`Please provide an argument.`,
+      footer:`Command: ${commandGuide}`
+    }),
+    duration:0
+  }
+}

@@ -1,5 +1,6 @@
 const {splitComma} = require('../../Helpers/toolbox')
 const {wrap} = require('../utility/utility')
+const  res = require('../misc/reponses')
 
 module.exports = [
 
@@ -260,7 +261,7 @@ module.exports = [
         Stocks:99,
         Authorization:'Player',
         RequiredNumberOfTargets:1,
-        Phase:['Discussion','Voting','Judgement'],
+        Phase:['Discussion','Voting','Judgement','In Lobby'],
         RequiredStatus:['Alive'],
 
         Targetables:({user,game})=>{
@@ -291,24 +292,18 @@ module.exports = [
         Priority:0,
         Stocks:99,
         Authorization:'Player',
-        RequiredNumberOfTargets:1,
+        RequiredNumberOfTargets:0,
         Phase:['In Lobby'],
         RequiredStatus:['Alive'],
         
-        Run:({user,game,tagets})=>{
-            let body = '';
-            let footer = '';
-            let duration = 0;
-            if(tagets.length>0){
-                tagets = tagets.join(' ');
-                user.setUsername(tagets);
-                body=`You have set your nickname to **${tagets}**!`;
+        Run:({user,command,args})=>{
+            args = args.join( ' ' );
+            if(args.length>0){
+                user.setUsername( args );
+                user.getPersonalChannel().messageChannel( res.nicknameChanged(args) );
             }else{
-                body = `**${user.getUsername()}**, the command is:\n\n${game.getPrefix()}changename <name>\n\nExamples:\n${game.getPrefix()}cn julius`;
-            }
-            if(body){
-                user.sendResponse(body,footer,duration);
-            }
+                user.getPersonalChannel().messageChannel( res.pleaseProvideAnArgument(command.Guide) );
+            }   
         }
     },
     

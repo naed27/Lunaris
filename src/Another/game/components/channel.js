@@ -154,7 +154,7 @@ class Channel{
   }
 
   async messageChannel({embed}){
-    await this.discordConnection.send("‎\n",{embeds:[embed]}).catch()
+    await this.discordConnection.send({content:'\n',embeds:[embed]}).catch()
   }
 
 
@@ -202,6 +202,7 @@ class Channel{
         if(command.RequiredNumberOfTargets===0)
           return command.Run({
             user:this.owner,
+            command:command,
             game:this.game,
             args:ARGUMENTS
           })
