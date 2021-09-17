@@ -170,7 +170,7 @@ module.exports = [
         Stocks:99,
         Authorization:'Admin',
         RequiredNumberOfTargets:0,
-        Phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)'],
+        Phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)','In Lobby','Game Over'],
         RequiredStatus:['Alive','Dead'],
         
         Run:({game})=>{
@@ -224,7 +224,7 @@ module.exports = [
         Stocks:99,
         Authorization:'Player',
         RequiredNumberOfTargets:0,
-        Phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)','In Lobby'],
+        Phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)','In Lobby','Game Over'],
         RequiredStatus:['Alive'],
         
         Run:({user})=>{
@@ -242,7 +242,7 @@ module.exports = [
         Stocks:99,
         Authorization:'Player',
         RequiredNumberOfTargets:0,
-        Phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)','In Lobby'],
+        Phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)','In Lobby','Game Over'],
         RequiredStatus:['Alive'],
         
         Run:({user})=>{
