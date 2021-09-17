@@ -233,8 +233,8 @@ class Functions{
     return
   }
 
-  processActions(actions){
-
+  processActions(){
+    let actions = this.game.getActions();
     // process commands
     if(actions.length>0){
       actions = arrangeActions(actions);
