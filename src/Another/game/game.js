@@ -56,7 +56,7 @@ class Game{
         this.clock.setHourSand(0);
         this.clock.freezeHourGlass();
         await this.functions.lockStudentChannels();
-        await this.functions.gameCountDown(15);
+        await this.functions.gameCountDown(3);
         await this.getClock().startGame();
     }
 
