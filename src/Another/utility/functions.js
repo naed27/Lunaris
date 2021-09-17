@@ -35,12 +35,14 @@ class Functions{
 
     // if target is valid
     if(validTargets.length==1){
+      console.log(validTargets);
       return {
         response:true,
         target:validTargets[0],
         args:args
       }
     }
+    
 
     // if not valid, do another search to determine why its not  
     const foundPlayers = this.findName(this.town.getPlayers(),targetQuery);
@@ -117,6 +119,7 @@ class Functions{
 
     const initialsFound = players.filter(player=>containsInitials(player.getUsername(),keyword));
     if(initialsFound.length>0)return initialsFound;
+
 
     return [];
 
@@ -204,6 +207,12 @@ class Functions{
     alives.forEach(alivePlayer => {
         alivePlayer.listenForTheWin();
     });
+  }
+
+  async gameCountDown(seconds){
+    await Promise.all(this.game.getPlayers().map(async (player) => {
+      await player.getPersonalChannel().countDown(seconds);
+    }));
   }
 
   
