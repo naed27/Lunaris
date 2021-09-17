@@ -234,35 +234,31 @@ class Functions{
   }
 
   processActions(){
-    let actions = this.game.getActions();
+    
     // process commands
-    if(actions.length>0){
-      actions = arrangeActions(actions);
-      actions.forEach(({performer,command,user,target}) => {
-        command.Run({
-          command:command,
-          performer:performer,
-          user:user,
-          target:target
-        })
-      });
-      this.actions=[];
-    }
+    const actions = arrangeActions(this.game.getActions());
+    actions.forEach(({performer,command,user,target}) => {
+      command.Run({
+        command:command,
+        performer:performer,
+        user:user,
+        target:target
+      })
+    });
+    this.game.clearActions();
       
     // process deaths
-    this.freshDeaths.forEach(player => {
-      player.pushNotif({player: `You have died.`})
+    this.game.getFreshDeaths().forEach(freshlyDeadPlayer => {
+      freshlyDeadPlayer.pushNotif({player: `You have died.`})
     });
 
     // process notifs
-    this.players.forEach(player => {
+    this.game.getPlayers().forEach(player => {
         const result = respond.concatNotifs(player.getNotifs());
         player.getPersonalChannel().messageChannel(result);
         player.clearNotifs();
     });
   }
-
-
 }
 
 
