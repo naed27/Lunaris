@@ -139,6 +139,13 @@ class Game{
         return
     }
 
+    pushFreshDeath(freshlyDeadPlayer){
+        const index = this.freshDeaths.findIndex(someFreshDead => someFreshDead.id === freshlyDeadPlayer.id);
+        if(index<0)
+        this.freshDeaths.push(freshlyDeadPlayer)
+        return
+    }
+
     // getters
     getId(){return this.id}
     getHost(){return this.host}
