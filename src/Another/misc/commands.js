@@ -18,7 +18,7 @@ module.exports = [
         RequiredStatus:['Alive'],
 
         Targetables: ({user,game})=>{
-            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getRequiredStatus()=='Alive');
+            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getStatus()=='Alive');
         },
 
         Response: ()=>{
@@ -32,7 +32,7 @@ module.exports = [
             if(target.length>0){
                 target = target.join('');
                 target = splitComma(target);
-                let targetables = game.getPlayers().filter(p=>p.getRequiredStatus()==='Alive' && p.getId()!=user.getId()); 
+                let targetables = game.getPlayers().filter(p=>p.getStatus()==='Alive' && p.getId()!=user.getId()); 
                 if(target.length==1){
                   let res = game.getFunctions().areValidTargets(user,'vote',target,targetables,game.getPlayers());
                   if(res){
@@ -67,7 +67,7 @@ module.exports = [
         RequiredStatus:['Alive'],
 
         Targetables: ({user,game})=>{
-            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getRequiredStatus()=='Alive');
+            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getStatus()=='Alive');
         },
         
         Response: ()=>{
@@ -265,7 +265,7 @@ module.exports = [
         RequiredStatus:['Alive'],
 
         Targetables:({user,game})=>{
-            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getRequiredStatus()=='Alive');
+            return  game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getStatus()=='Alive');
         },
         
         Run:({user,game,target,args})=>{
