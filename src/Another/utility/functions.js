@@ -233,10 +233,7 @@ class Functions{
     return
   }
 
-  nightResettter(){
 
-  }
-  
 }
 
 
