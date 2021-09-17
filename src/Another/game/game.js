@@ -22,10 +22,15 @@ class Game{
 
     connectedGuilds = [];
 
+
+    //game related
+
     freshDeaths = [];
     votes = [];
     voteWinner=null;
+    actions = [];
 
+    
    
 
     prefix = PREFIX;
@@ -54,7 +59,10 @@ class Game{
         await this.host.notifyGameStart(this.players);
         this.clock.runHourGlass();
         this.clock.playLobby();
+        return
     }
+
+  
 
     async gameStart(){
         this.clock.setHourSand(0);
@@ -62,6 +70,7 @@ class Game{
         await this.functions.lockStudentChannels();
         await this.functions.gameCountDown(3);
         await this.getClock().startGame();
+        return
     }
 
 
@@ -108,11 +117,26 @@ class Game{
     connectGuild(guild){
         const index = this.connectedGuilds.findIndex(connectedGuild => connectedGuild.id === guild.id);
         if(index<0)
-            this.connectedGuilds.push(guild)
+        this.connectedGuilds.push(guild)
+        return
     }
-    pushVote(a){this.votes.push(a)}
+    pushVote(vote){
+        const index = this.votes.findIndex(oldVote => oldVote.id === vote.id);
+        if(index<0)
+        this.votes.push(vote)
+        return
+    }
     pushChannelKey(key){
+        const index = this.channelKeys.findIndex(oldKEy => oldKEy.id === key.id);
+        if(index<0)
         this.channelKeys.push(key);
+        return
+    }
+    pushAction(action){
+        const index = this.actions.findIndex(oldAction => oldAction.id === action.id);
+        if(index<0)
+        this.actions=action
+        return
     }
 
     // getters
@@ -129,12 +153,12 @@ class Game{
     getClock(){return this.clock}
     getFunctions(){return this.functions}
     getVotes(){return this.votes}
-    
     getNumberOfGhosts(){return this.numberOfGhosts}
-
+    getActions(){return this.actions}
 
     //array clearers
-    clearVotes(){this.votes=[]}
+    clearVotes(){return this.votes=[]}
+    clearActions(){return this.actions=[]}
 
 
 }
