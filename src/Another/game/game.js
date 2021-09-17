@@ -23,6 +23,10 @@ class Game{
     connectedGuilds = [];
 
     freshDeaths = [];
+    votes = [];
+    voteWinner=null;
+
+   
 
     prefix = PREFIX;
 
@@ -106,6 +110,10 @@ class Game{
         if(index<0)
             this.connectedGuilds.push(guild)
     }
+    pushVote(a){this.votes.push(a)}
+    pushChannelKey(key){
+        this.channelKeys.push(key);
+    }
 
     // getters
     getId(){return this.id}
@@ -120,15 +128,13 @@ class Game{
     getFreshDeaths(){return this.freshDeaths;}
     getClock(){return this.clock}
     getFunctions(){return this.functions}
+    getVotes(){return this.votes}
     
     getNumberOfGhosts(){return this.numberOfGhosts}
 
-    //array pushers
-    pushChannelKey(key){
-        this.channelKeys.push(key);
-    }
 
-
+    //array clearers
+    clearVotes(){this.votes=[]}
 
 
 }

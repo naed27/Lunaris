@@ -232,7 +232,13 @@ class Functions{
     }  
     return
   }
+
+  nightResettter(){
+
+  }
+  
 }
+
 
 
 module.exports = Functions;
