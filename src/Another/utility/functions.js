@@ -1,5 +1,5 @@
 const {containsKeyword,containsInitials, stringifyArrayOfNamesEmbed} = require('../../Helpers/toolbox')
-const {wrap,arrangeActions} = require('./utility')
+const {wrap,arrangeActions,concatNotifs} = require('./utility')
 const respond = require('../misc/responses');
 
 class Functions{
@@ -254,7 +254,7 @@ class Functions{
 
     // process notifs
     this.game.getPlayers().forEach(player => {
-        const result = respond.concatNotifs(player.getNotifs());
+        const result = concatNotifs(player.getNotifs());
         player.getPersonalChannel().messageChannel(result);
         player.clearNotifs();
     });
