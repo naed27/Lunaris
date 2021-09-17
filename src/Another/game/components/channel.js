@@ -1,6 +1,7 @@
 const {parseCommand} = require('../../../Helpers/toolbox')
 const { PREFIX } = require('../../variables/variables');
-const res = require('../../misc/reponses');
+const res = require('../../misc/responses');
+const {delay} = require('../../../Helpers/toolbox');
 
 class Channel{
     
@@ -9,6 +10,7 @@ class Channel{
   owner;
   discordConnection;
   collector;
+  timer;
 
   alertMessage;
 
@@ -19,7 +21,6 @@ class Channel{
     this.name = name;
     this.game = game;
     this.discordConnection = channel;
-      
   }
 
   //  setters and getters
@@ -34,6 +35,9 @@ class Channel{
 
   setCollector(a){this.collector=a}
   getCollector(){return this.collector;}
+
+  setTimer(a){this.timer=a}
+  getTimer(){this.timer}
 
   // channel signs
 
@@ -91,7 +95,7 @@ class Channel{
 
 
 
-
+// -----------------------------------------
 
   async alertChannel(message){
 
@@ -114,6 +118,7 @@ class Channel{
     }
   }
 
+// -----------------------------------------
 
   async showCommandList(){
     this.deletePreviousCommandListNotebook();
@@ -152,12 +157,25 @@ class Channel{
     }
   }
 
+// -----------------------------------------
+
   async messageChannel({embed}){
     await this.discordConnection.send({content:'\n',embeds:[embed]}).catch()
   }
 
+// -----------------------------------------
 
+  async countDown(seconds){
 
+    await this.game.getFunctions().cleanChannel(this.discordConnection);
+    const timer = await this.discordConnection.send(`‎Game will start in 15...`).catch();
+    for (let i = seconds;i!=0;i--){
+      await timer.edit(`‎Game will start in ${i}...`).catch();
+      await delay(1500);
+    }
+    await timer.delete();
+
+  }
 
 
 

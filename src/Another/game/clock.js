@@ -45,24 +45,8 @@ class Clock{
     // ------------------------------------- FUNCTIONS
 
     async timeReminder(){
-      if(this.hourSand>5||this.hourSand<1){
-        this.game.getPlayers().forEach(player => {
-          if(player.getPersonalChannel().getTimer()){
-            player.getPersonalChannel().getTimer().delete();
-            player.getPersonalChannel().setTimer(null);
-          }else{
-            return
-          }
-        });
-      }else{
-        this.game.getPlayers().forEach(async player => {
-          if(player.getPersonalChannel().getTimer()){
-            player.getPersonalChannel().getTimer().edit(`‎‎\n${this.phase} will end in ${this.hourSand}...`).catch();
-          }else{
-            player.getPersonalChannel().setTimer(await player.getPersonalChannel().getDiscordConnection().send(`‎\n‎${this.phase} will end in ${this.hourSand}...`).catch());
-          }
-        });
-      }
+      if(this.hourSand>5||this.hourSand<1)return
+      this.game.getFunctions().gameCountDown(this.hourSand);
     }
 
     runHourGlass(){
@@ -117,7 +101,7 @@ class Clock{
           break;
       }
       
-      // this.game.getSetup().listenHouseChannel();
+      // this.game.getFunctions().listenHouseChannel();
     }
 
     async playLobby(){
@@ -133,7 +117,7 @@ class Clock{
       this.remindTime=false;
       this.round++;
       let message;
-      this.game.getSetup().closeHouseChannels();
+      this.game.getFunctions().lockStudentChannels();
       this.nextPhase = "Calculation";
       message = `Day ${this.round}.`;
       await this.game.getFunctions().gameMessage(message);
@@ -149,7 +133,7 @@ class Clock{
       // set some stuff
       this.remindTime=true;
       let message;
-      this.game.getSetup().openHouseChannels();
+      this.game.getFunctions().unlockStudentChannels();
 
       if(this.round>1){
 
@@ -255,13 +239,13 @@ class Clock{
       this.game.resetNight();
       this.nextPhase = "Calculation";
       this.addTime(this.nightDuration);
-      await this.game.getSetup().closeHouseChannels();
+      await this.game.getFunctions().lockStudentChannels();
 
       // phase notification
       message = `Night ${this.round}.\nDuration: ${this.hourSand}s`;
       await this.game.getFunctions().gameMessage(message);
 
-      await this.game.getSetup().openHouseChannels();
+      await this.game.getFunctions().unlockStudentChannels();
       this.moveHourGlass(); 
     }
 
@@ -284,7 +268,7 @@ class Clock{
           }
           break;
         case "Voting":{
-          let isAgreedUpon = await this.game.getSetup().calculateVotes();
+          let isAgreedUpon = await this.game.getFunctions().calculateVotes();
           if(isAgreedUpon){
             this.nextPhase = "Execution";
 

@@ -3,7 +3,6 @@ const Host = require('./host');
 const Setup = require('./setup');
 const Functions = require('../utility/functions');
 const Clock = require('./clock');
-const {delay} = require('../../Helpers/toolbox')
 
 class Game{
 
@@ -54,35 +53,17 @@ class Game{
     }
 
     async gameStart(){
-        
         this.clock.setHourSand(0);
         this.clock.freezeHourGlass();
         await this.functions.lockStudentChannels();
-
-        this.players.forEach(async player => {
-            await this.functions.cleanChannel(player.getPersonalChannel().getDiscordConnection());
-            player.getHouse().setTimer(await player.getPersonalChannel().getDiscordConnection().send(`‎Game will start in 15...`).catch());
-        });
-
-        for (let i = 15;i!=0;i--){
-            await delay(1500);
-            this.players.forEach(player =>{
-                if(player.getHouse().getTimer()){
-                    player.getHouse().getTimer().edit(`‎Game will start in ${i}...`).catch();
-                }
-            });
-        }
-        await delay(1500);
-
-        this.players.forEach(player => {
-            if(player.getHouse().getTimer()){
-                player.getHouse().getTimer().delete();
-                player.getHouse().setTimer(null);
-            }
-        });
-
+        await this.functions.gameCountDown(15);
         await this.getClock().startGame();
     }
+
+
+
+
+
 
     async quit(){
         this.getClock().terminateHourGlass();
