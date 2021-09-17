@@ -17,10 +17,10 @@ class Clock{
     lobbyDuration = 20;
     reportingDuration = 10;
     firstDiscussionDuration = 10;
-    discussionDuration = 10;
+    discussionDuration = 200;
     votingDuration = 10;
     executionDuration = 10;
-    nightDuration = 10;
+    nightDuration = 200;
     calcDuration = 0;
     testDuration = 100;
 
@@ -183,6 +183,7 @@ class Clock{
       await this.game.getFunctions().gameMessage(message);
       
       this.moveHourGlass();
+      return
     }
 
     async playFinalWords(){
@@ -199,6 +200,7 @@ class Clock{
 
       // resume the hour glass
       this.moveHourGlass(); 
+      return
     }
 
     async playExecution(){
@@ -229,7 +231,7 @@ class Clock{
       await this.game.updatePlayerLists();
       this.game.listenForWinners();
       this.moveHourGlass();
-
+      return
     }
 
     async playNight(){
@@ -247,6 +249,7 @@ class Clock{
 
       await this.game.getFunctions().unlockStudentChannels();
       this.moveHourGlass(); 
+      return
     }
 
     async playCalculation(){
@@ -287,6 +290,7 @@ class Clock{
       }
 
       this.moveHourGlass(); 
+      return
     }
 
     async playGameOver(){
@@ -317,6 +321,7 @@ class Clock{
         }
         await delay(1500);
         this.game.quit();
+        return
     }
 
     async startGame(){
@@ -324,6 +329,7 @@ class Clock{
         this.nextPhase="Discussion";
         this.game.getFunctions().unlockStudentChannels();
         this.moveHourGlass();
+        return
     }
 
     async setupTownClock(){
@@ -338,6 +344,7 @@ class Clock{
         const temp = await clockChannel.getDiscordConnection().send({embeds:[embed]}).catch();
         this.clockMessageAddresses.push(temp)
       });
+      return
     }
 
     async updateTownClock(){
@@ -361,6 +368,7 @@ class Clock{
       this.clockMessageAddresses.forEach(messageAddress => {
           messageAddress.edit(embed).catch();
       });
+      return
     }
 
     addTime(seconds){
@@ -368,38 +376,39 @@ class Clock{
       if(this.hourSand<0){
         this.hourSand=0;
       }
+      return
     }
 
     skipPhase(){
-      this.hourSand=0;
+      return this.hourSand=0;
     }
 
-    terminateHourGlass(){clearInterval(this.hourGlass);}
+    terminateHourGlass(){return clearInterval(this.hourGlass);}
 
     // ------------------------------------- SETTERS / GETTERS
     getPhase(){return this.phase;}
 
     getHourSand(){return this.hourSand;}
-    setHourSand(a){this.hourSand=a}
+    setHourSand(a){return this.hourSand=a}
 
     getPreviousPhase(){return this.previousPhase;}
-    setPreviousPhase(a){this.previousPhase=a;}
+    setPreviousPhase(a){return this.previousPhase=a;}
 
     getNextPhase(){return this.nextPhase;}
 
-    setNextPhase(a){this.nextPhase=a;}
+    setNextPhase(a){return this.nextPhase=a;}
 
     getRound(){return this.round;}
    
     getRemindTime(){return this.remindTime;}
-    setRemindTime(a){this.remindTime=a}
+    setRemindTime(a){return this.remindTime=a}
 
     getVotingExcessTime(){return this.votingExcessTime;}
-    setVotingExcessTime(a){this.votingExcessTime=a;}
-    resetVotingExcessTime(){this.votingExcessTime=0;}
+    setVotingExcessTime(a){return this.votingExcessTime=a;}
+    resetVotingExcessTime(){return this.votingExcessTime=0;}
 
     getPeaceCount(){return this.peaceCount;}
-    setPeaceCount(a){this.peaceCount=a}
+    setPeaceCount(a){return this.peaceCount=a}
 
     
 
