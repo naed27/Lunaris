@@ -1,5 +1,5 @@
 const {containsKeyword,containsInitials, stringifyArrayOfNamesEmbed} = require('../../Helpers/toolbox')
-const {wrap} = require('./utility')
+const {wrap,arrangeActions} = require('./utility')
 const respond = require('../misc/responses');
 
 class Functions{
@@ -231,6 +231,35 @@ class Functions{
       return this.game.setFreshDeaths([]);
     }  
     return
+  }
+
+  processActions(actions){
+
+    // process commands
+    if(actions.length>0){
+      actions = arrangeActions(actions);
+      actions.forEach(({performer,command,user,target}) => {
+        command.Run({
+          command:command,
+          performer:performer,
+          user:user,
+          target:target
+        })
+      });
+      this.actions=[];
+    }
+      
+    // process deaths
+    this.freshDeaths.forEach(player => {
+      player.pushNotif({player: `You have died.`})
+    });
+
+    // process notifs
+    this.players.forEach(player => {
+        const result = respond.concatNotifs(player.getNotifs());
+        player.getPersonalChannel().messageChannel(result);
+        player.clearNotifs();
+    });
   }
 
 
