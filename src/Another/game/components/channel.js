@@ -168,7 +168,7 @@ class Channel{
   async countDown(seconds){
 
     await this.game.getFunctions().cleanChannel(this.discordConnection);
-    const timer = await this.discordConnection.send(`‎Game will start in 15...`).catch();
+    const timer = await this.discordConnection.send(`‎Game will start in ${seconds}...`).catch();
     for (let i = seconds;i!=0;i--){
       await timer.edit(`‎Game will start in ${i}...`).catch();
       await delay(1500);
