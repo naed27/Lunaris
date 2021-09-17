@@ -35,12 +35,12 @@ util.arrangeActions=(actions)=>{
 }
 
 util.concatNotifs = (arrayOfNotifs)=>{
-    let result = "";
-    for (let i = 0; i < arrayOfNotifs.length; i++) {
-      result += `${arrayOfNotifs[i].player}`;
-        if(i<arrayOfNotifs.length-1){
-          result+=`\n`;
-        }
-    }
-    return result;
+  let result = "";
+  for (let i = 0; i < arrayOfNotifs.length; i++) {
+    result += `${arrayOfNotifs[i].player}`;
+      if(i<arrayOfNotifs.length-1){
+        result+=`\n`;
+      }
+  }
+  return {content:this.wrap(result)};
 }
