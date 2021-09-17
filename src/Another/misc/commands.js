@@ -141,7 +141,7 @@ module.exports = [
         RequiredStatus:['Alive','Dead'],
         
         Run:({user,game})=>{
-            if(game.getSetup().isHost(user.getId())){game.gameStart();}
+            if(game.isHost(user.getId())){game.gameStart();}
         }
     },
 
