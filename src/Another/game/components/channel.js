@@ -115,33 +115,32 @@ class Channel{
   }
 
 
-  async showCommandList({embed}){
+  async showCommandList(){
     this.deletePreviousCommandListNotebook();
+    const response = res.commandListOpen(this.owner);
+    this.commandListNotebook = await this.discordConnection.send({content:'\n',embeds:[response.embed]}).catch();
 
-    this.commandListNotebook = await this.discordConnection.send({content:'\n',embeds:[embed]}).catch();
-
-    await this.commandListNotebook.react('📗');
+    await this.commandListNotebook.react('↩️');
     
-    const filter = m => !m.author.bot;
+    const filter = user => !user.bot;
 
     const collector = this.commandListNotebook.createReactionCollector({filter});
 
-    collector.on('collect', async (reaction) => {
+    collector.on('collect', async (reaction,user) => {
+      if(user.bot)return 
       switch(reaction.emoji.name){
         case "📗": {
-          const response = res.commandListClosed();
-          this.commandListNotebook.edit(response.embed);
+          this.commandListNotebook.edit({embeds:[response.embed]});
           await this.commandListNotebook.reactions.removeAll();
           this.commandListNotebook.react('↩️');
-      }
-      break;
-      case "↩️": {
-          const response = res.commandListOpen();
-          this.commandListNotebook.edit(response.embed);
-          await this.commandListNotebook.reactions.removeAll();
-          this.commandListNotebook.react('📗');
-        }
-      break;
+          }
+        break;
+        case "↩️": {
+            this.commandListNotebook.edit({embeds:[res.commandListClosed().embed]});
+            await this.commandListNotebook.reactions.removeAll();
+            this.commandListNotebook.react('📗');
+          }
+        break;
       }
     });
   }
@@ -215,9 +214,14 @@ class Channel{
           user:this.owner,
           game:this.game
         });
-        
-        const {response,target,args} = this.owner.parseArguments(command,ARGUMENTS,targetables);
 
+        // separate the target from the arguments
+        const {response,target,args} = this.game.getFunctions().parseArguments(command,ARGUMENTS,targetables);
+        console.log(`
+          response: ${response}\n
+          target: ${target}\n
+          args: ${args}
+        `)
         // if target is not found or invalid, escape out of function
         if(!response)return;
 
