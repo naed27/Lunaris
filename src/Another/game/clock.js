@@ -16,11 +16,9 @@ class Clock{
     //durations
     lobbyDuration = 20;
     reportingDuration = 10;
+    firstDiscussionDuration = 10;
     discussionDuration = 10;
     votingDuration = 10;
-    defenseDuration = 10;
-    judgmentDuration = 10;
-    finalWordsDuration = 10;
     executionDuration = 10;
     nightDuration = 10;
     calcDuration = 0;
@@ -46,7 +44,9 @@ class Clock{
 
     async timeReminder(){
       if(this.hourSand>5||this.hourSand<1)return
-      this.game.getFunctions().gameCountDown(this.hourSand);
+      const timeLeft = this.hourSand;
+      this.hourSand=0;
+      this.game.getFunctions().gameCountDown(timeLeft);
     }
 
     runHourGlass(){
@@ -159,7 +159,7 @@ class Clock{
 
         // set phase for the first day
         this.nextPhase = "Night";
-        this.addTime(15);
+        this.addTime(this.firstDiscussionDuration);
         message = `Day ${this.round}: The Discussion.\nDuration: ${this.hourSand}s`;
         await this.game.getFunctions().gameMessage(message);
 
