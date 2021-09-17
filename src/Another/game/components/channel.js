@@ -239,6 +239,10 @@ class Channel{
 
         // if the command has a target
 
+        // if no arguments is supplied
+        if(ARGUMENTS.length===0)
+        return this.messageChannel(res.pleaseProvideAnArgument(command));
+
         // find target from the given keyword
         const performer = this.owner;
         const targetables = command.Targetables({
