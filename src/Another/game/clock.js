@@ -43,10 +43,12 @@ class Clock{
     // ------------------------------------- FUNCTIONS
 
     async timeReminder(){
-      if(this.hourSand>5||this.hourSand<1)return
-      const timeLeft = this.hourSand;
-      this.hourSand=0;
-      this.game.getFunctions().gameCountDown(timeLeft);
+      this.game.getPlayers().forEach( player => {
+        player.getPersonalChannel().updateTimeReminder({
+          phase:this.phase,
+          hourSand:this.hourSand
+        });
+      });
     }
 
     runHourGlass(){

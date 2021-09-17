@@ -210,11 +210,12 @@ class Functions{
     });
   }
 
-  async gameCountDown(seconds){
+  async gameCountDown(hourSand){
     await Promise.all(this.game.getPlayers().map(async (player) => {
-      await player.getPersonalChannel().countDown(seconds);
+      await player.getPersonalChannel().countDown(hourSand);
     }));
   }
+
 
   
   async deathListener(){

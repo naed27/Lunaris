@@ -10,7 +10,7 @@ class Channel{
   owner;
   discordConnection;
   collector;
-  timer;
+  timeLeftMessage;
 
   alertMessage;
 
@@ -175,6 +175,19 @@ class Channel{
     }
     await timer.delete();
 
+  }
+
+  async updateTimeReminder({phase,hourSand}){
+    if(hourSand>5||hourSand<1){
+      if(!this.timeLeftMessage)return
+      this.timeLeftMessage.delete();
+      this.timeLeftMessage=null;
+      return
+    }
+
+    if(!this.timeLeftMessage)
+      this.timeLeftMessage = await this.discordConnection.send(`‎${phase} will end in ${hourSand}...`).catch();
+    this.timeLeftMessage.edit(`${phase} will end in ${hourSand}...`).catch();
   }
 
 
