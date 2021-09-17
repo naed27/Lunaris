@@ -273,7 +273,13 @@ class Channel{
         // if the command is normal type
 
         // push the command into the game to run it later
-        this.game.pushAction(this.owner,performer,command,target);
+        this.game.pushAction({
+          user:this.owner,
+          performer:performer,
+          command:command,
+          target:target,
+          args:args
+        });
 
         // send a response that the command will run later
         this.messageChannel(res.commandResponse(await command.Response({
