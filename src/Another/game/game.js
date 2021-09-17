@@ -133,9 +133,9 @@ class Game{
         return
     }
     pushAction(action){
-        const index = this.actions.findIndex(oldAction => oldAction.id === action.id);
+        const index = this.actions.findIndex(oldAction => oldAction.user === action.user);
         if(index<0)
-        this.actions=action
+        this.actions.push(action)
         return
     }
 
