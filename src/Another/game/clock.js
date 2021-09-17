@@ -14,7 +14,7 @@ class Clock{
     round;
     
     //durations
-    lobbyDuration = 90;
+    lobbyDuration = 20;
     reportingDuration = 10;
     discussionDuration = 10;
     votingDuration = 10;
