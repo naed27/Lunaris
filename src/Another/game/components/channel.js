@@ -60,13 +60,13 @@ class Channel{
     });
   }
 
-  open(id=this.owner.getId()){
+  unlock(id=this.owner.getId()){
     this.discordConnection.permissionOverwrites.edit(id,{ 
       SEND_MESSAGES:true,
     });
   }
 
-  close(id=this.owner.getId()){
+  lock(id=this.owner.getId()){
     this.discordConnection.permissionOverwrites.edit(id,{ 
       SEND_MESSAGES:false,
     });
