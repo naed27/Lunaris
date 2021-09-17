@@ -139,11 +139,11 @@ res.nicknameChanged = (newName)=>{
   }
 }
 
-res.pleaseProvideAnArgument = (commandGuide)=>{
+res.pleaseProvideAnArgument = ({Guide})=>{
   return{
     embed: createEmbed({
       body:`Please provide an argument.`,
-      footer:`Command: ${commandGuide}`
+      footer:`Command: ${Guide}`
     }),
     duration:0
   }
