@@ -30,7 +30,8 @@ class Game{
     voteWinner=null;
     actions = [];
 
-    
+    peaceCount=0;
+    maxPeaceCount=5;
     daysSinceGhostDied=0;
 
     prefix = PREFIX;
@@ -165,15 +166,18 @@ class Game{
     getNumberOfGhosts(){return this.numberOfGhosts}
     getActions(){return this.actions}
     getDaysSinceGhostDied(){return this.daysSinceGhostDied;}
+    getPeaceCount(){return this.peaceCount}
 
     //array clearers
     clearVotes(){return this.votes=[]}
     clearActions(){return this.actions=[]}
     clearDaysSinceGhostDied(){return this.daysSinceGhostDied=0}
+    clearPeaceCount(){this.peaceCount=0}
 
-
+    
     // incrementers
     incrementDaysSinceGhostDied(){return this.daysSinceGhostDied++;}
+    incrementPeaceCount(){this.peaceCount++}
 
 }
 
