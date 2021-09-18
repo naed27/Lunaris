@@ -72,7 +72,7 @@ class Player{
         }else{
           message = `${this.getUsername()} died last night.`;
         }
-        await this.town.getFunctions().gameMessage(message);
+        await this.game.getFunctions().gameMessage(message);
         await delay(3000);
 
         for (let i = 0; i < this.causeOfDeath.length; i++) {
@@ -81,7 +81,7 @@ class Player{
           }else{
             message = `${this.getUsername()} was also ${this.causeOfDeath[i]}`;
           }
-          await this.town.getFunctions().gameMessage(message);
+          await this.game.getFunctions().gameMessage(message);
           await delay(2000);
         }
       }
