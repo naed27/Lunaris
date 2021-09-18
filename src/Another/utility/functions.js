@@ -254,7 +254,9 @@ class Functions{
 
     // process notifs
     this.game.getPlayers().forEach(player => {
-        const result = concatNotifs(player.getNotifs());
+        const notifs = player.getNotifs();
+        if(notifs.length===0)return
+        const result = concatNotifs(notifs);
         player.getPersonalChannel().postMessage(result);
         player.clearNotifs();
     });
