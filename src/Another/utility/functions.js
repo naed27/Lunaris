@@ -204,10 +204,23 @@ class Functions{
   }
 
   async listenForWinners(){
-    const alives = this.players.filter(player=>player.getStatus()=="Alive");
-    alives.forEach(alivePlayer => {
-        alivePlayer.listenForTheWin();
-    });
+    const alivePlayers = this.players.filter(player=>player.getStatus()=="Alive");
+    const students = alivePlayers.filter(player => player.getRole().Name==='Student');
+    const ghost = alivePlayers.filter(player => player.getRole().Name==='Ghost');
+
+    if(students<1){
+      ghost.setWinStatus(true);
+      this.game.getClock().skipPhase();
+    }
+
+    if(this.game.getDaysSinceGhostDied()===3){
+      students.forEach(student => {
+        student.setWinStatus(true);
+      });
+      this.game.getClock().skipPhase();
+    }
+
+    return
   }
 
   async gameCountDown(hourSand){
