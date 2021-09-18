@@ -159,8 +159,12 @@ class Channel{
 
 // -----------------------------------------
 
-  async messageChannel({content='\n',embed=[]}){
-    await this.discordConnection.send({content:content,embeds:[embed]}).catch()
+  async postEmbed({embed}){
+    await this.discordConnection.send({embeds:[embed]}).catch()
+  }
+
+  async postMessage({content}){
+    await this.discordConnection.send({content:content}).catch()
   }
 
 // -----------------------------------------
