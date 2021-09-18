@@ -232,10 +232,10 @@ class Functions{
 
   
   async deathListener(){
-    
+
     const freshDeaths = this.game.getFreshDeaths();
     if(freshDeaths.length>0){
-      this.getClock().setPeaceCount(0);
+      this.game.clearPeaceCount();
       for (let i = 0; i < freshDeaths.length; i++) {
         await freshDeaths[i].playDeath();
       }
