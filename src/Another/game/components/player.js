@@ -4,7 +4,7 @@ const {
   containsKeyword,
   containsInitials,
   delay} = require('../../../Helpers/toolbox');
-const {wrap} = require('../../utility/utility');
+const {wrap,parseDiary} = require('../../utility/utility');
   
 const Role = require('./role')
 
@@ -28,6 +28,9 @@ class Player{
   causeOfDeath=[];
   confiscatedValuables = [];
   notifications = [];
+  diaryLogs = [];
+
+ 
 
   target;
 
@@ -87,29 +90,8 @@ class Player{
       }
     }
 
-    if(this.getNotes().length>0){
-      const note = `We found a note beside ${this.getUsername()}'s body.`;
-      this.game.getPlayers().forEach(async player => {
-        const notepad = await player.getPersonalChannel().getDiscordConnection().send({content:wrap(note)});
-        await notepad.react('📜');
-        const filter = m => !m.author.bot;
-        let cover = notepad.createReactionCollector({filter});
-        cover.on('collect', async (reaction) => {
-          await notepad.reactions.removeAll();
-          switch(reaction.emoji.name){
-            case "📜": {
-              const openedMessage = `"${this.getNotes()}"\n\n- ${this.getUsername()}`;
-              notepad.edit(wrap(openedMessage));
-              notepad.react('↩️');
-              }
-            break;
-            case "↩️": 
-              notepad.edit(wrap(note));
-              notepad.react('📜');
-            break;
-          }
-        });
-      });
+    if(this.diaryLogs.length>0){
+      await this.showLeftBehindDiary();
       await delay(3000);
     }
   }
@@ -155,6 +137,57 @@ class Player{
 
     return [];
 
+  }
+
+  async showLeftBehindDiary(){
+    const diaryCover = `We found a diary beside ${this.getUsername()}'s body.`;
+    const diary = parseDiary(this);
+    let page = 0;
+    await Promise.all(this.game.getPlayers().map(async (player) => {
+      const diaryMessage = await player.getPersonalChannel().getDiscordConnection().send({content:wrap(diaryCover)});
+      await diaryMessage.react('📔');
+      const filter = user => !user.bot;
+      const collector = diaryMessage.createReactionCollector({filter});
+      collector.on('collect', async (reaction,user) => {
+        if(user.bot)return
+        switch(reaction.emoji.name){
+          case "📔": {
+            page = 0;
+            await diaryMessage.reactions.removeAll();
+            const openedMessage = `"${this.getNotes()}"\n\n- ${this.getUsername()}`;
+            diaryMessage.edit(wrap(openedMessage));
+            await diaryMessage.react('⏪');
+            await diaryMessage.react('◀️');
+            await diaryMessage.react('▶️');
+            await diaryMessage.react('⏩');
+            await diaryMessage.react('❌');
+            }
+          break;
+          case "❌": 
+            page=0;
+            await diaryMessage.reactions.removeAll();
+            diaryMessage.edit(wrap(diaryCover));
+            diaryMessage.react('📔');
+          break;
+          case "⏪": 
+            page=1;
+          break;
+          case "◀️":
+            if(page === 0)return 
+            page--;
+          break;
+          case "▶️": 
+            if(page === diary.length-1)return 
+            page++;
+          break;
+          case "⏩": 
+            page=diary.length-1;
+          break;
+        }
+        const diaryPage = diary[page];
+        diaryMessage.edit(diaryPage);
+      });
+    }));
   }
 
   
@@ -216,6 +249,10 @@ class Player{
   getNotifs(){return this.notifications;}
   pushNotif(a){this.notifications.push(a);}
   clearNotifs(){this.notifications=[]}
+
+  addLogToDiary(log){return this.diaryLogs.push(log)}
+  getDiaryLogs(){return this.diaryLogs}
+  clearDiaryLogs(){return this.diaryLogs=[]}
 
   getRole(){return this.role;}
   setRole(a){this.role=a;}
