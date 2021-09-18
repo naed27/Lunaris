@@ -123,8 +123,7 @@ class Clock{
       this.nextPhase = "Calculation";
       message = `Day ${this.round}.`;
       await this.game.getFunctions().gameMessage(message);
-      await this.game.deathListener();
-      await this.game.rebornListener();
+      await this.game.getFunctions().deathListener();
       
       this.addTime(this.reportingDuration);
       this.moveHourGlass();  
@@ -254,7 +253,6 @@ class Clock{
 
     async playCalculation(){
       this.remindTime=false;
-      let message="";
       this.addTime(this.calcDuration);
       switch(this.previousPhase){
         case "Night":
@@ -263,8 +261,8 @@ class Clock{
           break;
         case "Reporting":
           this.nextPhase = "Discussion";
-          this.game.listenForWinners();
-          this.game.resetDay();
+          this.game.getFunctions().listenForWinners();
+          this.game.getFunctions().resetDay();
           if(this.peaceCount==this.maxPeaceCount){
             this.setNextPhase("Game Over");
             this.skipPhase();
@@ -277,7 +275,7 @@ class Clock{
 
             await delay(2000);
 
-            message = `The students will try to hunt someone tonight!`;
+            const message = `The students will try to hunt someone tonight!`;
             await this.game.getFunctions().gameMessage(message);
             await delay(3000);
 
