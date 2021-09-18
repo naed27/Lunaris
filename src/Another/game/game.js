@@ -31,7 +31,7 @@ class Game{
     actions = [];
 
     
-   
+    daysSinceGhostDied=0;
 
     prefix = PREFIX;
 
@@ -146,6 +146,8 @@ class Game{
         return
     }
 
+    
+
     // getters
     getId(){return this.id}
     getHost(){return this.host}
@@ -162,11 +164,16 @@ class Game{
     getVotes(){return this.votes}
     getNumberOfGhosts(){return this.numberOfGhosts}
     getActions(){return this.actions}
+    getDaysSinceGhostDied(){return this.daysSinceGhostDied;}
 
     //array clearers
     clearVotes(){return this.votes=[]}
     clearActions(){return this.actions=[]}
+    clearDaysSinceGhostDied(){return this.daysSinceGhostDied=0}
 
+
+    // incrementers
+    incrementDaysSinceGhostDied(){return this.daysSinceGhostDied++;}
 
 }
 
