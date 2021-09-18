@@ -167,6 +167,7 @@ class Game{
     getActions(){return this.actions}
     getDaysSinceGhostDied(){return this.daysSinceGhostDied;}
     getPeaceCount(){return this.peaceCount}
+    getRemainingPeace(){return this.maxPeaceCount-this.peaceCount}
 
     //array clearers
     clearVotes(){return this.votes=[]}
@@ -174,7 +175,7 @@ class Game{
     clearDaysSinceGhostDied(){return this.daysSinceGhostDied=0}
     clearPeaceCount(){this.peaceCount=0}
 
-    
+
     // incrementers
     incrementDaysSinceGhostDied(){return this.daysSinceGhostDied++;}
     incrementPeaceCount(){this.peaceCount++}
