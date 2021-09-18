@@ -24,8 +24,6 @@ class Clock{
     calcDuration = 0;
     testDuration = 100;
 
-    peaceCount=0;
-    maxPeaceCount=5;
 
     //timers
     hourFlag=false;
@@ -147,7 +145,7 @@ class Clock{
         await this.game.getFunctions().gameMessage(message);
         
         // notify everyone that the game is nearing a draw
-        if(this.maxPeaceCount-this.peaceCount==1){
+        if(this.game.getRemainingPeace()==1){
           await delay(1000);
           message = `The game will end in a draw if no one dies tomorrow.`;
           await this.game.getFunctions().gameMessage(message);
@@ -263,7 +261,7 @@ class Clock{
           this.nextPhase = "Discussion";
           this.game.getFunctions().listenForWinners();
           this.game.getFunctions().resetDay();
-          if(this.peaceCount==this.maxPeaceCount){
+          if(this.game.getRemainingPeace()===0){
             this.setNextPhase("Game Over");
             this.skipPhase();
           }
@@ -404,9 +402,6 @@ class Clock{
     getVotingExcessTime(){return this.votingExcessTime;}
     setVotingExcessTime(a){return this.votingExcessTime=a;}
     resetVotingExcessTime(){return this.votingExcessTime=0;}
-
-    getPeaceCount(){return this.peaceCount;}
-    setPeaceCount(a){return this.peaceCount=a}
 
     
 
