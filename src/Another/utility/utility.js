@@ -44,3 +44,22 @@ util.concatNotifs = (arrayOfNotifs)=>{
   }
   return {content:this.wrap(result)};
 }
+
+
+util.parseDiary = (player)=>{
+  const fullDiaryContent = player.getDiaryLogs().join('\n\n');
+  const diaryLines = fullDiaryContent.split('\n');
+
+  let line=0;
+  let pages = [];
+  let page = '';
+  for (let i = 0; i < diaryLines.length; i++) {
+    if(line<5)
+      page += diaryLines[i]+'\n';
+    pages.push(page);
+    page='';
+    line=0;
+  }
+  
+  return pages;
+}
