@@ -232,8 +232,6 @@ class Functions{
 
   
   async deathListener(){
-    const currentPeaceCount = this.getClock().getPeaceCount();
-    this.getClock().setPeaceCount(currentPeaceCount+1);
     
     const freshDeaths = this.game.getFreshDeaths();
     if(freshDeaths.length>0){

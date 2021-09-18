@@ -121,6 +121,7 @@ class Clock{
       this.nextPhase = "Calculation";
       message = `Day ${this.round}.`;
       await this.game.getFunctions().gameMessage(message);
+      this.game.incrementPeaceCount();
       await this.game.getFunctions().deathListener();
       
       this.addTime(this.reportingDuration);
