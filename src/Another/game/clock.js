@@ -50,7 +50,6 @@ class Clock{
     }
 
     runHourGlass(){
-      console.log('running hourglass...');
       this.hourGlass = setInterval(() => {
         this.updateTownClock();
         if(this.hourFlag){
@@ -106,7 +105,6 @@ class Clock{
 
     async playLobby(){
       
-      console.log('In lobby.');
       this.remindTime=false;
       this.nextPhase = "Calculation";
       this.addTime(this.lobbyDuration);
@@ -331,7 +329,6 @@ class Clock{
 
     async setupTownClock(){
       
-      console.log('setting up game clock feed...');
       const embed = createEmbed({
         title: `Town Clock`
       });

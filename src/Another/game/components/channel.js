@@ -256,11 +256,7 @@ class Channel{
 
         // separate the target from the arguments
         const {response,target,args} = this.game.getFunctions().parseArguments(command,ARGUMENTS,targetables);
-        console.log(`
-          response: ${response}\n
-          target: ${target}\n
-          args: ${args}
-        `)
+        
         // if target is not found or invalid, escape out of function
         if(!response)return;
 

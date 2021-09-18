@@ -19,7 +19,7 @@ class Setup{
 
 
   async setupPlayers(){
-    console.log('setting up players...')
+    
     const players = shuffleArray([...this.game.getHost().getPlayers()]);
     
     const ghostCount = this.game.getNumberOfGhosts();
@@ -56,7 +56,7 @@ class Setup{
       ],
     })
     player.pushChannel(new Channel("personal channel",houseChannel,this.game,player));
-    console.log("channel created!")
+    
   }
 
 
@@ -75,7 +75,6 @@ class Setup{
   } 
 
   async createClockChannel(){
-    console.log('creating clock channel...');
 
     for await (const guild of this.game.getConnectedGuilds()) {
       
@@ -97,7 +96,6 @@ class Setup{
 
   
   async createClockChannelKeys(){
-    console.log('creating clock keys...');
 
     for await (const guild of this.game.getConnectedGuilds()) {
       
@@ -107,13 +105,12 @@ class Setup{
         permissions:[]
       });
       this.game.pushClockChannelKey(channelKey); 
-      console.log('key created!')
       
     }
   }
 
   async distributeClockChannelKeys(){
-    console.log('distributing clock keys...');
+    
     this.game.getPlayers().forEach(player => {
       const user = player.getDiscord();
       const keys = this.game.getClockChannelKeys().filter(key=>key.guild.id==player.getGuild().id);
@@ -126,7 +123,6 @@ class Setup{
 
 
   async showStartingChannels(){
-    console.log('showing starting channels...');
 
     // show player channels
     this.game.getPlayers().forEach(player => {
@@ -149,7 +145,6 @@ class Setup{
 
   
   async setupPlayerListeners(){
-    console.log('setting up player listeners...');
     this.game.getPlayers().forEach(player => {
       player.getPersonalChannel().setupListener();
     });

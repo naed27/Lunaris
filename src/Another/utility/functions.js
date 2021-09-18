@@ -36,7 +36,6 @@ class Functions{
 
     // if target is valid
     if(validTargets.length==1){
-      console.log(validTargets);
       return {
         response:true,
         target:validTargets[0],
