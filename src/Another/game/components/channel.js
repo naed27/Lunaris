@@ -245,7 +245,7 @@ class Channel{
 
         // if no arguments is supplied
         if(ARGUMENTS.length===0)
-        return this.messageChannel(res.pleaseProvideAnArgument(command));
+        return this.postEmbed(res.pleaseProvideAnArgument(command));
 
         // find target from the given keyword
         const performer = this.owner;
@@ -286,7 +286,7 @@ class Channel{
         });
 
         // send a response that the command will run later
-        this.messageChannel(res.commandResponse(await command.Response({
+        this.postEmbed(res.commandResponse(await command.Response({
           user:this.owner,
           command:command,
           target:target,

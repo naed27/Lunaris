@@ -255,7 +255,7 @@ class Functions{
     // process notifs
     this.game.getPlayers().forEach(player => {
         const result = concatNotifs(player.getNotifs());
-        player.getPersonalChannel().messageChannel(result);
+        player.getPersonalChannel().postMessage(result);
         player.clearNotifs();
     });
   }
