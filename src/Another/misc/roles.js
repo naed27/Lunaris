@@ -65,7 +65,11 @@ module.exports.rolesList = [
                 },
                 Run:({target})=>{
                     target.kill();
-                    target.pushCauseOfDeath(`died to an accident.`);
+                    if(target.getCauseOfDeath().length===0){
+                        target.pushCauseOfDeath(`${target} died to an accident.`);
+                    }else{
+                        target.pushCauseOfDeath(`${target} also died to an accident.`);
+                    }
                     target.pushNotif({
                         player: 'You have been killed by the Ghost!'
                     });

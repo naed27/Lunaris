@@ -79,11 +79,7 @@ class Player{
         await delay(3000);
 
         for (let i = 0; i < this.causeOfDeath.length; i++) {
-          if(i==0){
-            message = `${this.getUsername()} was ${this.causeOfDeath[i]}`;
-          }else{
-            message = `${this.getUsername()} was also ${this.causeOfDeath[i]}`;
-          }
+          message = `${this.causeOfDeath[i]}`;
           await this.game.getFunctions().gameMessage(message);
           await delay(2000);
         }
