@@ -205,10 +205,11 @@ class Functions{
     const students = alivePlayers.filter(player => player.getRole().Name==='Student');
     const ghosts = alivePlayers.filter(player => player.getRole().Name==='Ghost');
 
-    if(students<1){
+    if(students.length<1){
       ghosts.forEach((ghost)=>{
         ghost.setWinStatus(true);
       })
+      this.game.getClock().setNextPhase('Game Over');
       this.game.getClock().skipPhase();
     }
 
