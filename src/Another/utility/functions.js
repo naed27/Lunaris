@@ -238,7 +238,7 @@ class Functions{
       for (let i = 0; i < freshDeaths.length; i++) {
         await freshDeaths[i].playDeath();
       }
-      return this.game.setFreshDeaths([]);
+      return this.game.clearFreshDeaths();
     }  
     return
   }
