@@ -174,6 +174,7 @@ class Game{
     clearActions(){return this.actions=[]}
     clearDaysSinceGhostDied(){return this.daysSinceGhostDied=0}
     clearPeaceCount(){this.peaceCount=0}
+    clearFreshDeaths(){this.freshDeaths=[]}
 
 
     // incrementers
