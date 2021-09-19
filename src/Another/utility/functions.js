@@ -170,7 +170,7 @@ class Functions{
   }
 
   whoArrivedAtTheSchoolSafely(){
-    const alives = stringifyArrayOfNamesEmbed(this.gameMessage.getPlayers().filter((player)=>player.getStatus()==='Alive'));
+    const alives = stringifyArrayOfNamesEmbed(this.game.getPlayers().filter((player)=>player.getStatus()==='Alive'));
     this.gameMessage(`${alives} arrived at the school safely.`);
   }
 
@@ -196,7 +196,7 @@ class Functions{
   }
 
   async resetDay(){
-    this.getPlayers().forEach(player => {
+    this.game.getPlayers().forEach(player => {
       player.clearVisitors();
       player.clearNotifs();
     });
@@ -205,10 +205,12 @@ class Functions{
   async listenForWinners(){
     const alivePlayers = this.game.getPlayers().filter(player=>player.getStatus()=='Alive');
     const students = alivePlayers.filter(player => player.getRole().Name==='Student');
-    const ghost = alivePlayers.filter(player => player.getRole().Name==='Ghost');
+    const ghosts = alivePlayers.filter(player => player.getRole().Name==='Ghost');
 
     if(students<1){
-      ghost.setWinStatus(true);
+      ghosts.forEach((ghost)=>{
+        ghost.setWinStatus(true);
+      })
       this.game.getClock().skipPhase();
     }
 
