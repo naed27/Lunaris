@@ -11,48 +11,71 @@ class Functions{
   }
 
 
-  parseArguments(command,commandArguments,targetables){
-    // returns an element
+  parseArguments(command,commandArguments,user){
+    
+    // this function returns an element
+
+    // first, find the possible valid targets
+    const targetables = command.Targetables({
+      user:user,
+      game:this.game
+    });
+   
 
     // separate the target and the argument
     let targetQuery = '';
     let sliceIndex = 0;
     let validTargets = []
 
+    console.log('------- args --------');
+    console.log(commandArguments);
+    console.log('---------------------')
+    console.log('scanning....')
+
     // scan the args to find the whole 'name' of the target
-    for (let i = 0; i < commandArguments.length; i++) {
+    for (let i = 1; i <= commandArguments.length; i++) {
+      console.log('--------------')
       targetQuery = commandArguments.slice(0,i).join();
+      console.log(`targetQuery: ${targetQuery}`)
       const results = this.findName(targetables,targetQuery)
+      console.log('results:');
+      console.log(results);
       if(results.length===0){
-        sliceIndex=i+1;
+        sliceIndex=i-1;
         break;
       }
       validTargets=[...results];
+      console.log('validTargets:')
+      console.log(validTargets);
     }
 
     // separate the target with the arguments by slicing
     const args = commandArguments.slice(sliceIndex,commandArguments.length).join(' ');
+    console.log('args:')
+    console.log(args);
     const commandName = command.Name;
 
     // if target is valid
     if(validTargets.length==1){
+      console.log('target is valid');
       return {
         response:true,
         target:validTargets[0],
         args:args
       }
     }
+    console.log('target is not valid')
     
 
     // if not valid, do another search to determine why its not  
-    const foundPlayers = this.findName(this.town.getPlayers(),targetQuery);
+    const foundPlayers = this.findName(this.game.getPlayers(),targetQuery);
 
     if(foundPlayers.length==1){
       const foundPlayer = foundPlayers[0];
-      if(foundPlayer.getId()==this.getId()){
-
+      if(foundPlayer.getId()==user.getId()){
+        console.log('you cannot target yourself');
         //if target is yourself
-        this.sendResponse(respond.targetCantBeYourself(commandName));
+        user.getPersonalChannel().alertChannel(respond.targetCantBeYourself(commandName));
         return {
           response:false,
           target:commandArguments
@@ -61,9 +84,9 @@ class Functions{
       }
 
       if(foundPlayer.getStatus()=="Alive"){
-
+        console.log('target cannot be targeted')
         //if target cannot be targeted
-        this.sendResponse(respond.targetIsNotAllowedToBeTargeted(foundPlayer));
+        user.getPersonalChannel().alertChannel(respond.targetIsNotAllowedToBeTargeted(foundPlayer));
         return {
           response:false,
           target:commandArguments
@@ -72,9 +95,9 @@ class Functions{
       }
 
       if(foundPlayer.getStatus()=="Dead"){
-
+        console.log('target is dead')
         //if target is dead
-        this.sendResponse(respond.targetIsDead(foundPlayer));
+        user.getPersonalChannel().alertChannel(respond.targetIsDead(foundPlayer));
         return {
           response:false,
           target:commandArguments
@@ -83,18 +106,18 @@ class Functions{
       }
              
     }else if(validTargets.length>1){
-
-      // if keyword ha multiple results
-      this.sendResponse(respond.keywordHasMultipleResults(commandArguments));
+      console.log('keyword has multiple results')
+      // if keyword has multiple results  
+      user.getPersonalChannel().alertChannel(respond.keywordHasMultipleResults(commandArguments));
       return {
         response:false,
         target:commandArguments
       }
 
     }else{
-
+      console.log('target not found')
       // if target was not found
-      this.sendResponse(respond.targetNotFound(commandArguments));
+      user.getPersonalChannel().alertChannel(respond.targetNotFound(commandArguments));
       return {
         response:false,
         target:commandArguments
