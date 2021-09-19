@@ -137,6 +137,7 @@ class Clock{
         this.nextPhase = "Voting";
         
         // show everyone who are left alive
+        await delay(1500);
         await this.game.getFunctions().whoArrivedAtTheSchoolSafely();
         
         await delay(1000);
