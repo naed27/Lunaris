@@ -30,7 +30,7 @@ class Player{
   notifications = [];
   diaryLogs = [];
 
- 
+  clockChannelKey;
 
   target;
 
@@ -209,6 +209,9 @@ class Player{
   getTarget(){return this.target;}
   setTarget(a){this.target=a;}
 
+  setClockChannelKey(a){return this.clockChannelKey = a}
+  getClockChannelKey(){return this.clockChannelKey;}
+
   kill(){
     this.status="Dead";
     this.getPersonalChannel().lock();
@@ -263,6 +266,7 @@ class Player{
 
   getGame(){return this.game;}
   getGuild(){return this.guild}
+
 
 }
 
