@@ -115,8 +115,8 @@ class Setup{
       const user = player.getDiscord();
       const keys = this.game.getClockChannelKeys().filter(key=>key.guild.id==player.getGuild().id);
       keys.forEach(key => {
-        if(key.name==='Another')
           user.roles.add(key);
+          player.setClockChannelKey(key);
       });
     });
   }
