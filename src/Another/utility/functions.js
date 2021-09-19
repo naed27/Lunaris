@@ -1,5 +1,5 @@
-const {containsKeyword,containsInitials, stringifyArrayOfNamesEmbed} = require('../../Helpers/toolbox')
-const {wrap,arrangeActions,concatNotifs} = require('./utility')
+const {containsKeyword,containsInitials} = require('../../Helpers/toolbox')
+const {wrap,arrangeActions,concatNotifs,stringifyPlayerNames} = require('./utility')
 const respond = require('../misc/responses');
 
 class Functions{
@@ -170,7 +170,7 @@ class Functions{
   }
 
   whoArrivedAtTheSchoolSafely(){
-    const alives = stringifyArrayOfNamesEmbed(this.game.getPlayers().filter((player)=>player.getStatus()==='Alive'));
+    const alives = stringifyPlayerNames(this.game.getPlayers().filter((player)=>player.getStatus()==='Alive'));
     this.gameMessage(`${alives} arrived at the school safely.`);
   }
 
@@ -235,14 +235,13 @@ class Functions{
   async deathListener(){
 
     const freshDeaths = this.game.getFreshDeaths();
-    if(freshDeaths.length>0){
-      this.game.clearPeaceCount();
-      for (let i = 0; i < freshDeaths.length; i++) {
-        await freshDeaths[i].playDeath();
-      }
-      return this.game.clearFreshDeaths();
-    }  
-    return
+    if(freshDeaths.length===0)return
+
+    this.game.clearPeaceCount();
+    for (let i = 0; i < freshDeaths.length; i++) {
+      await freshDeaths[i].playDeath();
+    }
+    return this.game.clearFreshDeaths();
   }
 
   processActions(){
