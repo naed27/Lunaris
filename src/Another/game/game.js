@@ -34,6 +34,8 @@ class Game{
     maxPeaceCount=5;
     daysSinceGhostDied=0;
 
+    ghostChallenge = false;
+
     prefix = PREFIX;
 
     numberOfGhosts = 1;
@@ -123,8 +125,21 @@ class Game{
     }
     pushVote(vote){
         const index = this.votes.findIndex(oldVote => oldVote.id === vote.id);
-        if(index<0)
-        this.votes.push(vote)
+        const alivePlayers = this.players.filter(player=>player.getStatus()==='Alive').length
+        let lynchLine = 0;
+        if(alivePlayers%2===0){
+            lynchLine=(alivePlayers/2)+1;
+        }else{
+            lynchLine=(alivePlayers+1)/2;
+        }
+        if(index<0){
+            this.votes.push(vote)
+            if(this.votes.length===lynchLine){
+                this.game.getClock().setNextPhase('Execution');
+                this.game.getClock().skipPhase();
+                return
+            }
+        }
         return
     }
     pushChannelKey(key){
@@ -168,6 +183,10 @@ class Game{
     getDaysSinceGhostDied(){return this.daysSinceGhostDied;}
     getPeaceCount(){return this.peaceCount}
     getRemainingPeace(){return this.maxPeaceCount-this.peaceCount}
+    getGhostChallenge(){return this.ghostChallenge}
+
+    // setters
+    setGhostChallenge(a){return this.ghostChallenge=a}
 
     //array clearers
     clearVotes(){return this.votes=[]}
@@ -175,6 +194,8 @@ class Game{
     clearDaysSinceGhostDied(){return this.daysSinceGhostDied=0}
     clearPeaceCount(){this.peaceCount=0}
     clearFreshDeaths(){this.freshDeaths=[]}
+
+    
 
 
     // incrementers

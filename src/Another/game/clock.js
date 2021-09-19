@@ -266,17 +266,13 @@ class Clock{
           }
           break;
         case "Voting":{
-          let isAgreedUpon = await this.game.getFunctions().calculateVotes();
-          if(isAgreedUpon){
-            this.nextPhase = "Execution";
-
+          
+            this.nextPhase = "Night";
             await delay(2000);
-
-            const message = `The students will try to hunt someone tonight!`;
+            const message = `The students will try to challenge the ghost tonight!`;
             await this.game.getFunctions().gameMessage(message);
             await delay(3000);
 
-          }
         }
         break;
         case "In Lobby":
