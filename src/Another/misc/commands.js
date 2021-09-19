@@ -305,9 +305,9 @@ module.exports = [
             args = args.join( ' ' );
             if(args.length>0){
                 user.setUsername( args );
-                user.getPersonalChannel().messageChannel( res.nicknameChanged(args) );
+                user.getPersonalChannel().postEmbed( res.nicknameChanged(args) );
             }else{
-                user.getPersonalChannel().messageChannel( res.pleaseProvideAnArgument(command) );
+                user.getPersonalChannel().alertChannel( res.pleaseProvideAnArgument(command) );
             }   
         }
     },
