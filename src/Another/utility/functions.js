@@ -274,17 +274,17 @@ class Functions{
     });
   }
 
-  async farewellMessage(msg){
-    this.town.getPlayers().forEach(async (p)=>{
-      let gbye = await p.getHouse().getChannel().send(msg);
-      gbye.react('🚪');
+  async gameOverMessage(message){
+    this.game.getPlayers().forEach(async (p)=>{
+      const gameOverAddress = await p.getHouse().getChannel().send(message);
+      gameOverAddress.react('🚪');
       const filter = () => {return true;};
-      let collector = gbye.createReactionCollector(filter,{dispose:true});
+      const collector = gameOverAddress.createReactionCollector(filter,{dispose:true});
       collector.on('collect', async (reaction, user) => {
           if(!user.bot){
             switch(reaction.emoji.name){
             case "🚪": {
-              p.getDiscord().remove(this.town.getDiscordRole());
+              p.getDiscord().remove(this.game.getDiscordRole());
               p.getPersonalChannel().hideAndLock();
             }
             break;

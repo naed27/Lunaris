@@ -293,7 +293,7 @@ class Clock{
         await this.game.getFunctions().gameMessage(message);
 
         message = this.game.getFunctions().stringifyWinners();
-        await this.game.getFunctions().farewellMessage(wrap(message));
+        await this.game.getFunctions().gameOverMessage(wrap(message));
 
         this.game.getPlayers().forEach(async player => {
           player.getPersonalChannel().unlock();
