@@ -51,10 +51,11 @@ util.parseDiary = (player)=>{
   const diaryLines = fullDiaryContent.split('\n');
 
   let line=0;
+  const lineLimit = 7;
   let pages = [];
   let page = '';
   for (let i = 0; i < diaryLines.length; i++) {
-    if(line<5)
+    if(line<lineLimit)
       page += diaryLines[i]+'\n';
     pages.push(page);
     page='';
