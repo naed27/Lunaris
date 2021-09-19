@@ -138,7 +138,10 @@ class Clock{
         // add time and set next phase
         this.addTime(this.discussionDuration);
         this.nextPhase = "Voting";
-
+        
+        // show everyone who are left alive
+        await this.game.getFunctions().whoArrivedAtTheSchoolSafely();
+        await delay(1000);
         // phase notification
         message = `Day ${this.round}: The Discussion.\nDuration: ${this.hourSand}s`;
         await this.game.getFunctions().gameMessage(message);
@@ -150,8 +153,6 @@ class Clock{
           await this.game.getFunctions().gameMessage(message);
         }
 
-        // show everyone who are left alive
-        await this.game.getFunctions().whoArrivedAtTheSchoolSafely();
 
       }else{
 
