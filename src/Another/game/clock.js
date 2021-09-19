@@ -295,21 +295,15 @@ class Clock{
         message = this.game.getFunctions().stringifyWinners();
         await this.game.getFunctions().gameOverMessage(wrap(message));
 
-        this.game.getPlayers().forEach(async player => {
+        await Promise.all(this.game.getPlayers().map(async (player) => {
           player.getPersonalChannel().unlock();
-          player.getPersonalChannel().setTimer(await player.getPersonalChannel().getDiscordConnection().send(`‎Game will shutdown in 10...`).catch());
-        
-        });
-
-        for(let i = 10;i!=0;i--){
-          await delay(1500);
-          this.game.getPlayers().forEach((player)=>{
-            if(player.getPersonalChannel().getTimer()){
-              player.getPersonalChannel().getTimer().edit(`‎Game will shutdown in ${i}...`).catch();
-           }
+          await player.getPersonalChannel().countDown({
+            message:`The game will end in `,
+            seconds:10,
+            cleanChannelFlag:false
           });
-        }
-        await delay(1500);
+        }));
+       
         this.game.quit();
         return
     }
