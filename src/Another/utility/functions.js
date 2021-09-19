@@ -233,9 +233,11 @@ class Functions{
 
   
   async deathListener(){
-
     const freshDeaths = this.game.getFreshDeaths();
-    if(freshDeaths.length===0)return
+    if(freshDeaths.length===0){
+      return
+    }
+
 
     this.game.clearPeaceCount();
     for (let i = 0; i < freshDeaths.length; i++) {
