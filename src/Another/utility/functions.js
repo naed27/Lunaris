@@ -149,9 +149,9 @@ class Functions{
     let string = "End Results:\n";
     this.game.getPlayers().forEach(p => {
       if(p.getWinStatus()){
-        string+=`-----\n${p.getDiscord().username} (${p.getUsername()}) (Victorious)\nRole: ${p.getRole().getName()}\n`;
+        string+=`-----\n${p.getDiscord().user.username} (${p.getUsername()}) (Victorious)\nRole: ${p.getRole().getName()}\n`;
       }else{
-        string+=`-----\n${p.getDiscord().username} (${p.getUsername()})\nRole: ${p.getRole().getName()}\n`;
+        string+=`-----\n${p.getDiscord().user.username} (${p.getUsername()})\nRole: ${p.getRole().getName()}\n`;
       }
     });
     return string;

@@ -214,9 +214,9 @@ class Host{
       
       this.game.getPlayers().forEach(p => {
         if(p.getWinStatus()){
-          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().Name} (Victorious)\n`;
+          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().getName()} (Victorious)\n`;
         }else{
-          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().Name} (Defeated)\n`;
+          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().getName()} (Defeated)\n`;
         }
       });
 
