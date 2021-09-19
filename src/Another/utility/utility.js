@@ -69,3 +69,19 @@ util.parseDiary = ({diaryOwner,diaryReader})=>{
   
   return pages;
 }
+
+util.stringifyPlayerNames = (arrayOfPlayers)=>{
+  let result ="";
+
+  for (let i = 0; i < arrayOfPlayers.length; i++) {
+    result+=`${arrayOfPlayers[i].getUsername()}`;
+    if(i<arrayOfPlayers.length-1){
+        result+=`, `;
+      if(i==arrayOfPlayers.length-2){
+        result+=`and `;
+      }
+    }
+  }
+
+  return result;
+}

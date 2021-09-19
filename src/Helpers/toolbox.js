@@ -269,21 +269,7 @@ util.stringifyArrayOfNames = (arrayOfNames)=>{
   return result;
 }
 
-util.stringifyArrayOfNamesEmbed = (arrayOfNames)=>{
-  let result ="";
 
-  for (let i = 0; i < arrayOfNames.length; i++) {
-    result+=`**${arrayOfNames[i]}**`;
-    if(i<arrayOfNames.length-1){
-        result+=`, `;
-      if(i==arrayOfNames.length-2){
-        result+=`and `;
-      }
-    }
-  }
-
-  return result;
-}
 
 
 
