@@ -225,7 +225,11 @@ class Functions{
 
   async gameCountDown(hourSand){
     await Promise.all(this.game.getPlayers().map(async (player) => {
-      await player.getPersonalChannel().countDown(hourSand);
+      await player.getPersonalChannel().countDown({
+        message:`The game will start in `,
+        seconds:hourSand,
+        cleanChannelFlag:true
+      });
     }));
   }
 
@@ -275,21 +279,24 @@ class Functions{
   }
 
   async gameOverMessage(message){
-    this.game.getPlayers().forEach(async (p)=>{
-      const gameOverAddress = await p.getHouse().getChannel().send(message);
+    this.game.getPlayers().forEach(async (player)=>{
+      const gameOverAddress = await player.getPersonalChannel().getDiscordConnection().send(message);
       gameOverAddress.react('🚪');
-      const filter = () => {return true;};
-      const collector = gameOverAddress.createReactionCollector(filter,{dispose:true});
+      const filter = (user) => !user.bot;
+      const collector = gameOverAddress.createReactionCollector({filter});
       collector.on('collect', async (reaction, user) => {
-          if(!user.bot){
-            switch(reaction.emoji.name){
-            case "🚪": {
-              p.getDiscord().remove(this.game.getDiscordRole());
-              p.getPersonalChannel().hideAndLock();
-            }
-            break;
-            }
-          }
+        if(user.bot)return
+        switch(reaction.emoji.name){
+        case "🚪": {
+          player.getConfiscatedValuables().forEach(async valuable => {
+            player.getDiscord().roles.add(valuable);
+          });
+          player.getDiscord().roles.remove(player.getClockChannelKey());
+          player.getPersonalChannel().hideAndLock();
+          
+        }
+        break;
+        }
       });
     });
     
