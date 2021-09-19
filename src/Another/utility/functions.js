@@ -203,7 +203,7 @@ class Functions{
   }
 
   async listenForWinners(){
-    const alivePlayers = this.players.filter(player=>player.getStatus()=="Alive");
+    const alivePlayers = this.game.getPlayers().filter(player=>player.getStatus()=='Alive');
     const students = alivePlayers.filter(player => player.getRole().Name==='Student');
     const ghost = alivePlayers.filter(player => player.getRole().Name==='Ghost');
 
