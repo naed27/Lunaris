@@ -157,7 +157,7 @@ class Channel{
     }
   }
 
-// -----------------------------------------
+// ----------------------------------------- permanent unless deleted
 
   async postEmbed({embed}){
     await this.discordConnection.send({embeds:[embed]}).catch()
@@ -232,8 +232,10 @@ class Channel{
 
         // if the player called a valid and unique command
 
-        // initiate the command
+        // initiate the variables
+        const performer = this.owner;
         const command = foundCommands[0];
+        
 
         // if the command doesnt require any targets, run and exit
         if(command.RequiredNumberOfTargets===0)
@@ -245,20 +247,14 @@ class Channel{
           })
 
         // if the command has a target
+       
 
         // if no arguments is supplied
         if(ARGUMENTS.length===0)
         return this.postEmbed(res.pleaseProvideAnArgument(command));
 
-        // find target from the given keyword
-        const performer = this.owner;
-        const targetables = command.Targetables({
-          user:this.owner,
-          game:this.game
-        });
-
         // separate the target from the arguments
-        const {response,target,args} = this.game.getFunctions().parseArguments(command,ARGUMENTS,targetables);
+        const {response,target,args} = this.game.getFunctions().parseArguments(command,ARGUMENTS,this.owner);
         
         // if target is not found or invalid, escape out of function
         if(!response)return;
