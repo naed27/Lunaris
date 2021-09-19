@@ -287,13 +287,12 @@ class Clock{
     async playGameOver(){
         
         let message;
-        let winners = this.game.getPlayers().filter(p=>p.getWinStatus()==true);
         this.game.getHost().notifyGameEnd();
 
         message = `Game Over`;
         await this.game.getFunctions().gameMessage(message);
 
-        message = this.game.getFunctions().stringifyWinners(winners);
+        message = this.game.getFunctions().stringifyWinners();
         await this.game.getFunctions().farewellMessage(wrap(message));
 
         this.game.getPlayers().forEach(async player => {
@@ -304,11 +303,11 @@ class Clock{
 
         for(let i = 10;i!=0;i--){
           await delay(1500);
-          for (const player of this.game.getPlayers()) {
+          this.game.getPlayers().forEach((player)=>{
             if(player.getPersonalChannel().getTimer()){
-                player.getPersonalChannel().getTimer().edit(`‎Game will shutdown in ${i}...`).catch();
-            }
-          }
+              player.getPersonalChannel().getTimer().edit(`‎Game will shutdown in ${i}...`).catch();
+           }
+          });
         }
         await delay(1500);
         this.game.quit();

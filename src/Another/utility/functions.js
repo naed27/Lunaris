@@ -148,12 +148,10 @@ class Functions{
   stringifyWinners(){
     let string = "End Results:\n";
     this.game.getPlayers().forEach(p => {
-      let user = p.getGuild().members.cache.get(p.getId());
-      let real_name = user.user.username;
       if(p.getWinStatus()){
-        string+=`-----\n${real_name} (${p.getUsername()}) (Victorious)\nRole: ${p.getRole().getName()}\nServer: ${p.getGuild().name}\n`;
+        string+=`-----\n${p.getDiscord().username} (${p.getUsername()}) (Victorious)\nRole: ${p.getRole().getName()}\n`;
       }else{
-        string+=`-----\n${real_name} (${p.getUsername()})\nRole: ${p.getRole().getName()}\nServer: ${p.getGuild().name}\n`;
+        string+=`-----\n${p.getDiscord().username} (${p.getUsername()})\nRole: ${p.getRole().getName()}\n`;
       }
     });
     return string;
