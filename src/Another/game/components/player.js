@@ -91,7 +91,14 @@ class Player{
     }
 
     if(this.diaryLogs.length>0){
-      await this.showLeftBehindDiary();
+      
+      const diaryNotice = `We found a diary beside ${this.getUsername()}'s body.`;
+      this.game.getFunctions().gameMessage(diaryNotice);
+
+      await Promise.all(this.game.getPlayers().map(async (player) => {
+        await this.showDiary(player);
+      }));
+
       await delay(3000);
     }
   }
@@ -139,58 +146,51 @@ class Player{
 
   }
 
-  async showLeftBehindDiary(){
-    const diaryCover = `We found a diary beside ${this.getUsername()}'s body.`;
-    const diary = parseDiary(this);
+  async showDiary(player){
+    const diaryPages = parseDiary({diaryOwner:this,diaryReader:player});
     let page = 0;
-    await Promise.all(this.game.getPlayers().map(async (player) => {
-      const diaryMessage = await player.getPersonalChannel().getDiscordConnection().send({content:wrap(diaryCover)});
-      await diaryMessage.react('📔');
-      const filter = user => !user.bot;
-      const collector = diaryMessage.createReactionCollector({filter});
-      collector.on('collect', async (reaction,user) => {
-        if(user.bot)return
-        switch(reaction.emoji.name){
-          case "📔": {
-            page = 0;
-            await diaryMessage.reactions.removeAll();
-            const openedMessage = `"${this.getNotes()}"\n\n- ${this.getUsername()}`;
-            diaryMessage.edit(wrap(openedMessage));
-            await diaryMessage.react('⏪');
-            await diaryMessage.react('◀️');
-            await diaryMessage.react('▶️');
-            await diaryMessage.react('⏩');
-            await diaryMessage.react('❌');
-            }
-          break;
-          case "❌": 
-            page=0;
-            await diaryMessage.reactions.removeAll();
-            diaryMessage.edit(wrap(diaryCover));
-            diaryMessage.react('📔');
-          break;
-          case "⏪": 
-            page=1;
-          break;
-          case "◀️":
-            if(page === 0)return 
-            page--;
-          break;
-          case "▶️": 
-            if(page === diary.length-1)return 
-            page++;
-          break;
-          case "⏩": 
-            page=diary.length-1;
-          break;
-        }
-        const diaryPage = diary[page];
-        diaryMessage.edit(diaryPage);
-      });
-    }));
+    const diaryMessage = await player.getPersonalChannel().getDiscordConnection().send({content:wrap(diaryPages[page])});
+    await diaryMessage.react('📔');
+    const filter = user => !user.bot;
+    const collector = diaryMessage.createReactionCollector({filter});
+    collector.on('collect', async (reaction,user) => {
+      if(user.bot)return
+      switch(reaction.emoji.name){
+        case "📔": {
+          page = 1;
+          await diaryMessage.reactions.removeAll();
+          await diaryMessage.react('⏪');
+          await diaryMessage.react('◀️');
+          await diaryMessage.react('▶️');
+          await diaryMessage.react('⏩');
+          await diaryMessage.react('❌');
+          }
+        break;
+        case "❌": 
+          page=0;
+          await diaryMessage.reactions.removeAll();
+          diaryMessage.react('📔');
+        break;
+        case "⏪": 
+          page=1;
+        break;
+        case "◀️":
+          if(page === 0)return 
+          page--;
+        break;
+        case "▶️": 
+          if(page === diaryPages.length-1)return 
+          page++;
+        break;
+        case "⏩": 
+          page=diaryPages.length-1;
+        break;
+      }
+      diaryMessage.edit(diaryPages[page]);
+    });
+
   }
 
-  
   
   
 

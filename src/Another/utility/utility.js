@@ -46,13 +46,18 @@ util.concatNotifs = (arrayOfNotifs)=>{
 }
 
 
-util.parseDiary = (player)=>{
-  const fullDiaryContent = player.getDiaryLogs().join('\n\n');
+util.parseDiary = ({diaryOwner,diaryReader})=>{
+  const fullDiaryContent = diaryOwner.getDiaryLogs().join('\n\n');
   const diaryLines = fullDiaryContent.split('\n');
+  let diaryCover ='';
+
+  if(diaryOwner.getId()===diaryReader.getId())
+  diaryCover = `Your Diary.`
+  diaryCover = `${diaryOwner.getUsername()}'s Diary'`;
 
   let line=0;
   const lineLimit = 7;
-  let pages = [];
+  let pages = [diaryCover];
   let page = '';
   for (let i = 0; i < diaryLines.length; i++) {
     if(line<lineLimit)
