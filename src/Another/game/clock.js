@@ -15,7 +15,7 @@ class Clock{
     
     //durations
     lobbyDuration = 20;
-    reportingDuration = 10;
+    reportingDuration = 0;
     firstDiscussionDuration = 10;
     discussionDuration = 200;
     votingDuration = 10;
@@ -100,7 +100,6 @@ class Clock{
           break;
       }
       
-      // this.game.getFunctions().listenHouseChannel();
     }
 
     async playLobby(){
@@ -121,7 +120,6 @@ class Clock{
       await this.game.getFunctions().gameMessage(message);
       this.game.incrementPeaceCount();
       await this.game.getFunctions().deathListener();
-      
       this.addTime(this.reportingDuration);
       this.moveHourGlass();  
     }
@@ -132,7 +130,6 @@ class Clock{
       this.remindTime=true;
       let message;
       this.game.getFunctions().unlockStudentChannels();
-
       if(this.round>1){
 
         // add time and set next phase
@@ -141,6 +138,7 @@ class Clock{
         
         // show everyone who are left alive
         await this.game.getFunctions().whoArrivedAtTheSchoolSafely();
+        
         await delay(1000);
         // phase notification
         message = `Day ${this.round}: The Discussion.\nDuration: ${this.hourSand}s`;
