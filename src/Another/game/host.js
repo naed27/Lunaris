@@ -209,15 +209,14 @@ class Host{
       this.editHostCard(embed);
     }
 
-    async notifyGameEnd(players){
+    async notifyGameEnd(){
       let resultString = "End Results:\n";
-      players.forEach(p => {
-        let discord = p.getGuild().members.cache.get(p.getId());
-        let real_name = discord.user.username;
+      
+      this.game.getPlayers().forEach(p => {
         if(p.getWinStatus()){
-          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${real_name}\nRole: ${p.getRole().getName()} (Victorious)\n`;
+          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().Name} (Victorious)\n`;
         }else{
-          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${real_name}\nRole: ${p.getRole().getName()} (Defeated)\n`;
+          resultString+=`-----\nUsername: ${p.getUsername()}\nDiscord Name: ${p.getDiscord().user.username}\nRole: ${p.getRole().Name} (Defeated)\n`;
         }
       });
 
