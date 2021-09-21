@@ -199,13 +199,6 @@ class Channel{
 
 
 
-
-
-
-
-
-
-  
   setupListener(){
     const filter = m => !m.author.bot || m.author.id===this.owner.getId();
     this.collector = this.discordConnection.createMessageCollector({filter})
