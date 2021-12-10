@@ -1,14 +1,14 @@
-const util = require("./utility");
-const roledump = require("./roledump");
-const Action = require("./action");
-const Setup = require("./setup");
-const Functions = require("./functions");
-const Clock = require("./clock");
+import util from "./utility";
+import roledump from "./roledump";
+import Action from "./action";
+import Setup from "./setup";
+import Functions from "./functions";
+import Clock from "./clock";
 
-class Town{
+export default class Town{
 
     // identifier
-    id;
+    id:string;
 
     //head
     inventory;
@@ -563,5 +563,3 @@ class Town{
   
 
 }
-
-module.exports = Town;

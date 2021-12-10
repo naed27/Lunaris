@@ -1,12 +1,9 @@
-const util = require("../Salem/utility");
-const {MessageEmbed} = require('discord.js');
-
-class Inventory{
+export default class SalemServer{
 
     portals=[];
     towns=[];    
 
-    //--------------------- SALEM FUNCTIONS
+    //--------------------- Server Functions ----------------------
 
     pushPortal(guild){
         let checker = this.portals.filter(p=>p === guild.id);
@@ -16,6 +13,10 @@ class Inventory{
         }else{
             return false;
         }
+    }
+
+    pushTown(town){
+        return this.towns.push(town);
     }
 
     fetchTown(town){
@@ -45,5 +46,3 @@ class Inventory{
     getPortals(){return this.portals;}
   
 }
-
-module.exports = Inventory;

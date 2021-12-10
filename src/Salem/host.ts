@@ -1,7 +1,8 @@
-const util = require("./utility");
-const {MessageEmbed} = require('discord.js');
-const modes = require("./modes");
-class Host{
+import util from "./utility";
+import { MessageEmbed } from 'discord.js';
+import modes from "./modes";
+
+export default class Host{
 
     town;
     host;
@@ -314,5 +315,3 @@ class Host{
 
     
 }
-
-module.exports = Host;

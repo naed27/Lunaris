@@ -1,7 +1,48 @@
-const util = require("./utility");
-const Role = require("./role");
+import util from "./utility";
+import Role from "./role";
 
-module.exports.list = [
+export interface SalemRoleCommand{
+    Name: string;
+    Guide: string;
+    Description: string;
+    Priority: number;
+    Stocks: number;
+    Permission: string;
+    Queue: string;
+    Phase: string[];
+    Status: string;
+    RequiredTargets: number;
+    Performer: any;
+    VisitsTarget: any;
+    ValidTargets: any;
+    ActionResponse: any;
+    Act: any;
+}
+
+export interface SalemRole{
+    id: string;
+    Name: string;
+    Alignment: string;
+    Type: string;
+    Immunities: any[];
+    Attack: number;
+    Defense: number;
+    Unique: boolean;
+    Results: {
+        Investigator: string;
+        Sheriff: string;
+        Consigliere: string;
+    };
+    Abilities: string[];
+    Goals: string[];
+    NightMessage: string;
+    RoleMessage: string;
+    Friendlies: string[];
+    Commands: SalemRoleCommand[];
+
+}
+
+const roles = [
         {
             id:"001",
             Name:"Jailor",
@@ -81,6 +122,7 @@ module.exports.list = [
                     VisitsTarget:()=>{
                         return false;
                     },
+                    ValidTargets:()=>null,
                     AutoTargets:(town)=>{
                         if(town.getJailedPerson()){
                             return [town.getJailedPerson()];
@@ -233,6 +275,7 @@ module.exports.list = [
                     VisitsTarget:()=>{
                         return false;
                     },
+                    ValidTargets:()=>null,
                     AutoTargets:(user)=>{
                         return [user];
                     },
@@ -503,6 +546,7 @@ module.exports.list = [
                     VisitsTarget:()=>{
                         return false;
                     },
+                    ValidTargets:()=>null,
                     AutoTargets:(user)=>{
                         return [user];
                     },
@@ -1770,6 +1814,7 @@ module.exports.list = [
                     VisitsTarget:()=>{
                         return false;
                     },
+                    ValidTargets:()=>null,
                     ActionResponse:async ()=>{
                         return `You have decided to heal yourself.`
                     },
@@ -1855,6 +1900,7 @@ module.exports.list = [
                     VisitsTarget:()=>{
                         return false;
                     },
+                    ValidTargets:()=>null,
                     AutoTargets:(user)=>{
                         return [user];
                     },
@@ -2208,3 +2254,5 @@ module.exports.list = [
         },
             
 ];
+
+export default roles
