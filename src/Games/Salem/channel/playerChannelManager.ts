@@ -3,6 +3,7 @@ import ChannelManager from './channelManager';
 import Game from '../game';
 import Player from '../player'
 import MessageManager from './messageManagers/messageManager';
+import { guide, playerRole, playerList, judge, clock, phaseCommands, availableCommands, countDown  } from './messageManagers/generators';
 
 interface ConstructorParams{
   channel:TextChannel,
@@ -15,37 +16,38 @@ export default class PlayerChannelManager extends ChannelManager{
   readonly player: Player;
   readonly discord: GuildMember;
 
-  readonly guideMessageManager = new MessageManager(this);
-  readonly phaseMessageManager = new MessageManager(this);
-  readonly timerMessageManager = new MessageManager(this);
-  readonly profileMessageManager = new MessageManager(this);
-  readonly judgementMessageManager = new MessageManager(this);
-  readonly countDownMessageManager = new MessageManager(this);
-  readonly playersListMessageManager = new MessageManager(this);
+  readonly clockMessageManager = new MessageManager({channel:this, generator:clock});
+  readonly guideMessageManager = new MessageManager({channel:this, generator:guide});
+  readonly judgementMessageManager = new MessageManager({channel:this, generator:judge});
+  readonly countDownMessageManager = new MessageManager({channel:this, generator:countDown});
+  readonly playersRoleMessageManager = new MessageManager({channel:this, generator:playerRole});
+  readonly playersListMessageManager = new MessageManager({channel:this, generator:playerList});
+  readonly phaseCommandsMessageManager = new MessageManager({channel:this, generator:phaseCommands});
+  readonly availableCommandsMessageManager = new MessageManager({channel:this, generator:availableCommands});
 
   constructor({ channel, discord: {id:defaultId} , game }: ConstructorParams){
     super({ game, channel, defaultId });
   }
-  
   
   listen = () =>{
     const filter = (message:Message) => message.author.id === this.discord.id;
     const collector = this.channel.createMessageCollector({filter});
 
     collector.on('collect',async (m)=>{
-        if(this.game.getClock().getPhase().name === 'Discussion')return
-        const message = m.content;
+      if(this.game.getClock().getPhase().name === 'Discussion')return
+      const message = m.content;
     })
   }
 
   getPlayer = () => this.player;
   getDiscord = () => this.discord;
 
+  manageClock = () => this.clockMessageManager;
   manageGuide = () => this.guideMessageManager;
-  managePhase = () => this.phaseMessageManager;
-  manageTimer = () => this.timerMessageManager;
-  manageProfile = () => this.profileMessageManager;
+  manageJudgement = () => this.judgementMessageManager;
   manageCountDown = () => this.countDownMessageManager;
-  manageJudgement = () => this.judgementMessageManager
-  managePlayersList = () => this.playersListMessageManager;
+  managePlayersRole = () => this.playersRoleMessageManager;
+  managerPlayerList = () => this.playersListMessageManager;
+  managePhaseCommands = () => this.phaseCommandsMessageManager;
+  manageAvailableCommands = () => this.availableCommandsMessageManager;
 }

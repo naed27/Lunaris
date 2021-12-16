@@ -1,7 +1,7 @@
 import { Message, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
 import { createEmbed, getStringSearchResults, sortWordsAlphabetically, removeDuplicates } from "../Helpers/toolbox";
 import roles, { SalemRoleCommand } from "../Games/Salem/roles";
-import guidebook from '../Games/Salem/guide';
+import guidebook from '../Games/Salem/archive/guide';
 import SalemServer from '../Servers/SalemServer';
 import Game from "../Games/Salem/game";
 import Host from "../Games/Salem/host";

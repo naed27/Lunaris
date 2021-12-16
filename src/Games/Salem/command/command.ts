@@ -28,7 +28,7 @@ export default class Command{
 
   // ------------------------------------- SETTERS AND GETTERS
 
-  getPhase = () => this.phase
+  getPhases = () => this.phase
   getStatus = () => this.status
 
   getQueue = () => this.queue;
@@ -42,7 +42,7 @@ export default class Command{
   
   getStocks = () => this.stocks;
   setStocks = (a:number) => this.stocks = a;
-  
+
   getPriority = () => this.priority;
   setPriority = (a: number) => this.priority=a;
 

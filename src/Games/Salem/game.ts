@@ -491,6 +491,14 @@ export default class Game{
 
     getPlayersWithStatus = (status:string) => this.players.filter(p=>p.getStatus()===status);
     getPlayersWithRole = (role:string) => this.players.filter(p=>p.getRole().getName()==role);
+    
+    isHost = (a:Player) => {
+        const hostId = this.host.getHostId();
+        const playerId = a.getId();
+        return hostId === playerId;
+    } 
+
+    isAdmin = (a:Player) => a.getId()=="481672943659909120"
 
 
     // ------------------------------------- QUITTERS

@@ -1,4 +1,4 @@
-import util from "./utility";
+import { splitStringByComma } from "../../Helpers/toolbox";
 
 export interface Command{
     name: string,
@@ -34,7 +34,7 @@ export default [
             let duration = 0;
             if(inputs.length>0){
                 inputs = inputs.join("");
-                inputs = util.splitComma(inputs);
+                inputs = splitStringByComma(inputs);
                 let targetables = town.getPlayers().filter(p=>p.getStatus()==="Alive" && p.getId()!=user.getId()); 
                 if(inputs.length==1){
                   let res = town.getFunctions().areValidTargets(user,"vote",inputs,targetables,town.getPlayers());

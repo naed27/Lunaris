@@ -315,15 +315,15 @@ class Clock{
         this.game.getPlayers().map( async (player)=>{
             player.getChannelManager().unlock();
             const address = await player.getChannelManager().getChannel().send(`‎Game will shutdown in 10...`).catch(error=>{})
-            player.getChannelManager().setTimer(address);
+            player.getChannelManager().manageTimer().set(address);
         
         })
         
         for(let i = 10;i!=0;i--){
             await delay(1500);
             this.game.getPlayers().map((player)=>{
-                if(player.getChannelManager().getTimer()){
-                    player.getChannelManager().getTimer().edit(`‎Game will shutdown in ${i}...`).catch(error=>{});
+                if(player.getChannelManager().manageTimer().get()){
+                    player.getChannelManager().manageTimer().edit(`‎Game will shutdown in ${i}...`).catch(error=>{});
                 }
             });
         }
