@@ -1,24 +1,20 @@
-const util = require("../Essentials/utility");
-const {MessageEmbed} = require('discord.js');
-
 class Notif{
 
-    toHouseOwner;
-    toReceiver;
-    toLookout;
     toSpy;
-
+    toLookout;
+    toReceiver;
+    toHouseOwner;
 
     constructor(performer,command,targets){
-        this.performer = performer;
         this.command = command;
         this.targets = targets;
+        this.performer = performer;
     }
 
     // ------------------------------------- SETTERS AND GETTERS
 
-    getPerformer(){return this.performer}
-    setPerformer(a){this.performer = a}    
+    getPerformer = () => this.performer
+    setPerformer = (a) => this.performer = a;
 
     getCommand(){return this.command}
     setCommand(a){this.command = a}

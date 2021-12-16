@@ -2,14 +2,14 @@ require('dotenv').config();
 
 import { Client, Intents } from 'discord.js';
 import { parseCommand } from "./Helpers/toolbox";
-import SalemServer from "./Servers/SalemServer";
-import { reactoToMessage } from './Triggers/Misc';
+// import SalemServer from "./Servers/SalemServer";
 import AnotherServer from './Servers/AnotherServer';
 import CloverClubserver from './Servers/CloverClubserver';
 import { initializeAnother } from './Triggers/Another';
-import { initializeSalem, salemGuide, getSalemRole, getSalemRoles } from './Triggers/Salem';
+import { initializeCloverClub } from './Triggers/CloverClub';
+// import { initializeSalem, salemGuide, getSalemRole, getSalemRoles } from './Triggers/Salem';
 
-const salemServer = new SalemServer();
+// const salemServer = new SalemServer();
 const anotherServer = new AnotherServer();
 const cloverClubServer = new CloverClubserver();
 
@@ -37,11 +37,12 @@ client.on('messageCreate', async (message) =>{
 
     switch(COMMAND){
         case 'test': break;
-        case 'sg': salemGuide(message);break;
-        case 'roles':getSalemRoles(message);break;
-        case 'role':getSalemRole(message,ARGS);break;
+        case 'sg': /* salemGuide(message) */;break;
+        case 'roles':/* getSalemRoles(message) */;break;
+        case 'role':/* getSalemRole(message,ARGS) */;break;
         case 'salem':/* initializeSalem(message,salemServer) */;break;
         case 'another':/* initializeAnother(message,anotherServer) */;break;
+        case 'cloverClub': initializeCloverClub(message,cloverClubServer) ;break;
         default:break;
     }
      

@@ -2,6 +2,7 @@ import Game from './game';
 import Player from './player';
 import { shuffleArray } from '../../Helpers/toolbox';
 import { Guild, GuildMember, TextChannel } from 'discord.js';
+import GameChannelManager from './gameChannelManager';
 
 export default class Setup{
 
@@ -51,17 +52,37 @@ export default class Setup{
     this.game.setGameKey(key); 
   }
 
-  async distributeClockChannelKeys(){
+  async setupStageChannel(){
+    const game = this.game;
+    const channel = await this.guild.channels.create(`🌹﹕stage`, {
+      type: "GUILD_TEXT",
+      permissionOverwrites: [
+        {
+          id: this.guild.roles.everyone, 
+          allow: [],
+          deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
+        }
+      ],
+    })
+
+    const stageChannelManager = new GameChannelManager({ channel,game })
+    game.setStageChannel(channel);
+    game.setStageChannelManager(stageChannelManager)
+  }
+
+  async distributeKeys(){
     const key = this.game.getGameKey();
     this.game.getPlayers().map(player => player.getDiscord().roles.add(key));
   }
 
-  showStartingChannels = () => {
-    this.game.getPlayers().map(p => p.getChannelManager().show(p.getId()));
+  showPlayerChannels = async () => {
+    this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
   }
 
-  async setupPlayerListeners(){
-    this.game.getPlayers().map(p => p.getChannelManager().listen());
+  showStageChannel = async () => this.game.getStageChannelManager().show();
+
+  setupPlayerListeners = async () =>  {
+    this.game.getPlayers().map(async p => p.getChannelManager().listen());
   }
 
 }

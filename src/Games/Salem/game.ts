@@ -4,30 +4,41 @@ import Action from "./action";
 import Setup from "./setup";
 import Functions from "./functions";
 import Clock from "./clock";
+import Host from "./host";
+import { Guild, Role } from "discord.js";
+import SalemServer from "../../Servers/SalemServer";
+import Player from "./player";
+import { SalemRoleCommand } from "./roles";
+import Ability from "./command/ability";
+import GlobalAbility from "./command/global";
 
-export default class Town{
+interface ConstructorParams {
+    guild: Guild;
+    server: SalemServer;
+}
 
-    // identifier
+export default class Game{
+
     id:string;
 
-    //head
-    inventory;
-    guilds=[];
-    gameKeys=[];
+    title: 'Town of Salem';
     
-    //preparations
-    host;
+    guild: Guild;
+    server: SalemServer;
+    
+    host:Host;
+    clock: Clock;
+    gameKey: Role;
+
     setup;
     functions;
-    clock;
     priority=[];
     
     rolesToRemove=[];
 
-    //game variables
     prefix = ".";
-    actions=[];
-    players=[];
+    actions: Action[]=[];
+    players: Player[]=[];
     jail=[];
     votes=[];
     votedUp=null;
@@ -36,22 +47,24 @@ export default class Town{
     freshDeaths=[];
     freshReborn = [];
 
-    //game main channels
     channels=[];
 
-    constructor(inventory,guild,host){
-        this.id = `${guild.id}${host.id}`;
-        this.inventory = inventory;
+    constructor({server,guild}: ConstructorParams){
+        this.guild = guild;
+        this.server = server;
+        this.id = `${guild.id}`;
         this.rolesToRemove = roledump.list;
+
+        this.setup = new Setup(this);
+        this.clock = new Clock(this);
         this.functions = new Functions(this);
     }  
-    // ------------------------------------- FUNCTION DUMP
+
+    // ---------------------- Functions
 
     async setupGame(){
-        this.setSetup(new Setup(this));
-        this.setClock(new Clock(this));
         await this.getSetup().setupPlayers();
-        await this.getSetup().createGameKeys();
+        await this.getSetup().creategameKey();
         await this.getSetup().passRoles();
         await this.getSetup().setupClockChannel();
         await this.getClock().setupTownClock();
@@ -60,51 +73,38 @@ export default class Town{
         await this.getSetup().setupGuides();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
-        await this.getClock().theHourGlass();
+        await this.getClock().runTimer();
         await this.getClock().playLobby();
     }
 
     async updateWerewolf(){
-        let round = this.getClock().getRound();
-        let werewolves = this.players.filter(p=>p.getRole().getName()=="Werewolf");
-        let report;
-        if(round%2==0){
-            report = "Your target is suspicious!";
-        }else{
-            report = "Your target seems innocent.";
-        }
-        console.log(report);
-        werewolves.forEach(w => {
-            w.getMaskRole().getResults().setSheriff(report);
-        });
+        const round = this.clock.getRound();
+        const werewolves = this.getPlayersWithRole('Werewolf');
+
+        const report = round%2==0 ? 
+        'Your target is suspicious! ': 
+        'Your target seems innocent.';
+
+        werewolves.forEach(werewolf => werewolf.getMaskRole().getResults().setSheriff(report) );
     }
 
-    async updatePlayerLists(){
-        this.getPlayers().forEach(player => {
-            player.getHouse().updatePlayerList();
-        });
-    }
+    resetNight = async () => this.getPlayers().map(p =>  p.setMuteStatus(false));
 
-   async resetNight(){
-        this.getPlayers().forEach(p => {
-            p.setMuteStatus(false);
-        });
-   }
+    updatePlayerLists = async () => this.getPlayers().map(p => p.getHouse().updatePlayerList());
 
     async resetDay(){
-        let jester = this.getPlayers().filter(p=>p.getRole().getName()=="Jester" && p.getStatus()=="Dead");
-        if(jester.length>0){
-            jester = jester[0];
+        const jester: Player = this.getPlayers().find(p=>p.getRole().getName()=="Jester" && p.getStatus()=="Dead");
+        if(jester){
             jester.getRole().getCommands().filter(c=>c.getName()=="haunt")[0].setStocks(0);
         }
         
-        this.getPlayers().forEach(p => {
-            p.clearJudgement();
-            p.clearVisitors();
-            p.clearBuffs();
-            p.resetMask();
-            p.setRoleBlockStatus(false);
-            p.setSeanceStatus(false);
+        this.getPlayers().map(player => {
+            player.resetMask();
+            player.clearBuffs();
+            player.clearVisitors();
+            player.clearJudgement();
+            player.setSeanceStatus(false);
+            player.setRoleBlockStatus(false);
         });
 
         if(this.getJailedPerson()){
@@ -112,130 +112,93 @@ export default class Town{
         }
         
         this.getClock().resetVotingExcessTime();
-
     }
 
-    async listenForWinners(){
-        let alives = this.players.filter(p=>p.getStatus()=="Alive");
-        alives.forEach(p => {
-            p.listenForTheWin();
+
+    deathListener = async () => {
+        const currentPeaceCount = this.getClock().getPeaceCount();
+        this.getClock().setPeaceCount(currentPeaceCount+1);
+        if(this.freshDeaths.length<=0)return
+        this.getClock().setPeaceCount(0);
+        this.freshDeaths.map((p)=>p.playDeath());
+        this.freshDeaths=[];
+    }
+
+    rebornListener = async () => {
+        if(this.freshReborn.length<=0)return;
+        this.freshReborn.map(async reborn =>{
+            const  msg = `${reborn.getUsername()} has been resurrected!`;
+            await this.getFunctions().messagePlayersWrapped(msg);
+        });
+        this.clearFreshReborn();
+    }
+
+    pushAction( action: Action ){
+        const index = this.actions.findIndex(a => a.user.getId() == action.getUser().getId());
+        (index>=0)? this.actions[index]=action : this.actions.push(action)
+    }
+
+    arrangeActions = () =>{
+        return this.actions.sort((a,b)=>{
+            const aPriority = a.getCommand().getPriority();
+            const bPriority = b.getCommand().getPriority();
+            if(aPriority<bPriority)return -1;
+            if(aPriority>bPriority)return 1;
+            return 0;
         });
     }
 
-    async deathListener(){
-        let currentPeaceCount = this.getClock().getPeaceCount();
-        currentPeaceCount++;
-        this.getClock().setPeaceCount(currentPeaceCount);
-        
-        if(this.freshDeaths.length>0){
-            this.getClock().setPeaceCount(0);
-            for (let i = 0; i < this.freshDeaths.length; i++) {
-                await this.freshDeaths[i].playDeath();
-            }
-            this.freshDeaths=[];
-        }  
-    }
-
-    async rebornListener(){
-        if(this.freshReborn.length>0){
-            let msg;
-            for (let i = 0; i < this.freshReborn.length; i++) {
-                msg = `${this.freshReborn[i].getUsername()} has been resurrected!`;
-                await this.getFunctions().messagePlayersWrapped(msg);
-            }
-            this.clearFreshReborn();
-        }   
-    }
-
-    pushAction(user,performer, command, targets){
-        let action = new Action(user,performer,command,targets);
-        if(command.getQueue()=="Normal"){
-            let index = this.actions.findIndex(a => a.user.getId() == user.getId());
-            if(index>=0){
-                this.actions[index]=action;
-            }else{
-                this.actions.push(action);
-            }
-        }else{
-            switch(user.getRole().getName()){
-                case "Witch": 
-                    {let index = this.actions.findIndex(a => a.user.getId() == user.getId());
-                    //if the witch aldy submitted an action
-                    if(index>=0){
-                        this.actions[index]=action;
-                    }else{
-                        this.actions.push(action);
-                        let new_user = targets[0];
-                        let new_performer = targets[0];
-                        let new_command;
-                        let new_targets = [targets[1]];
-                        new_command = new_performer.getRole().getCommands().filter(c=>c.getRequiredTargets()==1);
-                        if(new_command.length>0){
-                            new_command = new_command[0];
-                        }else{
-                            new_command = -1;
-                        }
-                        let index2 = this.actions.findIndex(a => a.user.getId() == new_user.getId());
-                        let new_action = new Action(new_user,new_performer,new_command,new_targets);
-                        if(index2>=0){
-                            return
-                        }else{
-                            this.actions.push(new_action);
-                        }
-                    }}
-                break;
-                case "Mayor":
-                break;
-            }
-        }
-
-        
+    listenForWinners = () => {
+        const alivePlayers = this.getAlivePlayers()
+        alivePlayers.map(( player )=> player.listenForTheWin(alivePlayers))
     }
 
     processActions(){
         
-        if(this.actions.length>0){
-            this.actions = util.arrangeActions(this.actions);
-            this.actions.forEach(a => {
-                if(!a.getFirstTarget().getJailStatus() || a.getUser().getRole().getName()=="Jailor"){
-                    if(a.getFirstTarget().getBuffs().filter(b=>b=="Alert").length==0){
+        this.actions = this.arrangeActions();
+        this.actions.map(a => {
+            const firstTargetIsJailed = a.getFirstTarget().getJailStatus();
+            const secondTargetIsJailed = a.getSecondTarget().getJailStatus();
+            const firstTargetIsAlertedVeteran = a.getFirstTarget().getAlertStatus();
 
-                        if(!a.getPerformer().getRoleBlockStatus() && a.getCommand()!=-1 && this.functions.witchFlag(a)){
-                            a.getCommand().Act(a.getUser(),a.getPerformer(),a.getCommand(),a.getTargets(),this);
-                        }
-                        if(a.getCommand().VisitsTarget(a.getUser(),this)){
-                            a.getTargets().forEach(t => {
-                                t.pushVisitor(a.getPerformer());
-                            });
-                        }
+            if(!a.getFirstTarget().getJailStatus() || a.getUser().getRole().getName()=="Jailor"){
+                if(a.getFirstTarget().getBuffs().filter(b=>b=="Alert").length==0){
 
-                    }else{
-                        if(a.getCommand().VisitsTarget(a.getUser(),this)){
-                            let notif1 = {player:`You shot the person who visited you last night!`,spy:null}
-                            let notif2 = {player:`You were shot by the Veteran that you visited!`,spy:null}
-                            a.getFirstTarget().pushNotif(notif1);
-                            a.getPerformer().pushNotif(notif2);
-                            a.getPerformer().kill();
-                            a.getPerformer().pushCauseOfDeath(`shot by a Veteran.`);
-                        }
+                    if(!a.getPerformer().getRoleBlockStatus() && a.getCommand()!=-1 && this.functions.witchFlag(a)){
+                        a.getCommand().Act(a.getUser(),a.getPerformer(),a.getCommand(),a.getTargets(),this);
                     }
+                    if(a.getCommand().VisitsTarget(a.getUser(),this)){
+                        a.getTargets().forEach(t => {
+                            t.pushVisitor(a.getPerformer());
+                        });
+                    }
+
                 }else{
-                    let inJailNotice = {
-                        player: "Your target was in jail!",
+                    if(a.getCommand().VisitsTarget(a.getUser(),this)){
+                        let notif1 = {player:`You shot the person who visited you last night!`,spy:null}
+                        let notif2 = {player:`You were shot by the Veteran that you visited!`,spy:null}
+                        a.getFirstTarget().pushNotif(notif1);
+                        a.getPerformer().pushNotif(notif2);
+                        a.getPerformer().kill();
+                        a.getPerformer().pushCauseOfDeath(`shot by a Veteran.`);
+                    }
+                }
+            }else{
+                let inJailNotice = {
+                    player: "Your target was in jail!",
+                    spy: null
+                }
+                if(a.getPerformer().getRole().getName()=="Transporter"){
+                    inJailNotice = {
+                        player: "One of your targets was in jail!\nThe transportation has failed!",
                         spy: null
                     }
-                    if(a.getPerformer().getRole().getName()=="Transporter"){
-                        inJailNotice = {
-                            player: "One of your targets was in jail!\nThe transportation has failed!",
-                            spy: null
-                        }
-                    }
-                    a.getPerformer().pushNotif(inJailNotice);
                 }
-                a.setStatus("Done");
-            });
-            this.clearActions();
-        }
+                a.getPerformer().pushNotif(inJailNotice);
+            }
+            a.setStatus("Done");
+        });
+        this.clearActions();
             
         
         if(this.freshDeaths.length>0){
@@ -291,8 +254,8 @@ export default class Town{
 
     async gameStart(){
         
-        this.getClock().setHourSand(0);
-        this.getClock().freezeHourGlass();
+        this.getClock().setSecondsRemaining(0);
+        this.getClock().freezeTime();
         await this.getSetup().closeHouseChannels();
         await this.getSetup().closeNotepadChannels();
 
@@ -403,34 +366,35 @@ export default class Town{
         let msg = `‎\n\`\`\`json\n${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})\`\`\``;
         this.functions.messagePlayers(msg);
         if(voteCount==goal){
-            this.getClock().setNextPhase("Defense");
-            this.getClock().setVotingExcessTime(this.getClock().getHourSand());
+            const phase = this.getClock().findPhase('Defense')
+            this.getClock().setNextPhase(phase);
+            this.getClock().setVotingExcessTime(this.getClock().getSecondsRemaining());
             this.getClock().skipPhase();
             this.setVotedUp(voted);
         }
         return `**You** have voted against **${voted.getUsername()}**`;
     }
     removeVote(voter){
-        let ballot = this.votes.filter(v => v.voter.getId() === voter.getId());
-        if(ballot.length>0){
-            ballot = ballot[0]
-            let index = this.votes.indexOf(ballot);
-            if (index > -1) {
-                this.votes.splice(index, 1);
-            }
-            let voteCount = this.votes.filter(v=>v.voted.getId()===ballot.voted.getId()).length;
-            let grammar;
-            if(voteCount==1 || voteCount==0){
-                grammar = "vote";
-            }else{
-                grammar = "votes";
-            }
-            let msg = `‎\n\`\`\`json\n${voter.getUsername()} has cancelled their vote against ${ballot.voted.getUsername()}. (${voteCount} ${grammar})\`\`\``;
-            this.functions.messagePlayers(msg);
-            return `**You** have cancelled your vote.`;
-        }else{
-            return `**You** can't remove a vote if you haven't voted yet.`;
-        }
+        // let ballot = this.votes.filter(v => v.voter.getId() === voter.getId());
+        // if(ballot.length>0){
+        //     ballot = ballot[0]
+        //     let index = this.votes.indexOf(ballot);
+        //     if (index > -1) {
+        //         this.votes.splice(index, 1);
+        //     }
+        //     let voteCount = this.votes.filter(v=>v.voted.getId()===ballot.voted.getId()).length;
+        //     let grammar;
+        //     if(voteCount==1 || voteCount==0){
+        //         grammar = "vote";
+        //     }else{
+        //         grammar = "votes";
+        //     }
+        //     let msg = `‎\n\`\`\`json\n${voter.getUsername()} has cancelled their vote against ${ballot.voted.getUsername()}. (${voteCount} ${grammar})\`\`\``;
+        //     this.functions.messagePlayers(msg);
+        //     return `**You** have cancelled your vote.`;
+        // }else{
+        //     return `**You** can't remove a vote if you haven't voted yet.`;
+        // }
     }
     
 
@@ -459,12 +423,14 @@ export default class Town{
 
     getPlayers(){return this.players;}
     pushPlayer(a){this.players.push(a);}
-    
-    getDay(){ return this.day;}
-    setDay(a){this.day=a;}
 
-    getPhase(){return this.phase;}
-    setPhase(a){this.phase=a;}
+    getDeadPlayers = () => this.players.filter((p)=>p.getStatus()==='Dead');
+    getAlivePlayers = () => this.players.filter((p)=>p.getStatus()==='Alive');
+
+    getTitle = () => this.title
+    
+    // getDay(){ return this.day;}
+    // setDay(a){this.day=a;}
 
     pushFreshDeath(user){
         let index = this.freshDeaths.findIndex(a => a.getId() == user.getId());
@@ -515,50 +481,37 @@ export default class Town{
         }
     }
 
-    pushGameKey(key){
-        this.gameKeys.push(key);
-        // console.log(key);
-    }
 
-    getGameKeys(){return this.gameKeys;}
-    getInventory(){return this.inventory;}
+    getServer = () => this.server
+    getGameKey = () =>  this.gameKey;
+    setGameKey = ( key: Role ) => this.gameKey = key;
 
-    getClockKeys(){return this.gameKeys.filter(k=>k.name == "Key")}
+    getGuild = () => this.guild
+    setGuild = ( guild: Guild ) => this.guild = guild
 
-    pushGuild(guild){
-        let index = this.guilds.findIndex(g => g.id == guild.id);
-        if(index==-1){
-            this.guilds.push(guild);
-        }
-    }
+    getPlayersWithStatus = (status:string) => this.players.filter(p=>p.getStatus()===status);
+    getPlayersWithRole = (role:string) => this.players.filter(p=>p.getRole().getName()==role);
 
-    getGuilds(){return this.guilds;}
 
     // ------------------------------------- QUITTERS
 
     async quit(){
-        await this.getClock().terminateHourGlass();
+        this.getClock().terminateTimer();
 
-        this.getChannels().forEach(channel => {
+        this.getChannels().map( channel => {
             channel.getChannel().delete();
         });
 
-        this.getPlayers().forEach(async player => {
-            await player.getExRoles().forEach(async xr => {
-                await player.getUser().roles.add(xr);
-            });
-            await player.getChannels().forEach(async channel => {
-                await channel.getChannel().delete();
-            });
+        this.getPlayers().map( async player => {
+            player.getExRoles().map( role => player.getDiscord().roles.add(role));
+            player.getChannels().map( channel => channel.getChannel().delete());
         });
 
-        this.gameKeys.forEach(async k => {
-            await k.delete();
-        });
+        this.gameKey.delete()
 
         await this.getHost().notifyGameEnd();
-        
-        this.inventory.deleteSalem(this.id);
+
+        this.server.removeGame(this);
     }
   
 

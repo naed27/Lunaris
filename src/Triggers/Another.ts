@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import Game from '../Another/game/game';
+import Game from '../Games/Another/game/game';
 import AnotherServer from '../Servers/AnotherServer';
 
 export function initializeAnother(message:Message,server:AnotherServer){

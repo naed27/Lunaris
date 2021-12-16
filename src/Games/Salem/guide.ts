@@ -9,7 +9,7 @@ export default {
   //--------------------
     `**Special Roles**\n\n- players are given a role to play.\n- each role has its own special ability.\n\n**How to win**\n\n- each role has a special goal to achieve.\n- a player wins by achieving that goal!`,
   //---------------------
-    `That's pretty much all you have to know!\n\n**Good luck and have fun~**`
+    `That's pretty much all you have to know!\n\n**GLHF~**`
   
   ]
 }

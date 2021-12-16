@@ -1,31 +1,28 @@
-import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
+import { Message, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
 import { createEmbed, getStringSearchResults, sortWordsAlphabetically, removeDuplicates } from "../Helpers/toolbox";
-import roles, { SalemRoleCommand } from "../Salem/roles";
-import guidebook from '../Salem/guide';
+import roles, { SalemRoleCommand } from "../Games/Salem/roles";
+import guidebook from '../Games/Salem/guide';
 import SalemServer from '../Servers/SalemServer';
-import Town from "../Salem/town";
-import Host from "../Salem/host";
+import Game from "../Games/Salem/game";
+import Host from "../Games/Salem/host";
 
 export const getSalemRoles = (message:Message) =>{
 
   const title = 'Salem Roles';
   const footer = 'Type $role <rolename> for more info.'
 
-  // get role types
-  const roleTypes = removeDuplicates(roles.map((role)=>role.Alignment));
+  const roleTypes = removeDuplicates(roles.map((role)=>role.alignment));
 
-  // get the roles under each types
   const roleGroups = roleTypes.map((type)=>{
     const result = roles
-    .filter(role=>role.Alignment==type)
-    .map(role=>role.Name);
+    .filter(role=>role.alignment==type)
+    .map(role=>role.name);
     return {
       type:type,
       roles:sortWordsAlphabetically(result)
     };
   });
 
-  // finalize the string
   const resultString = roleGroups.map( ({ type,roles }) =>{
     const rolesUnderType = roles.join('\n');
     return `**(${type})**\n${rolesUnderType}`;
@@ -45,7 +42,7 @@ export const getSalemRole = (message:Message,args:string[])=>{
   const footer = "Type $roles to see all the roles."
 
   const keyword = args.join(" ");
-  const roleNames = roles.map(r=>r.Name);
+  const roleNames = roles.map(r=>r.name);
   const searchResults = getStringSearchResults(roleNames,keyword);
 
   if(searchResults.length < 1){
@@ -55,38 +52,51 @@ export const getSalemRole = (message:Message,args:string[])=>{
     return message.channel.send({embeds:[createEmbed({color,description:response,footer})]});   
   }
 
-  const role = roles.filter(r=>r.Name==searchResults[0])[0];
+  const role = roles.filter(r=>r.name==searchResults[0])[0];
   
-  const abilitiesString = role.Abilities.map(ability=>`- ${ability}`).join("\n");
-  const abilityHeader = (role.Abilities.length>1) ? "Abilities" : "Ability";
+  const abilitiesString = role.abilities.map(ability=>`- ${ability}`).join("\n");
+  const abilityHeader = (role.abilities.length>1) ? "Abilities" : "Ability";
 
-  const goalsString = role.Goals.map(goal=>`- ${goal}`).join("\n");
-  const goalsHeader = (role.Goals.length>1) ? "Goals" : "Goal";
+  const goalsString = role.goals.map(goal=>`- ${goal}`).join("\n");
+  const goalsHeader = (role.goals.length>1) ? "Goals" : "Goal";
 
-  const commandsString = role.Commands.map((roleCommand:SalemRoleCommand)=>`${salemPrefix}${roleCommand.Guide}`).join("\n");
-  const commandsHeader = (role.Commands.length>1) ? "Commands" : "Command";
+  const commandsString = role.commands.map((roleCommand:SalemRoleCommand)=>`${salemPrefix}${roleCommand.guide}`).join("\n");
+  const commandsHeader = (role.commands.length>1) ? "Commands" : "Command";
 
-  const result  = `**[${role.Name}]**\n\n**Alignment:** ${role.Alignment}\n**Type:** ${role.Type}\n\n**${goalsHeader}:**\n${goalsString}\n**${abilityHeader}:**\n${abilitiesString}\n**${commandsHeader}:**\n${commandsString}`;
+  const result  = `**[${role.name}]**\n\n**Alignment:** ${role.alignment}\n**Type:** ${role.type}\n\n**${goalsHeader}:**\n${goalsString}\n**${abilityHeader}:**\n${abilitiesString}\n**${commandsHeader}:**\n${commandsString}`;
 
   return message.channel.send({embeds:[createEmbed({color,description:result,footer})]});   
 }
 
 
 export const initializeSalem = (message:Message,server:SalemServer)=>{
-  if (message.channel.type != 'DM') {
-    const town = new Town(server,message.guild,message.author);
-    town.setHost(new Host(message,town));
-    server.pushTown(town);
-    
-    if(server.pushPortal(message.guild))
-      town.getHost().sendTicket(message.channel,message.author);
-  }
+
+  if (message.channel.type === 'DM') return
+
+  const channelSummoned:TextChannel = message.channel as TextChannel;
+  const summoner = message.author;
+  const guild = message.guild;
+
+  const game = new Game({
+    guild: guild,
+    server: server,
+  });
+
+  const host = new Host({
+    initiator:summoner,
+    channelSummoned:channelSummoned,
+    game:game,
+  })
+
+  game.setHost(host);
+  server.pushGame(game);
+  
+  if(server.connectGuild(message.guild))
+    game.getHost().sendGameInvite(channelSummoned,summoner);
 }
 
 
 export const salemGuide = async (message:Message) =>{
-
-  const color = `#000000`;
 
   const initialPage = 1;
   const initialBody = guidebook.pages[initialPage-1];
@@ -94,7 +104,7 @@ export const salemGuide = async (message:Message) =>{
 
   let page = initialPage;
   let footer = initialFooter;
-  const embed = createEmbed({color,description:initialBody,footer});
+  const embed = createEmbed({ description:initialBody,footer });
 
   const guide = await message.channel.send({embeds:[embed]}); 
   const filter = (reaction:MessageReaction,user:User) => !user.bot;
@@ -105,7 +115,6 @@ export const salemGuide = async (message:Message) =>{
     const pageEnd = guidebook.pages.length;
     if( reaction.emoji.name == '⬅️' && page > pageStart ) return pageUpdater(page--,embed,guide);
     if( reaction.emoji.name == '➡️' && page < pageEnd ) return pageUpdater(page++,embed,guide);
-    return
   }
   
   collector.on('collect', async (reaction) => updatePageNumber(reaction));

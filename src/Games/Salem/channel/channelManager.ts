@@ -1,5 +1,5 @@
 import { Message, TextChannel }  from 'discord.js';
-import Game from './game';
+import Game from '../game';
 
 interface ConstructorParams{
     channel:TextChannel,
@@ -24,7 +24,13 @@ export default class ChannelManager{
         this.isHidden = channel.permissionsFor(defaultId).has('VIEW_CHANNEL');
     }
 
-    //  --------------------- functions ---------------------
+    //  --------------------- Getters 
+
+    getGame = () => this.game;
+    getChannel = () => this.channel;
+    getDefaultId = () => this.defaultId
+
+    //  --------------------- Functions
 
     showAndUnlock = ( id:string=this.defaultId )=>{
         this.channel.permissionOverwrites.edit(id,{

@@ -1,98 +1,103 @@
 import util from "./utility";
 import Role from "./role";
+import Player from "./player";
 
 export interface SalemRoleCommand{
-    Name: string;
-    Guide: string;
-    Description: string;
-    Priority: number;
-    Stocks: number;
-    Permission: string;
-    Queue: string;
-    Phase: string[];
-    Status: string;
-    RequiredTargets: number;
-    Performer: any;
-    VisitsTarget: any;
-    ValidTargets: any;
-    ActionResponse: any;
-    Act: any;
+    name: string;
+    guide: string;
+    description: string;
+    priority: number;
+    stocks: number;
+    permission: string;
+    queue: string;
+    phase: string[];
+    status: string;
+    requiredTargets: number;
+
+    act: any;
+    performer: any;
+    defaultTarget: any;
+    visitsTarget: any;
+    validTargets: any;
+    actionResponse: any;
+}
+
+export interface Results{
+    investigator: string;
+    sheriff: string;
+    consigliere: string;
 }
 
 export interface SalemRole{
     id: string;
-    Name: string;
-    Alignment: string;
-    Type: string;
-    Immunities: any[];
-    Attack: number;
-    Defense: number;
-    Unique: boolean;
-    Results: {
-        Investigator: string;
-        Sheriff: string;
-        Consigliere: string;
-    };
-    Abilities: string[];
-    Goals: string[];
-    NightMessage: string;
-    RoleMessage: string;
-    Friendlies: string[];
-    Commands: SalemRoleCommand[];
+    name: string;
+    alignment: string;
+    type: string;
+    immunities: string[];
+    attack: number;
+    defense: number;
+    unique: boolean;
+    results: Results;
+    abilities: string[];
+    goals: string[];
+    nightMessage: string;
+    roleMessage: string;
+    winBuddies: string[];
+    commands: SalemRoleCommand[];
 
 }
 
 const roles = [
         {
             id:"001",
-            Name:"Jailor",
-            Alignment:"Town",
-            Type:"Killing",
-            Immunities:[],
-            Attack:3,
-            Defense:0,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be the Jailor."
+            name:"Jailor",
+            alignment:"Town",
+            type:"Killing",
+            immunities:[],
+            attack:3,
+            defense:0,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be the Jailor."
             },
-            Abilities:[
+            abilities:[
                 "You can jail 1 Person each night.",
                 "You can talk to the jailed person."
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the evildoers."
             ],
-            NightMessage:"You can talk to the detained person.",
-            RoleMessage:"",
-            Friendlies:["Town","Survivor","Amnesiac","Jester","Executioner"],
-            Commands:[
+            nightMessage:"You can talk to the detained person.",
+            roleMessage:"",
+            winBuddies:["Town","Survivor","Amnesiac","Jester","Executioner"],
+            commands:[
                 {   
-                    Name:"jail",
-                    Guide:"jail <player>",
-                    Description:"Jails a person for one night.",
-                    Priority:1,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    Phase:["Discussion", "Voting", "Judgement", "Defense", "Final Words", "Execution"],
-                    Status:"Alive",
-                    RequiredTargets:1,
-                    Performer:(user)=>{
+                    name:"jail",
+                    guide:"jail <player>",
+                    description:"Jails a person for one night.",
+                    priority:1,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    phase:["Discussion", "Voting", "Judgement", "Defense", "Final Words", "Execution"],
+                    status:"Alive",
+                    requiredTargets:1,
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables =  town.getPlayers().filter(p=>p.getId()!=user.getId() && p.getStatus()=="Alive");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to jail **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,targets)=>{
+                    act:(user,targets)=>{
                         const target = targets[0];
                         target.setJailStatus(true);
                         let notif1 = {
@@ -106,31 +111,31 @@ const roles = [
                     },
                 },
                 {
-                    Name:"execute",
-                    Guide:"execute",
-                    Description:"Executes the currently jailed person.",
-                    Priority:1,
-                    Stocks:0,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    RequiredTargets:0,
-                    Performer:(user)=>{
+                    name:"execute",
+                    guide:"execute",
+                    description:"Executes the currently jailed person.",
+                    priority:1,
+                    stocks:0,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    requiredTargets:0,
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:()=>null,
-                    AutoTargets:(town)=>{
+                    validTargets:()=>null,
+                    defaultTarget:(town)=>{
                         if(town.getJailedPerson()){
                             return [town.getJailedPerson()];
                         }else{
                             return null
                         }
                     },
-                    ActionResponse:async (user,town)=>{
+                    actionResponse:async (user,town)=>{
                         if(town.getJailedPerson()){
                             let channel = town.getJailedPerson().getHouse().getChannel();
                             let body = `The jailor has decided to execute you.`;
@@ -142,7 +147,7 @@ const roles = [
                             return `No one is jailed. You can't execute anyone.`
                         }
                     },
-                    Act:(user,performer,command,targets)=>{
+                    act:(user,performer,command,targets)=>{
                         command.setStocks(command.setStocks(0));
                         if(targets){
                             let target = targets[0];
@@ -162,53 +167,53 @@ const roles = [
         },
         {
             id:"013",
-            Name:"Transporter",
-            Alignment:"Town",
-            Type:"Support",
-            Immunities:["Roleblock","Control"],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Escort, Transporter, or Consort.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Transporter."
+            name:"Transporter",
+            alignment:"Town",
+            type:"Support",
+            immunities:["Roleblock","Control"],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Escort, Transporter, or Consort.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Transporter."
             },
-            Abilities:[
+            abilities:[
                 "You can swap 2 people's places each night."
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick (2) people to swap. (letter)",
-            Friendlies:["Town","Survivor","Amnesiac","Jester","Executioner"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick (2) people to swap. (letter)",
+            winBuddies:["Town","Survivor","Amnesiac","Jester","Executioner"],
+            commands:[
                 {
-                    Name:"transport",
-                    Guide:"transport <player 1>, <player 2>",
-                    Description:"Swaps the two targets of their locations.",
-                    Priority:1,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:2,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"transport",
+                    guide:"transport <player 1>, <player 2>",
+                    description:"Swaps the two targets of their locations.",
+                    priority:1,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:2,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables =  town.getPlayers().filter(p=>p.getStatus()=="Alive");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to swap **${inputs[0].getUsername()}** and **${inputs[1].getUsername()}**.`
                     },
-                    Act:(targets,town)=>{
+                    act:(targets,town)=>{
                         let p1 = targets[0];
                         let p2 = targets[1];
                         town.getActions().forEach(a => {
@@ -236,53 +241,53 @@ const roles = [
         },
         {
             id:"005",
-            Name:"Veteran",
-            Alignment:"Town",
-            Type:"Killing",
-            Immunities:["Roleblock","Control"],
-            Attack:2,
-            Defense:0,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Vigilante, Veteran, or Mafioso.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Veteran."
+            name:"Veteran",
+            alignment:"Town",
+            type:"Killing",
+            immunities:["Roleblock","Control"],
+            attack:2,
+            defense:0,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Vigilante, Veteran, or Mafioso.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Veteran."
             },
-            Abilities:[
+            abilities:[
                 "You can kill people who visit you. (3 uses)",
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the enemies of the Town."
             ],
-            NightMessage:"Choose whether to alert or not.",
-            RoleMessage:"Click [o] to alert, [x] to cancel.",
-            Friendlies:["Town","Survivor","Amnesiac","Jester","Executioner"],
-            Commands:[
+            nightMessage:"Choose whether to alert or not.",
+            roleMessage:"Click [o] to alert, [x] to cancel.",
+            winBuddies:["Town","Survivor","Amnesiac","Jester","Executioner"],
+            commands:[
                 {
-                    Name:"alert",
-                    Guide:"alert",
-                    Description:"Kills anyone who visits you at night.",
-                    Priority:1,
-                    Stocks:4,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:0,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"alert",
+                    guide:"alert",
+                    description:"Kills anyone who visits you at night.",
+                    priority:1,
+                    stocks:4,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:0,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:()=>null,
-                    AutoTargets:(user)=>{
+                    validTargets:()=>null,
+                    defaultTarget:(user)=>{
                         return [user];
                     },
-                    ActionResponse:async ()=>{
+                    actionResponse:async ()=>{
                         return `You have decided to stay on alert for tonight.`
                     },
-                    Act:(performer,command)=>{
+                    act:(performer,command)=>{
                         let stonks = command.getStocks();
                         command.setStocks(stonks-1);
                         performer.pushBuff("Alert");
@@ -292,53 +297,53 @@ const roles = [
         },
         {
             id:"206",
-            Name:"Witch",
-            Alignment:"Neutral",
-            Type:"Evil",
-            Immunities:["Roleblock","Control"],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Lookout, Forger, or Witch.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be an Witch."
+            name:"Witch",
+            alignment:"Neutral",
+            type:"Evil",
+            immunities:["Roleblock","Control"],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Lookout, Forger, or Witch.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be an Witch."
             },
-            Abilities:[
+            abilities:[
                 "You can control 1 person each night."
             ],
-            Goals:[
+            goals:[
                 "Survive with Mafia/Arsonist/Werewolf/Serial Killer."
             ],
-            NightMessage:"You can use your ability now",
-            RoleMessage:"Pick who to bewitch.",
-            Friendlies:["Witch"],
-            Commands:[
+            nightMessage:"You can use your ability now",
+            roleMessage:"Pick who to bewitch.",
+            winBuddies:["Witch"],
+            commands:[
                 {
-                    Name:"witch",
-                    Guide:"witch <player 1>, <player 2>",
-                    Description:"Controls <player 1> into targeting <player 2>.",
-                    Priority:2,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Witch",
-                    RequiredTargets:2,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"witch",
+                    guide:"witch <player 1>, <player 2>",
+                    description:"Controls <player 1> into targeting <player 2>.",
+                    priority:2,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Witch",
+                    requiredTargets:2,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to control **${inputs[0].getUsername()}** into targeting **${inputs[1].getUsername()}**.`
                     },
-                    Act:(targets,town)=>{
+                    act:(targets,town)=>{
                         let p1 = targets[0];
                         let p2 = targets[1];
                         let p1_action = town.getActions().filter(a=>a.getPerformer().getId()==p1.getId());
@@ -367,53 +372,53 @@ const roles = [
         },
         {
             id:"008",
-            Name:"Escort",
-            Alignment:"Town",
-            Type:"Support",
-            Immunities:["Roleblock"],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Escort, Transporter, or Consort.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Lookout."
+            name:"Escort",
+            alignment:"Town",
+            type:"Support",
+            immunities:["Roleblock"],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Escort, Transporter, or Consort.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Lookout."
             },
-            Abilities:[
+            abilities:[
                 "You can distract someone each night.",
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick someone to roleblock. (letter)",
-            Friendlies:["Town","Survivor","Amnesiac","Jester","Executioner"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick someone to roleblock. (letter)",
+            winBuddies:["Town","Survivor","Amnesiac","Jester","Executioner"],
+            commands:[
                 {
-                    Name:"distract",
-                    Guide:"distract <player>",
-                    Description:"Prevents a person from using their role ability.",
-                    Priority:2,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"distract",
+                    guide:"distract <player>",
+                    description:"Prevents a person from using their role ability.",
+                    priority:2,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p=>p.getStatus()=="Alive"&&p.getId()!=user.getId()&&p.getRole().getAlignment()!="Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to distract **${inputs[0].getUsername()}** tonight.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         let target = targets[0];
                         let immunities = target.getRole().getImmunities();
                         if(!util.containsElement(immunities,"Roleblock")){
@@ -436,55 +441,55 @@ const roles = [
         },
         {
             id:"110",
-            Name:"Consort",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:["Roleblock"],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Escort, Transporter, or Consort.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Consort."
+            name:"Consort",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:["Roleblock"],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Escort, Transporter, or Consort.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Consort."
             },
-            Abilities:[
+            abilities:[
                 "You can distract someone each night."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to roleblock. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Jester","Executioner","Amnesiac"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to roleblock. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Jester","Executioner","Amnesiac"],
+            commands:[
                 {
-                    Name:"distract",
-                    Guide:"distract <player>",
-                    Description:"Prevents a person from using their role ability.",
-                    Priority:2,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"distract",
+                    guide:"distract <player>",
+                    description:"Prevents a person from using their role ability.",
+                    priority:2,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p=>p.getStatus()=="Alive"&&p.getId()!=user.getId()&&p.getRole().getAlignment()!="Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to distract ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to distract **${inputs[0].getUsername()}** tonight.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         let target = targets[0];
                         let immunities = target.getRole().getImmunities();
                         if(!util.containsElement(immunities,"Roleblock")){
@@ -507,53 +512,53 @@ const roles = [
         },
         {
             id:"202",
-            Name:"Survivor",
-            Alignment:"Neutral",
-            Type:"Benign",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Survivor, Vampire Hunter, or Amnesiac.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be an Survivor."
+            name:"Survivor",
+            alignment:"Neutral",
+            type:"Benign",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Survivor, Vampire Hunter, or Amnesiac.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be an Survivor."
             },
-            Abilities:[
+            abilities:[
                 "You can win with any Alignment."
             ],
-            Goals:[
+            goals:[
                 "Survive until the end."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Choose whether to use your shield. (letter)",
-            Friendlies:["Survivor"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Choose whether to use your shield. (letter)",
+            winBuddies:["Survivor"],
+            commands:[
                 {
-                    Name:"vest",
-                    Guide:"vest",
-                    Description:"Be immune to any attacks at night.",
-                    Priority:3,
-                    Stocks:4,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:0,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"vest",
+                    guide:"vest",
+                    description:"Be immune to any attacks at night.",
+                    priority:3,
+                    stocks:4,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:0,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:()=>null,
-                    AutoTargets:(user)=>{
+                    validTargets:()=>null,
+                    defaultTarget:(user)=>{
                         return [user];
                     },
-                    ActionResponse:async ()=>{
+                    actionResponse:async ()=>{
                         return `You have decided to wear a vest tonight.`
                     },
-                    Act:(command,targets)=>{
+                    act:(command,targets)=>{
                         let vests = command.getStocks();
                         command.setStocks(command.setStocks(vests-1));
                         let target = targets[0];
@@ -566,53 +571,53 @@ const roles = [
         },
         // {
         //     id:"201",
-        //     Name:"Amnesiac",
-        //     Alignment:"Neutral",
-        //     Type:"Benign",
-        //     Immunities:[],
-        //     Attack:0,
-        //     Defense:0,
-        //     Unique:false,
-        //     Results:{
-        //         Investigator:"Your target could be a Survivor, Vampire Hunter, or Amnesiac.",
-        //         Sheriff:"Your target seems innocent.",
-        //         Consigliere:"Your target seems to be an Amnesiac."
+        //     name:"Amnesiac",
+        //     alignment:"Neutral",
+        //     type:"Benign",
+        //     immunities:[],
+        //     attack:0,
+        //     defense:0,
+        //     unique:false,
+        //     results:{
+        //         investigator:"Your target could be a Survivor, Vampire Hunter, or Amnesiac.",
+        //         sheriff:"Your target seems innocent.",
+        //         consigliere:"Your target seems to be an Amnesiac."
         //     },
-        //     Abilities:[
+        //     abilities:[
         //         "You can select any roles in the graveyard."
         //     ],
-        //     Goals:[
+        //     goals:[
         //         "Remember who you are."
         //     ],
-        //     NightMessage:"You can use your ability now.",
-        //     RoleMessage:"Pick a persona to remember yourself as. (letter)",
-        //     Friendlies:[],
-        //     Commands:[
+        //     nightMessage:"You can use your ability now.",
+        //     roleMessage:"Pick a persona to remember yourself as. (letter)",
+        //     winBuddies:[],
+        //     commands:[
         //         {
-        //             Name:"remember",
-        //             Guide:"remember <player>",
-        //             Description:"Copy a role from someone who is dead.",
-        //             Priority:6,
-        //             Stocks:1,
-        //             Permission:"Role Holder",
-        //             Queue:"Normal",
-        //             RequiredTargets:1,
-        //             Phase:["Night", "Night (Full Moon)"],
-        //             Status:"Alive",
-        //             Performer:(user,command,town)=>{
+        //             name:"remember",
+        //             guide:"remember <player>",
+        //             description:"Copy a role from someone who is dead.",
+        //             priority:6,
+        //             stocks:1,
+        //             permission:"Role Holder",
+        //             queue:"Normal",
+        //             requiredTargets:1,
+        //             phase:["Night", "Night (Full Moon)"],
+        //             status:"Alive",
+        //             performer:(user,command,town)=>{
         //                 return user;
         //             },
-        //             VisitsTarget:(user,town)=>{
+        //             visitsTarget:(user,town)=>{
         //                 return false;
         //             },
-        //             ValidTargets:(user,town)=>{
+        //             validTargets:(user,town)=>{
         //                 let targetables = town.getPlayers().filter(p=>p.getStatus()=="Dead" && p.getId()!=user.getId());
         //                 return targetables;
         //             },
-        //             ActionResponse:async (user,command,inputs,town)=>{
+        //             actionResponse:async (user,command,inputs,town)=>{
         //                 return `You have decided to attempt remembering your past.`
         //             },
-        //             Act:(user,performer,command,targets,town)=>{
+        //             act:(user,performer,command,targets,town)=>{
         //                 let n1 = {
         //                     player:null,
         //                     spy:null
@@ -634,53 +639,53 @@ const roles = [
         // },
         {
             id:"002",
-            Name:"Retributionist",
-            Alignment:"Town",
-            Type:"Support",
-            Immunities:["Roleblock"],
-            Attack:0,
-            Defense:0,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Medium, Janitor, or Retributionist.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Retributionist."
+            name:"Retributionist",
+            alignment:"Town",
+            type:"Support",
+            immunities:["Roleblock"],
+            attack:0,
+            defense:0,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Medium, Janitor, or Retributionist.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Retributionist."
             },
-            Abilities:[
+            abilities:[
                 "You can resurrect 1 dead person. (One time use)"
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can resurrect someone now.",
-            RoleMessage:"Pick who to resurrect. (letter)",
-            Friendlies:["Town","Survivor","Jester","Executioner"],
-            Commands:[
+            nightMessage:"You can resurrect someone now.",
+            roleMessage:"Pick who to resurrect. (letter)",
+            winBuddies:["Town","Survivor","Jester","Executioner"],
+            commands:[
                 {
-                    Name:"resurrect",
-                    Guide:"resurrect <player>",
-                    Description:"Resurrects the target from the dead.",
-                    Priority:1,
-                    Stocks:1,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"resurrect",
+                    guide:"resurrect <player>",
+                    description:"Resurrects the target from the dead.",
+                    priority:1,
+                    stocks:1,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Dead" && p.getMaskRole().getName() != "Cleaned" && p.getMaskRole().getAlignment()=="Town");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to resurrect **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,performer,command,targets,town)=>{
+                    act:(user,performer,command,targets,town)=>{
                         if(command.getStocks()>0){
                             command.setStocks(command.getStocks()-1);
                             let target = targets[0];
@@ -699,55 +704,55 @@ const roles = [
         },
         {
             id:"104",
-            Name:"Framer",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Framer, Vampire, or Jester.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Framer."
+            name:"Framer",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Framer, Vampire, or Jester.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Framer."
             },
-            Abilities:[
+            abilities:[
                 "You can frame 1 person each night."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to frame. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to frame. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"frame",
-                    Guide:"frame <player>",
-                    Description:"Frames a person at night.",
-                    Priority:3,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"frame",
+                    guide:"frame <player>",
+                    description:"Frames a person at night.",
+                    priority:3,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to frame ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to frame **${inputs[0].getUsername()}**.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         let target = targets[0];
                         let frame = module.exports.list.filter(r=>r.Name=="Mafioso");
                         frame=frame[0];
@@ -758,55 +763,55 @@ const roles = [
         },
         {
             id:"106",
-            Name:"Disguiser",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Disguiser."
+            name:"Disguiser",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Disguiser."
             },
-            Abilities:[
+            abilities:[
                 "You can disguise a person with another's to alter their identity."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick (2) people to swap identity. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick (2) people to swap identity. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"disguise",
-                    Guide:"disguise <player>",
-                    Description:"Steals the target's identity.",
-                    Priority:5,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:2,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"disguise",
+                    guide:"disguise <player>",
+                    description:"Steals the target's identity.",
+                    priority:5,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:2,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to disguise themself as ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to disguise yourself as **${inputs[0].getUsername()}**.`
                     },
-                    Act:(performer,targets,town)=>{
+                    act:(performer,targets,town)=>{
 
                         let oldDisguisedPlayer = town.getPlayers().filter(p=>p.getDisguiseStatus());
                         if(oldDisguisedPlayer.length>0){
@@ -830,55 +835,55 @@ const roles = [
         },
         {
             id:"109",
-            Name:"Consigliere",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Consigliere."
+            name:"Consigliere",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Consigliere."
             },
-            Abilities:[
+            abilities:[
                 "You can check one person for their exact role each night."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to investigate. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to investigate. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"tail",
-                    Guide:"tail <player>",
-                    Description:"Gives you the exact role of a person.",
-                    Priority:4,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"tail",
+                    guide:"tail <player>",
+                    description:"Gives you the exact role of a person.",
+                    priority:4,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to investigate ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to investigate **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,performer,command,targets)=>{
+                    act:(user,performer,command,targets)=>{
                         let target = targets[0];
                         let notif1 = {
                             player: target.getRole().getResults().getConsigliere(),
@@ -891,53 +896,53 @@ const roles = [
         },
         {
             id:"006",
-            Name:"Investigator",
-            Alignment:"Town",
-            Type:"Investigative",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be an Investigator."
+            name:"Investigator",
+            alignment:"Town",
+            type:"Investigative",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be an Investigator."
             },
-            Abilities:[
+            abilities:[
                 "You can find clues about a person's role each night.",
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the enemies of the Town."
             ],
-            NightMessage:"You can investigate someone now.",
-            RoleMessage:"Pick who to investigate. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can investigate someone now.",
+            roleMessage:"Pick who to investigate. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"tail",
-                    Guide:"tail <player>",
-                    Description:"Gives you clues about the target's role.",
-                    Priority:4,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"tail",
+                    guide:"tail <player>",
+                    description:"Gives you clues about the target's role.",
+                    priority:4,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getId() != user.getId());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to investigate **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,targets,)=>{
+                    act:(user,targets,)=>{
                         let target = targets[0];
                         let notif1 = {
                             player: target.getMaskRole().getResults().getInvestigator(),
@@ -950,53 +955,53 @@ const roles = [
         },
         {
             id:"003",
-            Name:"Sheriff",
-            Alignment:"Town",
-            Type:"Investigative",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Sheriff, Executioner, or Werewolf..",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Sheriff."
+            name:"Sheriff",
+            alignment:"Town",
+            type:"Investigative",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Sheriff, Executioner, or Werewolf..",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Sheriff."
             },
-            Abilities:[
+            abilities:[
                 "You can check 1 person at night for suspicious activities.",
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the enemies of the Town."
             ],
-            NightMessage:"You can interrogate someone now.",
-            RoleMessage:"Pick who to interrogate. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can interrogate someone now.",
+            roleMessage:"Pick who to interrogate. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"visit",
-                    Guide:"visit <player>",
-                    Description:"Lets you know whether someone is suspicious or not.",
-                    Priority:4,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"visit",
+                    guide:"visit <player>",
+                    description:"Lets you know whether someone is suspicious or not.",
+                    priority:4,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getId() != user.getId());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to interrogate **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,targets)=>{
+                    act:(user,targets)=>{
                         let target = targets[0];
                         let notif1 = {
                             player: target.getMaskRole().getResults().getSheriff(),
@@ -1009,55 +1014,55 @@ const roles = [
         },
         {
             id:"108",
-            Name:"Blackmailer",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Blackmailer."
+            name:"Blackmailer",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Blackmailer."
             },
-            Abilities:[
+            abilities:[
                 "You can blackmail 1 person each night."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to blackmail. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to blackmail. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"blackmail",
-                    Guide:"blackmail <player>",
-                    Description:"Prevent a person from talking during the day.",
-                    Priority:3,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"blackmail",
+                    guide:"blackmail <player>",
+                    description:"Prevent a person from talking during the day.",
+                    priority:3,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to blackmail ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to blackmail **${inputs[0].getUsername()}**.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         let target = targets[0];
                         target.setMuteStatus(true);
                         let notif1 = {
@@ -1071,53 +1076,53 @@ const roles = [
         },
         {
             id:"0087",
-            Name:"Lookout",
-            Alignment:"Town",
-            Type:"Investigative",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Lookout, Forger, or Witch.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Lookout."
+            name:"Lookout",
+            alignment:"Town",
+            type:"Investigative",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Lookout, Forger, or Witch.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Lookout."
             },
-            Abilities:[
+            abilities:[
                 "You can watch 1 person at night to see who visits them.",
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can stakeout someone now.",
-            RoleMessage:"Pick a house to set a stakeout. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can stakeout someone now.",
+            roleMessage:"Pick a house to set a stakeout. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"watch",
-                    Guide:"watch <player>",
-                    Description:"Lets you know who visits your target.",
-                    Priority:4,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"watch",
+                    guide:"watch <player>",
+                    description:"Lets you know who visits your target.",
+                    priority:4,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to keep an eye on **${inputs[0].getUsername()}**'s house tonight.`
                     },
-                    Act:(user,targets,town)=>{
+                    act:(user,targets,town)=>{
                         let target = targets[0];
                         let visitors = []
                         let actions = town.getActions().filter(a=>a.getFirstTarget().getId()==target.getId());
@@ -1139,58 +1144,58 @@ const roles = [
         },
         {
             id:"101",
-            Name:"Godfather",
-            Alignment:"Mafia",
-            Type:"Leader",
-            Immunities:[],
-            Attack:1,
-            Defense:1,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be the Godfather."
+            name:"Godfather",
+            alignment:"Mafia",
+            type:"Leader",
+            immunities:[],
+            attack:1,
+            defense:1,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be the Godfather."
             },
-            Abilities:[
+            abilities:[
                 "You can order to kill 1 townie each night."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to kill. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to kill. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"kill",
-                    Guide:"kill <player>",
-                    Description:"Orders the mafioso to kill your target.",
-                    Priority:5,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user,town)=>{
+                    name:"kill",
+                    guide:"kill <player>",
+                    description:"Orders the mafioso to kill your target.",
+                    priority:5,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user,town)=>{
                         if(town.getFunctions().roleExists("Mafioso")){
                             return town.getPlayers().filter(p=>p.getRole().getName()=="Mafioso")[0];
                         }else{
                             return user;
                         }
                     },
-                    VisitsTarget:(town)=>{
+                    visitsTarget:(town)=>{
                         if(town.getFunctions().roleExists("Mafioso")){
                             return false;
                         }else{
                             return true;
                         }
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         if(town.getFunctions().roleExists("Mafioso")){
                             const msg = `${user.getUsername()} has ordered the mafioso to kill ${inputs[0].getUsername()}.`
                             await town.getFunctions().messageOtherMafias(msg,user);
@@ -1201,7 +1206,7 @@ const roles = [
                             return `You have decided to kill **${inputs[0].getUsername()}**.`
                         }
                     },
-                    Act:(performer,targets)=>{
+                    act:(performer,targets)=>{
                         let target = targets[0];
                         let n1 = {
                             player:null,
@@ -1232,53 +1237,53 @@ const roles = [
         },
         // {
         //     id:"203",
-        //     Name:"Vampire",
-        //     Alignment:"Neutral",
-        //     Type:"Chaos",
-        //     Immunities:[],
-        //     Attack:1,
-        //     Defense:0,
-        //     Unique:false,
-        //     Results:{
-        //         Investigator:"Your target could be a Framer, Vampire, or Jester.",
-        //         Sheriff:"Your target is suspicious!",
-        //         Consigliere:"Your target seems to be an Vampire."
+        //     name:"Vampire",
+        //     alignment:"Neutral",
+        //     type:"Chaos",
+        //     immunities:[],
+        //     attack:1,
+        //     defense:0,
+        //     unique:false,
+        //     results:{
+        //         investigator:"Your target could be a Framer, Vampire, or Jester.",
+        //         sheriff:"Your target is suspicious!",
+        //         consigliere:"Your target seems to be an Vampire."
         //     },
-        //     Abilities:[
+        //     abilities:[
         //         "You can convert 1 person into a vampire each night."
         //     ],
-        //     Goals:[
+        //     goals:[
         //         "Make the vampires the last ones to survive."
         //     ],
-        //     NightMessage:"You can use your ability now.",
-        //     RoleMessage:"Pick who to bite. (letter)",
-        //     Friendlies:["Vampire","Witch","Survivor","Executioner","Jester"],
-        //     Commands:[
+        //     nightMessage:"You can use your ability now.",
+        //     roleMessage:"Pick who to bite. (letter)",
+        //     winBuddies:["Vampire","Witch","Survivor","Executioner","Jester"],
+        //     commands:[
         //         {
-        //             Name:"bite",
-        //             Guide:"bite <player>",
-        //             Description:"Turns the target into a vampire.",
-        //             Priority:5,
-        //             Stocks:99,
-        //             Permission:"Role Holder",
-        //             Queue:"Normal",
-        //             RequiredTargets:1,
-        //             Phase:["Night", "Night (Full Moon)"],
-        //             Status:"Alive",
-        //             Performer:(user,command,town)=>{
+        //             name:"bite",
+        //             guide:"bite <player>",
+        //             description:"Turns the target into a vampire.",
+        //             priority:5,
+        //             stocks:99,
+        //             permission:"Role Holder",
+        //             queue:"Normal",
+        //             requiredTargets:1,
+        //             phase:["Night", "Night (Full Moon)"],
+        //             status:"Alive",
+        //             performer:(user,command,town)=>{
         //                 return user;
         //             },
-        //             VisitsTarget:(user,town)=>{
+        //             visitsTarget:(user,town)=>{
         //                 return true;
         //             },
-        //             ValidTargets:(user,town)=>{
+        //             validTargets:(user,town)=>{
         //                 let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getName() != "Vampire");
         //                 return targetables;
         //             },
-        //             ActionResponse:async (user,command,inputs,town)=>{
+        //             actionResponse:async (user,command,inputs,town)=>{
         //                 return `You have decided to bite **${inputs[0].getUsername()}**.`
         //             },
-        //             Act:(user,performer,command,targets,town)=>{
+        //             act:(user,performer,command,targets,town)=>{
         //                 let n1 = {
         //                     player: null,
         //                     spy: `Your target was bitten by a vampire!`
@@ -1322,50 +1327,50 @@ const roles = [
         // },
         {
             id:"107",
-            Name:"Mafioso",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:1,
-            Defense:0,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Vigilante, Veteran, Mafioso.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Mafioso."
+            name:"Mafioso",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:1,
+            defense:0,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Vigilante, Veteran, Mafioso.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Mafioso."
             },
-            Abilities:[
+            abilities:[
                 "You carry out the Godfather's orders."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to kill. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to kill. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"kill",
-                    Guide:"kill <player>",
-                    Description:"kills the target.",
-                    Priority:5,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"kill",
+                    guide:"kill <player>",
+                    description:"kills the target.",
+                    priority:5,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia"); 
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         let msg;
                         if(town.getFunctions().roleExists("Godfather")){
                             msg = `${user.getUsername()} has voted to kill ${inputs[0].getUsername()}.`
@@ -1377,7 +1382,7 @@ const roles = [
                             return `You have decided to kill **${inputs[0].getUsername()}**.`
                         }
                     },
-                    Act:(user,performer,targets,town)=>{
+                    act:(user,performer,targets,town)=>{
                         if(town.getFunctions().killFlagMafioso(user,performer)){
                             let target = targets[0];
                             let n1 = {
@@ -1409,53 +1414,53 @@ const roles = [
         },
         {
             id:"004",
-            Name:"Vigilante",
-            Alignment:"Town",
-            Type:"Killing",
-            Immunities:[],
-            Attack:1,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Vigilante, Veteran, or Mafioso.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Vigilante."
+            name:"Vigilante",
+            alignment:"Town",
+            type:"Killing",
+            immunities:[],
+            attack:1,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Vigilante, Veteran, or Mafioso.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Vigilante."
             },
-            Abilities:[
+            abilities:[
                 "You can take justice into your own hands and shoot someone each night.",
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the enemies of the Town."
             ],
-            NightMessage:"You can take a shot or pass.",
-            RoleMessage:"Pick who to shoot. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can take a shot or pass.",
+            roleMessage:"Pick who to shoot. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"shoot",
-                    Guide:"shoot <player>",
-                    Description:"Kills the target.",
-                    Priority:5,
-                    Stocks:3,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"shoot",
+                    guide:"shoot <player>",
+                    description:"Kills the target.",
+                    priority:5,
+                    stocks:3,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to shoot **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,performer,command,targets)=>{
+                    act:(user,performer,command,targets)=>{
                         let target = targets[0];
                         command.setStocks(command.getStocks()-1);
                         let n1 = {
@@ -1487,54 +1492,54 @@ const roles = [
         },
         {
             id:"208",
-            Name:"Serial Killer",
-            Alignment:"Neutral",
-            Type:"Killing",
-            Immunities:[],
-            Attack:1,
-            Defense:1,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Serial Killer."
+            name:"Serial Killer",
+            alignment:"Neutral",
+            type:"Killing",
+            immunities:[],
+            attack:1,
+            defense:1,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Serial Killer."
             },
-            Abilities:[
+            abilities:[
                 "You can kill 1 person each night.",
                 "You are immune to night attacks."
             ],
-            Goals:[
+            goals:[
                 "Be the last person alive."
             ],
-            NightMessage:"You can use your ability now",
-            RoleMessage:"Pick who to kill.",
-            Friendlies:["Serial Killer","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now",
+            roleMessage:"Pick who to kill.",
+            winBuddies:["Serial Killer","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"stab",
-                    Guide:"stab <player>",
-                    Description:"Kills the target.",
-                    Priority:5,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"stab",
+                    guide:"stab <player>",
+                    description:"Kills the target.",
+                    priority:5,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to kill **${inputs[0].getUsername()}**.`
                     },
-                    Act:(performer,targets)=>{
+                    act:(performer,targets)=>{
                         let target = targets[0];
                         let n1 = {
                             player: null,
@@ -1565,54 +1570,54 @@ const roles = [
         },
         {
             id:"209",
-            Name:"Werewolf",
-            Alignment:"Neutral",
-            Type:"Killing",
-            Immunities:[],
-            Attack:2,
-            Defense:1,
-            Unique:true,
-            Results:{
-                Investigator:"Your target could be a Sheriff, Executioner, or Werewolf.",
-                Sheriff:["Your target is suspicious!","Your target seems innocent."],
-                Consigliere:"Your target seems to be a Werewolf!"
+            name:"Werewolf",
+            alignment:"Neutral",
+            type:"Killing",
+            immunities:[],
+            attack:2,
+            defense:1,
+            unique:true,
+            results:{
+                investigator:"Your target could be a Sheriff, Executioner, or Werewolf.",
+                sheriff:["Your target is suspicious!","Your target seems innocent."],
+                consigliere:"Your target seems to be a Werewolf!"
             },
-            Abilities:[
+            abilities:[
                 "You can go on a rampage at someone's house during full moons.",
                 "You are immune to night attacks."
             ],
-            Goals:[
+            goals:[
                 "Be the last person alive."
             ],
-            NightMessage:"You can use your ability now",
-            RoleMessage:"Pick who to kill.",
-            Friendlies:["Werewolf","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now",
+            roleMessage:"Pick who to kill.",
+            winBuddies:["Werewolf","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"maul",
-                    Guide:"maul <player>",
-                    Description:"Kills the target.",
-                    Priority:5,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"maul",
+                    guide:"maul <player>",
+                    description:"Kills the target.",
+                    priority:5,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to go on a rampage at **${inputs[0].getUsername()}**'s house.`
                     },
-                    Act:(performer,targets,town)=>{
+                    act:(performer,targets,town)=>{
                         let target = targets[0];
                         let n1 = {
                             player: null,
@@ -1656,79 +1661,79 @@ const roles = [
         },
         // {
         //     id:"207",
-        //     Name:"Arsonist",
-        //     Alignment:"Neutral",
-        //     Type:"Killing",
-        //     Immunities:[],
-        //     Attack:3,
-        //     Defense:1,
-        //     Unique:false,
-        //     Results:{
-        //         Investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
-        //         Sheriff:"Your target is suspicious!",
-        //         Consigliere:"Your target seems to be an Arsonist."
+        //     name:"Arsonist",
+        //     alignment:"Neutral",
+        //     type:"Killing",
+        //     immunities:[],
+        //     attack:3,
+        //     defense:1,
+        //     unique:false,
+        //     results:{
+        //         investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
+        //         sheriff:"Your target is suspicious!",
+        //         consigliere:"Your target seems to be an Arsonist."
         //     },
-        //     Abilities:[
+        //     abilities:[
         //         "You can douse 1 person each night.",
         //         "You are immune to night attacks."
         //     ],
-        //     Goals:[
+        //     goals:[
         //         "Be the last person alive."
         //     ],
-        //     NightMessage:"You can use your ability now",
-        //     RoleMessage:"Pick who to douse or decide to light the fire.",
-        //     Friendlies:["Arsonist","Witch","Survivor","Executioner","Jester"],
-        //     Commands:[
+        //     nightMessage:"You can use your ability now",
+        //     roleMessage:"Pick who to douse or decide to light the fire.",
+        //     winBuddies:["Arsonist","Witch","Survivor","Executioner","Jester"],
+        //     commands:[
         //         {
-        //             Name:"douse",
-        //             Guide:"douse <player>",
-        //             Description:"Douses the target.",
-        //             Priority:3,
-        //             Stocks:99,
-        //             Permission:"Role Holder",
-        //             Queue:"Normal",
-        //             RequiredTargets:1,
-        //             Phase:["Night", "Night (Full Moon)"],
-        //             Status:"Alive",
-        //             Performer:(user,command,town)=>{
+        //             name:"douse",
+        //             guide:"douse <player>",
+        //             description:"Douses the target.",
+        //             priority:3,
+        //             stocks:99,
+        //             permission:"Role Holder",
+        //             queue:"Normal",
+        //             requiredTargets:1,
+        //             phase:["Night", "Night (Full Moon)"],
+        //             status:"Alive",
+        //             performer:(user,command,town)=>{
         //                 return user;
         //             },
-        //             VisitsTarget:(user,town)=>{
+        //             visitsTarget:(user,town)=>{
         //                 return true;
         //             },
-        //             ValidTargets:(user,town)=>{
+        //             validTargets:(user,town)=>{
         //                 let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
         //                 return targetables;
         //             },
-        //             ActionResponse:async (user,command,inputs,town)=>{
+        //             actionResponse:async (user,command,inputs,town)=>{
         //                 return `You have decided to douse **${inputs[0].getUsername()}**.`
         //             },
-        //             Act:(user,performer,command,targets,town)=>{
+        //             act:(user,performer,command,targets,town)=>{
         //                 let target = targets[0];
         //                 target.setDouseStatus(true);
         //             },
         //         },
         //         {
-        //             Name:"light",
-        //             Guide:"light",
-        //             Description:"Sets all the doused houses on fire.",
-        //             Priority:5,
-        //             Stocks:99,
-        //             Permission:"Role Holder",
-        //             Queue:"Normal",
-        //             RequiredTargets:0,
-        //             Phase:["Night", "Night (Full Moon)"],
-        //             Status:"Alive",
-        //             Performer:(user,command,town)=>{
+        //             name:"light",
+        //             guide:"light",
+        //             description:"Sets all the doused houses on fire.",
+        //             priority:5,
+        //             stocks:99,
+        //             permission:"Role Holder",
+        //             queue:"Normal",
+        //             requiredTargets:0,
+        //             phase:["Night", "Night (Full Moon)"],
+        //             status:"Alive",
+        //             performer:(user,command,town)=>{
         //                 return user;
         //             },
-        //             VisitsTarget:(user,town)=>{
+        //             visitsTarget:(user,town)=>{
         //                 return false;
         //             },
-        //             ActionResponse:async (user,command,inputs,town)=>{
+        //             actionResponse:async (user,command,inputs,town)=>{
         //                 return `You have decided to light the doused houses.`
         //             },
-        //             Act:(user,performer,command,targets,town)=>{
+        //             act:(user,performer,command,targets,town)=>{
         //                 let doused = town.getPlayers().filter(p=>p.getDouseStatus()==true && p.getStatus()=="Alive");
         //                 doused.forEach(d => {
         //                     d.kill();
@@ -1745,83 +1750,83 @@ const roles = [
         // },
         {
             id:"010",
-            Name:"Doctor",
-            Alignment:"Town",
-            Type:"Protective",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Doctor."
+            name:"Doctor",
+            alignment:"Town",
+            type:"Protective",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Doctor, Disguiser, or Serial Killer.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Doctor."
             },
-            Abilities:[
+            abilities:[
                 "You can heal someone each night.",
                 "You can heal yourself. (One time use)"
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick someone to heal. (letter)",
-            Friendlies:["Town","Survivor","Amnesiac","Jester","Executioner"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick someone to heal. (letter)",
+            winBuddies:["Town","Survivor","Amnesiac","Jester","Executioner"],
+            commands:[
                 {
-                    Name:"heal",
-                    Guide:"heal <player>",
-                    Description:"Heals the target.",
-                    Priority:3,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"heal",
+                    guide:"heal <player>",
+                    description:"Heals the target.",
+                    priority:3,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername() && p.getVoteCount()!=3);
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to heal **${inputs[0].getUsername()}**.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         const  target = targets[0];
                         target.pushBuff("Heal");
                     },
                 },
                 {
-                    Name:"selfheal",
-                    Guide:"selfheal",
-                    Description:"Heals yourself.",
-                    Priority:3,
-                    Stocks:1,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:0,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"selfheal",
+                    guide:"selfheal",
+                    description:"Heals yourself.",
+                    priority:3,
+                    stocks:1,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:0,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:()=>null,
-                    ActionResponse:async ()=>{
+                    validTargets:()=>null,
+                    actionResponse:async ()=>{
                         return `You have decided to heal yourself.`
                     },
-                    AutoTargets:(user)=>{
+                    defaultTarget:(user)=>{
                         return [user];
                     },
-                    Act:(command,targets)=>{
+                    act:(command,targets)=>{
                         const target = targets[0];
                         command.setStocks(command.getStocks()-1);
                         target.pushBuff("Heal");
@@ -1831,83 +1836,83 @@ const roles = [
         },
         {
             id:"009",
-            Name:"Bodyguard",
-            Alignment:"Town",
-            Type:"Protective",
-            Immunities:[],
-            Attack:2,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Bodyguard."
+            name:"Bodyguard",
+            alignment:"Town",
+            type:"Protective",
+            immunities:[],
+            attack:2,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Bodyguard, Godfather, or Arsonist.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Bodyguard."
             },
-            Abilities:[
+            abilities:[
                 "You can protect someone each night.",
                 "You can shield yourself for one night.",
             ],
-            Goals:[
+            goals:[
                 "Lynch/kill all of the enemies of the Town."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick someone to protect. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick someone to protect. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"protect",
-                    Guide:"protect <player>",
-                    Description:"Protects the target.",
-                    Priority:3,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"protect",
+                    guide:"protect <player>",
+                    description:"Protects the target.",
+                    priority:3,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getUsername() != user.getUsername());
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to protect **${inputs[0].getUsername()}**.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         const target = targets[0];
                         target.pushBuff("Protect");
                     },
                 },
                 {
-                    Name:"vest",
-                    Guide:"vest",
-                    Description:"Be immune to any attacks at night.",
-                    Priority:3,
-                    Stocks:1,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:0,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"vest",
+                    guide:"vest",
+                    description:"Be immune to any attacks at night.",
+                    priority:3,
+                    stocks:1,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:0,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:()=>null,
-                    AutoTargets:(user)=>{
+                    validTargets:()=>null,
+                    defaultTarget:(user)=>{
                         return [user];
                     },
-                    ActionResponse:async ()=>{
+                    actionResponse:async ()=>{
                         return `You have decided to wear a vest tonight.`
                     },
-                    Act:(command,targets)=>{
+                    act:(command,targets)=>{
                         let vests = command.getStocks();
                         command.setStocks(command.setStocks(vests-1));
                         let target = targets[0];
@@ -1918,49 +1923,49 @@ const roles = [
         },
         // {
         //     id:"011",
-        //     Name:"Mayor",
-        //     Alignment:"Town",
-        //     Type:"Support",
-        //     Immunities:[],
-        //     Attack:0,
-        //     Defense:0,
-        //     Unique:true,
-        //     Results:{
-        //         Investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
-        //         Sheriff:"Your target seems innocent.",
-        //         Consigliere:"Your target seems to be the Mayor."
+        //     name:"Mayor",
+        //     alignment:"Town",
+        //     type:"Support",
+        //     immunities:[],
+        //     attack:0,
+        //     defense:0,
+        //     unique:true,
+        //     results:{
+        //         investigator:"Your target could be a Investigator, Consigliere, or Mayor.",
+        //         sheriff:"Your target seems innocent.",
+        //         consigliere:"Your target seems to be the Mayor."
         //     },
-        //     Abilities:[
+        //     abilities:[
         //         "Gain 3 votes when you reveal yourself as Mayor."
         //     ],
-        //     Goals:[
+        //     goals:[
         //         "Lynch all of the enemies of the Town."
         //     ],
-        //     NightMessage:"Sleep tight..",
-        //     RoleMessage:"Choose whether to reveal or not.",
-        //     Friendlies:["Town","Survivor","Executioner","Jester"],
-        //     Commands:[
+        //     nightMessage:"Sleep tight..",
+        //     roleMessage:"Choose whether to reveal or not.",
+        //     winBuddies:["Town","Survivor","Executioner","Jester"],
+        //     commands:[
         //         {
-        //             Name:"reveal",
-        //             Guide:"reveal",
-        //             Description:"Reveals to everyone that you are the mayor.",
-        //             Priority:1,
-        //             Stocks:1,
-        //             Permission:"Role Holder",
-        //             Queue:"Quick",
-        //             RequiredTargets:0,
-        //             Phase:["Discussion", "Voting", "Defense","Judgement"],
-        //             Status:"Alive",
-        //             Performer:(user,command,town)=>{
+        //             name:"reveal",
+        //             guide:"reveal",
+        //             description:"Reveals to everyone that you are the mayor.",
+        //             priority:1,
+        //             stocks:1,
+        //             permission:"Role Holder",
+        //             queue:"Quick",
+        //             requiredTargets:0,
+        //             phase:["Discussion", "Voting", "Defense","Judgement"],
+        //             status:"Alive",
+        //             performer:(user,command,town)=>{
         //                 return user;
         //             },
-        //             VisitsTarget:(user,town)=>{
+        //             visitsTarget:(user,town)=>{
         //                 return false;
         //             },
-        //             AutoTargets:(user,town)=>{
+        //             defaultTarget:(user,town)=>{
         //                 return [user];
         //             },
-        //             ActionResponse:async (user,command,inputs,town)=>{
+        //             actionResponse:async (user,command,inputs,town)=>{
         //                 command.setStocks(command.getStocks()-1);
         //                 user.setVoteCount(3);
         //                 let msg = `${user.getUsername()} has revealed to everyone that they are the Mayor!`;
@@ -1968,7 +1973,7 @@ const roles = [
         //                 return `You have revealed to everyone that you are the **Mayor**!`
                        
         //             },
-        //             Act:(user,performer,command,targets,town)=>{
+        //             act:(user,performer,command,targets,town)=>{
                         
         //             },
         //         }
@@ -1976,53 +1981,53 @@ const roles = [
         // },
         {
             id:"012",
-            Name:"Medium",
-            Alignment:"Town",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Medium, Janitor, or Retributionist.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Medium."
+            name:"Medium",
+            alignment:"Town",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Medium, Janitor, or Retributionist.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Medium."
             },
-            Abilities:[
+            abilities:[
                 "You can talk to ghosts every night."
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can talk to ghosts.",
-            RoleMessage:"You can talk to ghosts.",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can talk to ghosts.",
+            roleMessage:"You can talk to ghosts.",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"seance",
-                    Guide:"seance <player>",
-                    Description:"Lets you talk to the target.",
-                    Priority:1,
-                    Stocks:1,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Discussion","Voting","Judgement","Defense","Last Words","Execution"],
-                    Status:"Dead",
-                    Performer:(user)=>{
+                    name:"seance",
+                    guide:"seance <player>",
+                    description:"Lets you talk to the target.",
+                    priority:1,
+                    stocks:1,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Discussion","Voting","Judgement","Defense","Last Words","Execution"],
+                    status:"Dead",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to seance **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,performer,command,targets)=>{
+                    act:(user,performer,command,targets)=>{
                         command.setStocks(command.setStocks(0));
                         const target = targets[0];
                         target.setSeanceStatus(true);
@@ -2033,56 +2038,56 @@ const roles = [
         },
         {
             id:"014",
-            Name:"Spy",
-            Alignment:"Town",
-            Type:"Investigative",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
-                Sheriff:"Your target seems innocent.",
-                Consigliere:"Your target seems to be a Spy."
+            name:"Spy",
+            alignment:"Town",
+            type:"Investigative",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Spy, Blackmailer, or Jailor.",
+                sheriff:"Your target seems innocent.",
+                consigliere:"Your target seems to be a Spy."
             },
-            Abilities:[
+            abilities:[
                 "You can hear Mafia conversations at night.",
                 "You can know who the mafia visits."
             ],
-            Goals:[
+            goals:[
                 "Lynch all of the enemies of the Town."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to spy on. (letter)",
-            Friendlies:["Town","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to spy on. (letter)",
+            winBuddies:["Town","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"bug",
-                    Guide:"bug <player>",
-                    Description:"Bugs someone's house to see what happens to them at night.",
-                    Priority:6,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night","Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"bug",
+                    guide:"bug <player>",
+                    description:"Bugs someone's house to see what happens to them at night.",
+                    priority:6,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night","Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(user,town)=>{
+                    validTargets:(user,town)=>{
                          
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getId()!=user.getId());
                          
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to bug **${inputs[0].getUsername()}**'s house.`
                     },
-                    Act:(user,targets)=>{
+                    act:(user,targets)=>{
                         let target = targets[0];
                         target.getNotifs().forEach(n => {
                             let notif1 = {
@@ -2097,78 +2102,78 @@ const roles = [
         },
         // {
         //     id:"204",
-        //     Name:"Executioner",
-        //     Alignment:"Neutral",
-        //     Type:"Evil",
-        //     Immunities:[],
-        //     Attack:0,
-        //     Defense:1,
-        //     Unique:false,
-        //     Results:{
-        //         Investigator:"Your target could be a Sheriff, Executioner, or Werewolf.",
-        //         Sheriff:"Your target is suspicious!",
-        //         Consigliere:"Your target seems to be an Executioner."
+        //     name:"Executioner",
+        //     alignment:"Neutral",
+        //     type:"Evil",
+        //     immunities:[],
+        //     attack:0,
+        //     defense:1,
+        //     unique:false,
+        //     results:{
+        //         investigator:"Your target could be a Sheriff, Executioner, or Werewolf.",
+        //         sheriff:"Your target is suspicious!",
+        //         consigliere:"Your target seems to be an Executioner."
         //     },
-        //     Abilities:[
+        //     abilities:[
         //         "You are immune to night attacks."
         //     ],
-        //     Goals:[
+        //     goals:[
         //         "Lynch your target."
         //     ],
-        //     NightMessage:"Sleep tight...",
-        //     RoleMessage:"Convince everyone to lynch your target.",
-        //     Friendlies:[],
-        //     Commands:[],
+        //     nightMessage:"Sleep tight...",
+        //     roleMessage:"Convince everyone to lynch your target.",
+        //     winBuddies:[],
+        //     commands:[],
         // },
         {
             id:"205",
-            Name:"Jester",
-            Alignment:"Neutral",
-            Type:"Evil",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Framer, Vampire, or Jester.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be an Jester."
+            name:"Jester",
+            alignment:"Neutral",
+            type:"Evil",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Framer, Vampire, or Jester.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be an Jester."
             },
-            Abilities:[
+            abilities:[
                 "None."
             ],
-            Goals:[
+            goals:[
                 "Get yourself lynched."
             ],
-            NightMessage:"Sleep tight...",
-            RoleMessage:"Convince everyone to lynch you.",
-            Friendlies:[],
-            Commands:[
+            nightMessage:"Sleep tight...",
+            roleMessage:"Convince everyone to lynch you.",
+            winBuddies:[],
+            commands:[
                 {
-                    Name:"haunt",
-                    Guide:"haunt <player>",
-                    Description:"Kills the target.",
-                    Priority:1,
-                    Stocks:0,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Dead",
-                    Performer:(user)=>{
+                    name:"haunt",
+                    guide:"haunt <player>",
+                    description:"Kills the target.",
+                    priority:1,
+                    stocks:0,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Dead",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return false;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p=>p.getJudgement()[p.getJudgement().length-1]=="Guilty" && p.getStatus()=="Alive");
                         return targetables;
                     },
-                    ActionResponse:async (inputs)=>{
+                    actionResponse:async (inputs)=>{
                         return `You have decided to haunt **${inputs[0].getUsername()}**.`
                     },
-                    Act:(user,performer,command,targets,town)=>{
+                    act:(user,performer,command,targets,town)=>{
                         command.setStocks(command.setStocks(0));
                         let target = targets[0];
                         target.kill();
@@ -2194,55 +2199,55 @@ const roles = [
         },
         {
             id:"103",
-            Name:"Janitor",
-            Alignment:"Mafia",
-            Type:"Support",
-            Immunities:[],
-            Attack:0,
-            Defense:0,
-            Unique:false,
-            Results:{
-                Investigator:"Your target could be a Medium, Janitor, or Retributionist.",
-                Sheriff:"Your target is suspicious!",
-                Consigliere:"Your target seems to be a Janitor."
+            name:"Janitor",
+            alignment:"Mafia",
+            type:"Support",
+            immunities:[],
+            attack:0,
+            defense:0,
+            unique:false,
+            results:{
+                investigator:"Your target could be a Medium, Janitor, or Retributionist.",
+                sheriff:"Your target is suspicious!",
+                consigliere:"Your target seems to be a Janitor."
             },
-            Abilities:[
+            abilities:[
                 "You can erase the traces of each mafia kills."
             ],
-            Goals:[
+            goals:[
                 "Make the mafia the last ones to survive."
             ],
-            NightMessage:"You can use your ability now.",
-            RoleMessage:"Pick who to clean. (letter)",
-            Friendlies:["Mafia","Witch","Survivor","Executioner","Jester"],
-            Commands:[
+            nightMessage:"You can use your ability now.",
+            roleMessage:"Pick who to clean. (letter)",
+            winBuddies:["Mafia","Witch","Survivor","Executioner","Jester"],
+            commands:[
                 {
-                    Name:"clean",
-                    Guide:"clean <player>",
-                    Description:"Cleans the traces left behind by Mafia's murder victim.",
-                    Priority:3,
-                    Stocks:99,
-                    Permission:"Role Holder",
-                    Queue:"Normal",
-                    RequiredTargets:1,
-                    Phase:["Night", "Night (Full Moon)"],
-                    Status:"Alive",
-                    Performer:(user)=>{
+                    name:"clean",
+                    guide:"clean <player>",
+                    description:"Cleans the traces left behind by Mafia's murder victim.",
+                    priority:3,
+                    stocks:99,
+                    permission:"Role Holder",
+                    queue:"Normal",
+                    requiredTargets:1,
+                    phase:["Night", "Night (Full Moon)"],
+                    status:"Alive",
+                    performer:(user)=>{
                         return user;
                     },
-                    VisitsTarget:()=>{
+                    visitsTarget:()=>{
                         return true;
                     },
-                    ValidTargets:(town)=>{
+                    validTargets:(town)=>{
                         let targetables = town.getPlayers().filter(p => p.getStatus() == "Alive" && p.getRole().getAlignment() != "Mafia");
                         return targetables;
                     },
-                    ActionResponse:async (user,inputs,town)=>{
+                    actionResponse:async (user,inputs,town)=>{
                         const msg = `${user.getUsername()} has decided to clean ${inputs[0].getUsername()}.`
                         await town.getFunctions().messageOtherMafias(msg,user);
                         return `You have decided to clean **${inputs[0].getUsername()}**.`
                     },
-                    Act:(targets)=>{
+                    act:(targets)=>{
                         let target = targets[0];
                         target.setCleandName(target.getMaskRole().getName());
                         target.setCleanedNotes(target.getNotes());

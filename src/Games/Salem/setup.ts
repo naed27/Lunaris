@@ -1,35 +1,35 @@
-const util = require("./utility");
-const modes = require("./modes");
-const roles = require("./roles");
-const Role = require("./role");
-const Player = require("./player");
-const Channel = require("./channel");
-const {MessageEmbed} = require('discord.js');
+import util from "./utility";
+import modes from "./modes";
+import roles from "./roles";
+import Role from "./role";
+import Player from "./player";
+import Channel from "./channel";
+import { MessageEmbed, Guild, TextChannel } from 'discord.js';
+import Game from "./game";
+import { createEmbed, createMarkDown, shuffleArray } from "../../Helpers/toolbox";
 
+export default class Setup{
 
-class Setup{
+  game: Game;
+  guild: Guild;
+  gameChannel: TextChannel;
 
-  town;
-  townChannel;
-  Lwrap = `‎\n\`\`\`json\n`;
-  Rwrap = `\`\`\``;
-
-  constructor(town){
-    this.town = town;
+  constructor( game: Game ){
+    this.game = game;
+    this.guild = game.getGuild();
   }
 
   async setupJudgementCollector(){
-    let embed = new MessageEmbed()
-    .setColor("#000000")
-    .setTitle( `⚖️ The Judgement`)
-    .setDescription(`**Accused:** ${this.town.getVotedUp().getUsername()}`);
+    const title = `⚖️ The Judgement`;
+    const description = `Accused: ${this.game.getVotedUp().getUsername()}`
+    const embed = createEmbed({ title, description });
 
-    for await (const p of this.town.getPlayers()) {
-      if(p.getStatus()=="Alive" && p.getId()!=this.town.getVotedUp().getId()){
-        embed.setDescription(`**Accused:** ${this.town.getVotedUp().getUsername()}\n\n🙆‍♂️ - Innocent\n🙅 - Guilty`);
+    this.game.getAlivePlayers().map((player) => {
+      if(player.getStatus()=="Alive" && player.getId()!=this.game.getVotedUp().getId()){
+        embed.setDescription(`**Accused:** ${this.game.getVotedUp().getUsername()}\n\n🙆‍♂️ - Innocent\n🙅 - Guilty`);
       }
-      let card = await p.getHouse().setJudgeCard(embed);
-      if(p.getStatus()=="Alive" && p.getId()!=this.town.getVotedUp().getId()){
+      let card = await player.getHouse().setJudgeCard(embed);
+      if(player.getStatus()=="Alive" && player.getId()!=this.game.getVotedUp().getId()){
         await card.react('🙆‍♂️').catch();
         card.react('🙅').catch();
         const filter = () => {return true;};
@@ -38,35 +38,35 @@ class Setup{
           if(!user.bot){
             switch(reaction.emoji.name){
               case "🙆‍♂️":
-                p.pushJudgement("Innocent");
+                player.pushJudgement("Innocent");
               break;
               case "🙅": 
-                p.pushJudgement("Guilty");
+                player.pushJudgement("Guilty");
               break;
             }
             const userReactions = card.reactions.cache.filter(r => r.emoji.name!=reaction.emoji.name);
             for (const reaction of userReactions.values()) {
               await reaction.users.remove(user.id);
             }
-            this.town.pushJudgement(p,p.getJudgement()[p.getJudgement().length-1]);
+            this.game.pushJudgement(player,player.getJudgement()[player.getJudgement().length-1]);
           }
         });
         judgeCollector.on('remove', async (reaction) => {
           switch(reaction.emoji.name){
               case "🙆‍♂️":
-                p.removeJudgement("Innocent");
+                player.removeJudgement("Innocent");
               break;
               case "🙅": 
-                p.removeJudgement("Guilty");
+                player.removeJudgement("Guilty");
               break;
           }
-          if(p.getJudgement().length==1){
-            p.pushJudgement("Abstain");
-            this.town.pushJudgement(p,p.getJudgement()[p.getJudgement().length-1]);
+          if(player.getJudgement().length==1){
+            player.pushJudgement("Abstain");
+            this.game.pushJudgement(player,player.getJudgement()[player.getJudgement().length-1]);
           }
         });
       }
-    }
+    });
   }
 
   
@@ -75,7 +75,7 @@ class Setup{
 
     let finalString=``;
     let temp="";
-    let pl = util.shuffleArray(this.town.getPlayers().filter(p=>p.getStatus()=="Alive" && p.getId()!=this.town.getVotedUp().getId()));
+    let pl = util.shuffleArray(this.game.getPlayers().filter(p=>p.getStatus()=="Alive" && p.getId()!=this.game.getVotedUp().getId()));
     let guilty=0;
     let inno=0;
 
@@ -106,7 +106,7 @@ class Setup{
 
     finalString+=`\n\nGuilty: ${guilty}\nInnocent: ${inno}`;
 
-    for await (const p of this.town.getPlayers()) {
+    for await (const p of this.game.getPlayers()) {
       p.getHouse().updateJudgeCard(finalString);
     }
 
@@ -119,12 +119,11 @@ class Setup{
 
   async setupGuides(){
 
-    let content;
+    const content = `This is your Notepad Channel\n\n- Use this channel to write any important details in the game.\n- You can only send 1 message so just edit it when you have to.`
 
-    await this.town.getPlayers().forEach(async player => {
-      content = `This is your Notepad Channel\n\n- Use this channel to write any important details in the game.\n- You can only send 1 message so just edit it when you have to.`;
-      content = `${this.Lwrap}${content}${this.Rwrap}`;
-      player.getNotepad().getChannel().send(content).catch();
+    this.game.getPlayers().map(async player => {
+      const message = createMarkDown(content);
+      player.getNotepad().getChannel().send(message).catch();
       await player.getHouse().updateShortGuide();
       await player.getHouse().updateCommandList();
       player.getHouse().updatePlayerCard();
@@ -133,18 +132,18 @@ class Setup{
   }
 
   async setupExeTarget(){
-    let exe = this.town.getPlayers().filter(p=>p.getRole().getName()=="Executioner");
+    let exe = this.game.getPlayers().filter(p=>p.getRole().getName()=="Executioner");
     if(exe.length>0){
         exe = exe[0];
-        let townies = this.town.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
+        let townies = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
         townies = util.shuffleArray(townies);
-        exe.setTarget(townies[0]);
+        // exe.setTarget(townies[0]);
     }
   }
 
   updateReadyCollector(embed,address,guideIntro){
     let list = "";
-    let players = this.town.getPlayers();
+    let players = this.game.getPlayers();
     for(let i=0;i<players.length;i++){
       list+=`${players[i].getListNumber()}. **${players[i].getUsername()}** (${players[i].getIsReady()})`;
       if(i<players.length){
@@ -158,41 +157,40 @@ class Setup{
 
  
   async openNotepadChannels(){
-    for await (const p of this.town.getPlayers()) {
+    for await (const p of this.game.getPlayers()) {
       p.getNotepad().open();
     }
   }
 
   async openHouseChannels(){
-    for await (const p of this.town.getPlayers()) {
+    for await (const p of this.game.getPlayers()) {
       p.getHouse().open();
     }
   }
 
   async closeNotepadChannels(){
-    for await (const p of this.town.getPlayers()) {
+    for await (const p of this.game.getPlayers()) {
       p.getNotepad().close();
     }
   }
 
   async closeHouseChannels(){
-    for await (const p of this.town.getPlayers()) {
+    for await (const p of this.game.getPlayers()) {
       p.getHouse().close();
     }
   }
 
   async listenHouseChannel(){
-    this.town.getPlayers().forEach(player => {
+    this.game.getPlayers().map(player => {
       player.cleanHelpers();
-      if(player.getJailStatus()==false){
-        switch(this.town.getClock().getPhase()){
-          case "Discussion":
-          case "Night":
-          case "Night (Full Moon)":
-            player.getHouse().updatePhaseSign();
-            break;
-          default:break;
-        }
+      if(player.getJailStatus()==true)return
+      const phase = this.game.getClock().getPhase().name;
+      switch(phase){
+        case "Discussion":
+        case "Night":
+          player.getHouse().updatePhaseSign();
+        break;
+        default:break;
       }
     });
   }
@@ -211,69 +209,46 @@ class Setup{
 
 
   isHost(id){
-    return this.town.getHost().getHostId()===id;
+    return this.game.getHost().getHostId()===id;
   }
 
 
   async setupClockChannel(){
-
-    for await (const g of this.town.getGuilds()) {
-      let clock_key = this.town.getGameKeys().filter(k=>k.guild.id==g.id);
-      if(clock_key.length==1){
-        clock_key=clock_key[0];
-        let temp = await g.channels.create(`⏳﹕game-clock`, {
-          type: "text",
-          permissionOverwrites: [
-            {
-              id: g.roles.everyone, 
-              allow: [],
-              deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
-            },
-            {
-              id: clock_key, 
-              allow: ['READ_MESSAGE_HISTORY'],
-              deny: []
-            },
-          ],
-        });
-        this.town.pushChannel(new Channel("clock",temp));
-      }
-    }
-
+    const guild = this.game.getGuild();
+    const channel = await guild.channels.create(`⏳﹕game-clock`, {
+      type: "GUILD_TEXT",
+      permissionOverwrites: [
+        {
+          id: guild.roles.everyone, 
+          allow: [],
+          deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
+        }
+      ],
+    });
+    this.game.pushChannel(new Channel("clock",channel));
   }
 
+
   async setupPlayerCollectors(){
-    this.town.getPlayers().forEach(player => {
+    this.game.getPlayers().forEach(player => {
       player.setupCollector();
     });
   }
 
-  async showStartingChannels(){
-    this.town.getPlayers().forEach(player => {
-      player.getExRoles().forEach(xr => {
-        player.getUser().roles.remove(xr);
-      });
-      player.getChannels().forEach(channel => {
-        channel.getChannel().updateOverwrite(player.getId(),{ 
-          VIEW_CHANNEL:true
-        });
-      });
-    });
-    this.town.getClockChannels().forEach(ch => {
-      let clock_key = this.town.getClockKeys().filter(k=>k.guild.id==ch.getChannel().guild.id);
-      clock_key.forEach(ck => {
-        ch.getChannel().updateOverwrite(ck.id,{ 
-          VIEW_CHANNEL:true
-        });
-      });
-    });
+  showPlayerChannels = async () => {
+    this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
   }
 
+  showStageChannel = async () => this.game.getStageChannelManager().show();
+  showClockChannel = async () => this.game.getClockChannelManager().show();
+
+
   async setupPlayers(){
-    let players = this.town.getHost().getPlayers();
+
+    const players = shuffleArray(this.game.getHost().getJoinedPlayers())
 
     let rolled_roles = [];
-    let role_filter = roles.list;
+    let role_filter = roles;
     let avail_modes = modes.list.filter(m => m.PlayerCount == players.length);
     let rand = Math.floor((Math.random() * avail_modes.length) + 0);
 
@@ -281,7 +256,7 @@ class Setup{
     for (let i = 0; i < rolePool.length; i++) {
 
       if(rolePool[i][0]!="Random"){
-        role_filter = roles.list.filter(r => r.Alignment == `${rolePool[i][0]}`);
+        role_filter = roles.filter(r => r.Alignment == `${rolePool[i][0]}`);
         if(rolePool[i][1]!="Random"){
           role_filter = role_filter.filter(r => r.Type == `${rolePool[i][1]}`);
           if(rolePool[i][2]!="Random"){
@@ -304,13 +279,12 @@ class Setup{
       }
     }
 
-    players = util.shuffleArray(players);
     rolled_roles = util.shuffleArray(rolled_roles);
 
     for(let i=0;i<rolled_roles.length;i++){
-      let player = new Player(this.town,i+1,players[i],new Role(rolled_roles[i]));
-      this.town.pushPlayer(player);
-      this.town.pushGuild(players[i].guild);
+      let player = new Player(this.game,i+1,players[i],new Role(rolled_roles[i]));
+      this.game.pushPlayer(player);
+      this.game.setGuild(players[i].guild);
       await this.setupChannels(player);
       player.getRole().setPlayer(player);
     } 
@@ -365,39 +339,23 @@ class Setup{
     });
   }
 
-  async createGameKeys(){
+  async createGameRole(){
 
-    let guilds = this.town.getGuilds();
-
-    for await (const g of guilds) {
-      
-      let gameRole = await g.roles.create({
-        data: {
-          name: 'Key',
-          color: '#0f0f0f',
-        },
-      });
-      this.town.pushGameKey(gameRole);
-      
-    }
+    const guild = this.game.getGuild();
+    
+    const gameRole = await guild.roles.create({
+      name: 'Salem',
+      color: '#0f0f0f',
+      permissions:[]
+    });
+    this.game.setGameKey(gameRole);
 
   }
 
-  async passRoles(){
-    this.town.getPlayers().forEach(player => {
-      let user = player.getGuild().members.cache.find(m => m.id === player.getId());
-      let keys = this.town.getGameKeys().filter(k=>k.guild.id==player.getGuild().id);
-      keys.forEach(k => {
-        switch (k.name){
-          case "Key":
-            user.roles.add(k);
-            break;
-        }
-      });
-    });
+  async distributeGameRole(){
+    const key = this.game.getGameKey();
+    this.game.getPlayers().map(player => player.getDiscord().roles.add(key));
   }
 
 
 }
-
-module.exports = Setup;

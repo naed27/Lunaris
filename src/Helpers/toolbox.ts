@@ -139,18 +139,7 @@ export const shuffleArray=<T>(array:T[])=>{
 
 
 export const stringifyArrayOfNames = (arrayOfNames:string[])=>{
-  let result ="";
-
-  for (let i = 0; i < arrayOfNames.length; i++) {
-    result+=`**${arrayOfNames[i]}**`;
-    if(i<arrayOfNames.length-1){
-        result+=`, `;
-      if(i==arrayOfNames.length-2){
-        result+=`and `;
-      }
-    }
-  }
-
+  const result = arrayOfNames.slice(0,arrayOfNames.length-1).join(', ') + ', and ' + arrayOfNames.slice(-1);
   return result;
 }
 
@@ -178,6 +167,15 @@ export const createEmbed = ({
   return embed;
 } 
 
+export const createMarkDown = (message:string)=>{
+  const wrapper = `\`\`\``;
+  const format = `json\n`;
+  const linebreak = `‎`
+
+  const result = `${linebreak}${wrapper}${format}${message}${wrapper}`;
+
+  return result;
+}
 
 
 

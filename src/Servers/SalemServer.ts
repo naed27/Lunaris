@@ -1,48 +1,37 @@
-export default class SalemServer{
+import { arrayContainsElement } from '../Helpers/toolbox';
+import { Guild } from 'discord.js';
+import Game from '../Games/Salem/game';
 
-    portals=[];
-    towns=[];    
+export default class Server{
 
-    //--------------------- Server Functions ----------------------
+  games: Game[] =  [];
+  connectedGuilds: string[] = [];
 
-    pushPortal(guild){
-        let checker = this.portals.filter(p=>p === guild.id);
-        if(checker.length===0){
-            this.portals.push(guild.id);
-            return true;
-        }else{
-            return false;
-        }
-    }
+  //--------------------- Server Functions ----------------------
 
-    pushTown(town){
-        return this.towns.push(town);
-    }
+  connectGuild(guild:Guild){
+    const guildId = guild.id;
+    
+    if(arrayContainsElement(this.connectedGuilds,guildId))  // check if the guild is already playing
+      return false;
 
-    fetchTown(town){
-        if(this.towns.length===0){
-            this.towns.push(town);
-        }
-        return this.towns[0];
-    }
+    this.connectedGuilds.push(guildId);                     // if not, let the guild connect
+    return true;
 
-    deletePortal(guild){
-        let i = this.portals.findIndex(p => p == guild.id);
-        if(i>=0){this.portals.splice(i,1);}
-    }
+  }
 
-    deleteSalem(id){
-        let guilds = this.towns[0].getGuilds();
-        
-        guilds.forEach(g => {
-            this.deletePortal(g);
-        });
+  disconnectGuild(guild:Guild){
+    const guildId = guild.id;
+    const i = this.connectedGuilds.findIndex(g => g == guildId);
+    if(i>=0)this.connectedGuilds.splice(i,1);
 
-        let j = this.towns.findIndex(t => t.getId() == id);
-        if(j>=0){this.towns.splice(j,1);}
-    }
+  }
 
-    getTowns(){return this.towns;}
-    getPortals(){return this.portals;}
+  pushGame = (game:Game) => this.games.push(game) 
+
+  removeGame = (game:Game) => this.games = this.games.filter((g) => g.getId() != game.getId());
+
+  getGames(){ return this.games }
+  getConnectedGuilds(){ return this.connectedGuilds }
   
 }

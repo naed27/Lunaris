@@ -1,13 +1,13 @@
 import { MessageEmbed, User, TextChannel, Message, GuildMember } from 'discord.js';
 import Game from './game';
-import ChannelManager from './channelManager';
+import PlayerChannelManager from './playerChannelManager';
 
 export default class Player{
 
   readonly game:Game;
   readonly discord:GuildMember;
   readonly channel:TextChannel;
-  readonly channelManager:ChannelManager;
+  readonly channelManager:PlayerChannelManager;
   readonly points = 0;
 
   constructor(game:Game,discord:GuildMember,channel:TextChannel){
@@ -15,12 +15,11 @@ export default class Player{
     this.game = game;
     this.discord = discord;
     this.channel = channel;
-    this.channelManager = new ChannelManager({channel,discord,game});
+    this.channelManager = new PlayerChannelManager({channel,discord,game});
 
   }
 
   // ----------------------- Functions 
-
 
 
   // ----------------------- Setters and Getters  

@@ -1,24 +1,34 @@
-const util = require("./utility");
+import util from "./utility";
 
-module.exports.list = [
+export interface Command{
+    name: string,
+    guide: string,
+    description: string,
+    priority: number,
+    stocks: number,
+    permission: string,
+    queue: string,
+    requiredTargets: number,
+    phase: string [],
+    status: string,
+    process: any
+}
+
+export default [
 
     {
-        Name:"vote",
-        Guide:"vote <player>",
-        Description:"Votes the target.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:1,
-        Phase:["Voting"],
-        Status:"Alive",
+        name:"vote",
+        guide:"vote <player>",
+        description:"Votes the target.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:1,
+        phase:["Voting"],
+        status:"Alive",
 
-        bruh:()=>{
-            console.log("hello world!");
-        },
-
-        Process: (user,town,inputs)=>{
+        process: (user,town,inputs)=>{
             let body = "";
             let footer = "";
             let duration = 0;
@@ -47,18 +57,18 @@ module.exports.list = [
         },
     },
     {
-        Name:"unvote",
-        Guide:"unvote <Player>",
-        Description:"Cancels your vote.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Voting"],
-        Status:"Alive",
+        name:"unvote",
+        guide:"unvote <Player>",
+        description:"Cancels your vote.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Voting"],
+        status:"Alive",
         
-        Process:(user,town)=>{
+        process:(user,town)=>{
             let body = town.removeVote(user);
             let footer = "";
             let duration = 5000;
@@ -69,18 +79,18 @@ module.exports.list = [
     },
 
     {
-        Name:"cancel",
-        Guide:"cancel",
-        Description:"Cancels your action.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Night","Night (Full Moon)","Voting"],
-        Status:"Alive",
+        name:"cancel",
+        guide:"cancel",
+        description:"Cancels your action.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Night","Night (Full Moon)","Voting"],
+        status:"Alive",
         
-        Process:(user,town)=>{
+        process:(user,town)=>{
             let phase = town.getClock().getPhase();
             let body="no message";
             let footer ="";
@@ -108,154 +118,154 @@ module.exports.list = [
     },
 
     {
-        Name:"start",
-        Guide:"start",
-        Description:"Starts the game. (Only for hosts)",
-        Priority:0,
-        Stocks:99,
-        Permission:"Host",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["In Lobby"],
-        Status:"Alive",
+        name:"start",
+        guide:"start",
+        description:"Starts the game. (Only for hosts)",
+        priority:0,
+        stocks:99,
+        permission:"Host",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["In Lobby"],
+        status:"Alive",
         
-        Process:(user,town)=>{
+        process:(user,town)=>{
             if(town.getSetup().isHost(user.getId())){town.gameStart();}
         }
     },
 
     {
-        Name:"quit",
-        Guide:"quit",
-        Description:"Quits the game. (Only for developers)",
-        Priority:0,
-        Stocks:99,
-        Permission:"Admin",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)","In Lobby","Game Over"],
-        Status:"Alive",
+        name:"quit",
+        guide:"quit",
+        description:"Quits the game. (Only for developers)",
+        priority:0,
+        stocks:99,
+        permission:"Admin",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)","In Lobby","Game Over"],
+        status:"Alive",
         
-        Process:(town)=>{
+        process:(town)=>{
             town.quit();
         }
     },
 
     {
-        Name:"skip",
-        Guide:"skip",
-        Description:"Skips the current game. (Only for developers)",
-        Priority:0,
-        Stocks:99,
-        Permission:"Admin",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)"],
-        Status:"Alive",
+        name:"skip",
+        guide:"skip",
+        description:"Skips the current game. (Only for developers)",
+        priority:0,
+        stocks:99,
+        permission:"Admin",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)"],
+        status:"Alive",
         
-        Process:(town)=>{
+        process:(town)=>{
             town.getClock().skipPhase();
         }
     },
 
     {
-        Name:"players",
-        Guide:"players",
-        Description:"Shows a list of players.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
-        Status:"Alive",
+        name:"players",
+        guide:"players",
+        description:"Shows a list of players.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
+        status:"Alive",
         
-        Process:(user)=>{
+        process:(user)=>{
             user.getHouse().updatePlayerList();
         }
     },
 
     {
-        Name:"role",
-        Guide:"role",
-        Description:"Shows the user's role.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
-        Status:"Alive",
+        name:"role",
+        guide:"role",
+        description:"Shows the user's role.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
+        status:"Alive",
         
-        Process:(user)=>{
+        process:(user)=>{
             user.getHouse().updatePlayerCard();
         }
     },
 
     {
-        Name:"help",
-        Guide:"help",
-        Description:"Shows a list of commands",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
-        Status:"Alive",
+        name:"help",
+        guide:"help",
+        description:"Shows a list of commands",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
+        status:"Alive",
         
-        Process:(user)=>{
+        process:(user)=>{
             user.getHouse().updateCommandList();
         }
     },
 
     {
-        Name:"short guide",
-        Guide:"shortguide",
-        Description:"Shows a short guide.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:0,
-        Phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
-        Status:"Alive",
+        name:"short guide",
+        guide:"shortguide",
+        description:"Shows a short guide.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:0,
+        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
+        status:"Alive",
         
-        Process:(user)=>{
+        process:(user)=>{
             user.getHouse().updateShortGuide();
         }
     },
 
     // {
-    //     Name:"vote start",
-    //     Guide:"shortguide",
-    //     Description:"Shows a short guide.",
-    //     Priority:0,
-    //     Stocks:99,
-    //     Permission:"Player",
-    //     Queue:"Instant",
-    //     RequiredTargets:0,
-    //     Phase:["In Lobby"],
-    //     Status:"Alive",
+    //     name:"vote start",
+    //     guide:"shortguide",
+    //     description:"Shows a short guide.",
+    //     priority:0,
+    //     stocks:99,
+    //     permission:"Player",
+    //     queue:"Instant",
+    //     requiredTargets:0,
+    //     phase:["In Lobby"],
+    //     status:"Alive",
         
-    //     Process:(user,town,inputs)=>{
+    //     process:(user,town,inputs)=>{
     //         user.getHouse().updateVoteStart();
     //     }
     // },
 
     {
-        Name:"whisper",
-        Guide:"whisper <player>",
-        Description:"Whispers to the target.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:1,
-        Phase:["Discussion","Voting","Judgement"],
-        Status:"Alive",
+        name:"whisper",
+        guide:"whisper <player>",
+        description:"Whispers to the target.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:1,
+        phase:["Discussion","Voting","Judgement"],
+        status:"Alive",
         
-        Process:(user,town,inputs)=>{
+        process:(user,town,inputs)=>{
             let body = "";
             let footer = "";
             let duration = 0;
@@ -296,18 +306,18 @@ module.exports.list = [
     },
 
     {
-        Name:"change name",
-        Guide:"changename <name>",
-        Description:"Changes your in-game nickname.",
-        Priority:0,
-        Stocks:99,
-        Permission:"Player",
-        Queue:"Instant",
-        RequiredTargets:1,
-        Phase:["In Lobby"],
-        Status:"Alive",
+        name:"change name",
+        guide:"changename <name>",
+        description:"Changes your in-game nickname.",
+        priority:0,
+        stocks:99,
+        permission:"Player",
+        queue:"Instant",
+        requiredTargets:1,
+        phase:["In Lobby"],
+        status:"Alive",
         
-        Process:(user,town,inputs)=>{
+        process:(user,town,inputs)=>{
             let body = "";
             let footer = "";
             let duration = 0;
