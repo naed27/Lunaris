@@ -32,15 +32,6 @@ export const getMapSize = (map:any) =>{
   return size;
 }
 
-export const AMPMformat = (hours:number,minutes:number) => {
-  const ampm = hours >= 12 ? 'pm' : 'am';
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-  // minutes = minutes < 10 ? '0'+minutes : minutes;
-  const strTime = hours + ':' + minutes + ' ' + ampm;
-  return strTime;
-}
-
 export const getCurrentTime = () =>{
   return Math.floor(Date.now()/1000);
 }
@@ -64,7 +55,6 @@ export const sortNumbersDescending = (numbers:number[]) =>{
   return sortedNumbers;
 }
 
-
 export const stringContainsKeyword = (mainWord:string,keyword:string) =>{
   const result = mainWord.toLowerCase().includes(keyword.toLowerCase());
   return result;
@@ -81,8 +71,7 @@ export const stringStartsWithKeyword = (string:string,keyword:string) =>{
   return result;
 }
 
-
-export const getStringSearchResults=(arrayOfWords: string[],keyword:string )=>{
+export const getStringSearchResults=(arrayOfWords: string[],keyword:string): string[] => {
 
   const startWiths = [];
   const keysFound = [];
@@ -167,7 +156,8 @@ export const createEmbed = ({
   return embed;
 } 
 
-export const createMarkDown = (message:string)=>{
+
+export const jsonWrap = (message:string)=>{
   const wrapper = `\`\`\``;
   const format = `json\n`;
   const linebreak = `‎`
@@ -176,6 +166,7 @@ export const createMarkDown = (message:string)=>{
 
   return result;
 }
+
 
 
 

@@ -1,13 +1,23 @@
 import { Message } from 'discord.js';
-import Game from '../Games/Another/game/game';
+import Game from '../Games/Another/game';
+import Host from '../Games/Another/host';
 import AnotherServer from '../Servers/AnotherServer';
 
 export function initializeAnother(message:Message,server:AnotherServer){
   
-  if(!server.connectGuild(message.guild.id))return;
+  if(message.channel.type !== 'GUILD_TEXT') return
 
-  const game = new Game(message,server);
+  const channel = message.channel;
+  const summoner = message.author;
+  const guild = message.guild;
+
+  const game = new Game({ guild, server });
+  const host = new Host({ game, summoner, channel })
+
+  game.setHost(host);
   server.pushGame(game);
-  game.getHost().listenForPlayers();
+  
+  if(server.connectGuild(message.guild))
+    game.getHost().sendGameInvite({ channel, summoner });
 
 }

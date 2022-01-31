@@ -1,4 +1,4 @@
-import { createMarkDown } from "../../Helpers/toolbox";
+import { jsonWrap } from "../../Helpers/toolbox";
 import Game from "./game";
 import gamePhases, { Phase } from "./phases";
 
@@ -85,19 +85,19 @@ export default class Clock{
   playQuestioning = async () => {
     this.turn += 1;
     this.round = this.determineRound();
-    const message = createMarkDown('question phase');
+    const message = jsonWrap('question phase');
     await this.game.getStageChannel().send(message);
     this.unfreezeHourGlass();  
   }
 
   playAnswer = async () => {
-    const message = createMarkDown('answer phase');
+    const message = jsonWrap('answer phase');
     await this.game.getStageChannel().send(message);
     this.unfreezeHourGlass();  
   }
 
   playTurnResults = async () => {
-    const message = createMarkDown('turn results phase');
+    const message = jsonWrap('turn results phase');
     await this.game.getStageChannel().send(message);
     this.unfreezeHourGlass(); 
   }
@@ -109,7 +109,7 @@ export default class Clock{
 
   playGameOver = async () => {
     this.game.getHost().notifyGameEnd();
-    const message = createMarkDown('Game Over');
+    const message = jsonWrap('Game Over');
     await this.game.getStageChannel().send(message);
     this.game.quit();
   }

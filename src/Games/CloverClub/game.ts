@@ -64,10 +64,10 @@ export default class Game{
 
 
     getHost = () => this.host
-    setHost = (a:Host) => this.host=a
+    setHost = (a:Host) => this.host = a
     
     getPrefix = () => this.prefix
-    setPrefix = (a:string) => this.prefix=a
+    setPrefix = (a:string) => this.prefix = a
 
     getTitle = () => this.title
     setGameKey = (key:Role) => this.gameKey = key
@@ -87,8 +87,8 @@ export default class Game{
     getStageChannelManager = () => this.stageChannelManager;
     setStageChannelManager = (a:GameChannelManager) => this.stageChannelManager = a;
 
-    lockPlayerChannels = () => this.players.map( ( p )=> p.getChannelManager().lock() );
-    unlockPlayerChannels = () => this.players.map( ( p )=> p.getChannelManager().unlock() );
+    lockPlayerChannels = () => this.players.map( p => p.getChannelManager().lock() );
+    unlockPlayerChannels = () => this.players.map( p => p.getChannelManager().unlock() );
 
     getId = () => this.id;
     getSetup = () => this.setup;
@@ -102,7 +102,6 @@ export default class Game{
     // ------------------------ Quitters
 
     quit = async () => {
-
         await this.gameKey.delete();
         await this.getHost().notifyGameEnd();
 
@@ -110,7 +109,6 @@ export default class Game{
         this.getChannels().map( c => c.getChannel().delete());
 
         this.server.removeGame(this);
-
     }
 
 }

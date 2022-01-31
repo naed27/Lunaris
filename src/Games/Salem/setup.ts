@@ -1,12 +1,10 @@
-import util from "./utility";
-import modes from "./modes";
-import roles from "./roles";
+import sampleRolePool, { RolePoolElement } from "./modes";
+import roles, { SalemRole } from "./roles";
 import Role from "./role";
 import Player from "./player";
-import Channel from "./channel";
-import { MessageEmbed, Guild, TextChannel } from 'discord.js';
+import { Guild, TextChannel, Collection, Message } from 'discord.js';
 import Game from "./game";
-import { createEmbed, createMarkDown, shuffleArray } from "../../Helpers/toolbox";
+import { shuffleArray } from "../../Helpers/toolbox";
 
 export default class Setup{
 
@@ -19,184 +17,49 @@ export default class Setup{
     this.guild = game.getGuild();
   }
 
-  async setupJudgementCollector(){
-    const title = `⚖️ The Judgement`;
-    const description = `Accused: ${this.game.getVotedUp().getUsername()}`
-    const embed = createEmbed({ title, description });
+  async calculateJudgements(){
+    const chosens= [];
+    let guiltyCount=0;
+    let innoCount=0;
 
-    this.game.getAlivePlayers().map((player) => {
-      if(player.getStatus()=="Alive" && player.getId()!=this.game.getVotedUp().getId()){
-        embed.setDescription(`**Accused:** ${this.game.getVotedUp().getUsername()}\n\n🙆‍♂️ - Innocent\n🙅 - Guilty`);
+    this.game.getJudgements().filter(j => j.final).map(j => {
+      switch(j.choice){
+        case 'Guilty': guiltyCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
+        case 'Innocent': innoCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
+        case 'Abstain': chosens.push(`${j.judge.getUsername()} has abstained`); break;
       }
-      let card = await player.getHouse().setJudgeCard(embed);
-      if(player.getStatus()=="Alive" && player.getId()!=this.game.getVotedUp().getId()){
-        await card.react('🙆‍♂️').catch();
-        card.react('🙅').catch();
-        const filter = () => {return true;};
-        let judgeCollector = card.createReactionCollector(filter,{dispose:true});
-        judgeCollector.on('collect', async (reaction, user) => {
-          if(!user.bot){
-            switch(reaction.emoji.name){
-              case "🙆‍♂️":
-                player.pushJudgement("Innocent");
-              break;
-              case "🙅": 
-                player.pushJudgement("Guilty");
-              break;
-            }
-            const userReactions = card.reactions.cache.filter(r => r.emoji.name!=reaction.emoji.name);
-            for (const reaction of userReactions.values()) {
-              await reaction.users.remove(user.id);
-            }
-            this.game.pushJudgement(player,player.getJudgement()[player.getJudgement().length-1]);
-          }
-        });
-        judgeCollector.on('remove', async (reaction) => {
-          switch(reaction.emoji.name){
-              case "🙆‍♂️":
-                player.removeJudgement("Innocent");
-              break;
-              case "🙅": 
-                player.removeJudgement("Guilty");
-              break;
-          }
-          if(player.getJudgement().length==1){
-            player.pushJudgement("Abstain");
-            this.game.pushJudgement(player,player.getJudgement()[player.getJudgement().length-1]);
-          }
-        });
-      }
-    });
-  }
+    })
 
-  
+    const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
+    this.game.getPlayers().map(( p ) => p.getChannelManager().manageJudgement().update());
 
-  async finalJudgements(){
-
-    let finalString=``;
-    let temp="";
-    let pl = util.shuffleArray(this.game.getPlayers().filter(p=>p.getStatus()=="Alive" && p.getId()!=this.game.getVotedUp().getId()));
-    let guilty=0;
-    let inno=0;
-
-    pl.forEach(p => {
-      if(p.getJudgement().length>0){
-        switch(p.getJudgement()[p.getJudgement().length-1]){
-          case "Innocent":
-            temp = "has voted ***Innocent***";
-            inno+=p.getVoteCount();
-            break;
-          case "Guilty":
-            temp = "has voted ***Guilty***";
-            guilty+=p.getVoteCount();
-            break;
-          case "Abstain":
-            temp = "has ***Abstained***";
-            break;
-        }
-      }else{
-        temp = "has ***Abstained***";
-      }
-      if(finalString.length>0){
-        finalString+=`\n**${p.getUsername()}** ${temp}.`;
-      }else{
-        finalString+=`**${p.getUsername()}** ${temp}.`;
-      }
-    });
-
-    finalString+=`\n\nGuilty: ${guilty}\nInnocent: ${inno}`;
-
-    for await (const p of this.game.getPlayers()) {
-      p.getHouse().updateJudgeCard(finalString);
-    }
-
-    if(guilty>inno){
+    if(guiltyCount>innoCount)
       return true;
-    }else{
-      return false;
-    }
-  }
-
-  async setupGuides(){
-
-    const content = `This is your Notepad Channel\n\n- Use this channel to write any important details in the game.\n- You can only send 1 message so just edit it when you have to.`
-
-    this.game.getPlayers().map(async player => {
-      const message = createMarkDown(content);
-      player.getNotepad().getChannel().send(message).catch();
-      await player.getHouse().updateShortGuide();
-      await player.getHouse().updateCommandList();
-      player.getHouse().updatePlayerCard();
-    });
-
+    return false;
   }
 
   async setupExeTarget(){
-    let exe = this.game.getPlayers().filter(p=>p.getRole().getName()=="Executioner");
-    if(exe.length>0){
-        exe = exe[0];
-        let townies = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
-        townies = util.shuffleArray(townies);
-        // exe.setTarget(townies[0]);
-    }
+    const executioner = this.game.getPlayers().find(p=>p.getRole().getName()=="Executioner");
+    if(!executioner)return
+
+    const townies = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
+    const target = shuffleArray(townies)[0];
+    executioner.setExecutionerTarget(target);
   }
 
-  updateReadyCollector(embed,address,guideIntro){
-    let list = "";
-    let players = this.game.getPlayers();
-    for(let i=0;i<players.length;i++){
-      list+=`${players[i].getListNumber()}. **${players[i].getUsername()}** (${players[i].getIsReady()})`;
-      if(i<players.length){
-        list+="\n";
-      }
-    }
 
-    embed.setDescription(`${guideIntro}\n\n${list}`);
-    address.edit(embed);
-  }
-
- 
-  async openNotepadChannels(){
-    for await (const p of this.game.getPlayers()) {
-      p.getNotepad().open();
-    }
-  }
-
-  async openHouseChannels(){
-    for await (const p of this.game.getPlayers()) {
-      p.getHouse().open();
-    }
-  }
-
-  async closeNotepadChannels(){
-    for await (const p of this.game.getPlayers()) {
-      p.getNotepad().close();
-    }
-  }
-
-  async closeHouseChannels(){
-    for await (const p of this.game.getPlayers()) {
-      p.getHouse().close();
-    }
-  }
-
-  async listenHouseChannel(){
+  listenHouseChannel = async () => {
+    const phase = this.game.getClock().getPhase().name;
+    if(phase !== 'Discussion' && phase !== 'Night') return 
     this.game.getPlayers().map(player => {
       player.cleanHelpers();
-      if(player.getJailStatus()==true)return
-      const phase = this.game.getClock().getPhase().name;
-      switch(phase){
-        case "Discussion":
-        case "Night":
-          player.getHouse().updatePhaseSign();
-        break;
-        default:break;
-      }
+      if(player.isJailed())return
+      player.getChannelManager().managePhaseCommands().create();
     });
   }
 
-  async cleanChannel(channel){
-    let fetched;
+  async cleanChannel(channel: TextChannel){
+    let fetched: Collection<string, Message<boolean>>;
     do {
       fetched = await channel.messages.fetch({limit: 100});
       await channel.bulkDelete(fetched);
@@ -204,158 +67,90 @@ export default class Setup{
     while(fetched.size >= 2);
   }
 
- 
 
+  setupPlayerCollectors = async () => this.game.getPlayers().map(p => p.getChannelManager().listen());
+  lockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().lock());
+  unlockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().unlock());
+  showPlayerChannels = async () => this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
 
+  determineRolePool = (rolePool: RolePoolElement[]) => {
+    const rolledPool: SalemRole[] = [];
+    
+    for(let i=0; i<rolePool.length; i++){
+      let roleFilter = roles;
+      if(rolePool[i].alignment !== 'Random'){
+        roleFilter = roleFilter.filter(r => r.alignment === rolePool[i].alignment);
+        if(rolePool[i].type !== 'Random'){
+          roleFilter = roleFilter.filter(r => r.type === rolePool[i].type);
+          if(rolePool[i].name !== 'Random'){
+            roleFilter = roleFilter.filter(r => r.name === rolePool[i].name);
+          }
+        }
+      }
+      const startRange = 0;
+      const endRange = roleFilter.length-1;
+      const rngIndex = Math.floor((Math.random() * endRange) + startRange);
+      const pickedRoled = roleFilter[rngIndex];
+      if(pickedRoled.unique){
+        const roleAlreadyExists = rolePool.find((r)=>r.name === pickedRoled.name);
+        if(roleAlreadyExists) i--;
+        else rolledPool.push(pickedRoled);
+      }else{
+        rolledPool.push(pickedRoled);
+      }
+    }
 
-  isHost(id){
-    return this.game.getHost().getHostId()===id;
+    return rolledPool;
   }
 
+  setupPlayers = async () => {
 
-  async setupClockChannel(){
+    const rolePool = this.game.getHost().getRolePool();
+    const rolledRoles = shuffleArray( this.determineRolePool(rolePool) );
+    const players = shuffleArray( this.game.getHost().getJoinedPlayers() );
+
+    rolledRoles.map( async (role, i)=>{
+      const channel = await this.createChannel();
+      const player = new Player({
+        game: this.game,
+        discord: players[i],
+        channel: channel,
+        role: new Role(role),
+        listnumber: i+1
+      });
+
+      this.game.connectPlayer(player);
+    });
+  }
+
+  createChannel = async () => {
     const guild = this.game.getGuild();
-    const channel = await guild.channels.create(`⏳﹕game-clock`, {
-      type: "GUILD_TEXT",
+
+    const channel = await guild.channels.create(`🌹﹕salem`, {
+      type: 'GUILD_TEXT',
       permissionOverwrites: [
         {
           id: guild.roles.everyone, 
           allow: [],
           deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
-        }
-      ],
-    });
-    this.game.pushChannel(new Channel("clock",channel));
-  }
-
-
-  async setupPlayerCollectors(){
-    this.game.getPlayers().forEach(player => {
-      player.setupCollector();
-    });
-  }
-
-  showPlayerChannels = async () => {
-    this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
-  }
-
-  showStageChannel = async () => this.game.getStageChannelManager().show();
-  showClockChannel = async () => this.game.getClockChannelManager().show();
-
-
-  async setupPlayers(){
-
-    const players = shuffleArray(this.game.getHost().getJoinedPlayers())
-
-    let rolled_roles = [];
-    let role_filter = roles;
-    let avail_modes = modes.list.filter(m => m.PlayerCount == players.length);
-    let rand = Math.floor((Math.random() * avail_modes.length) + 0);
-
-    let rolePool = avail_modes[rand].LineUp;
-    for (let i = 0; i < rolePool.length; i++) {
-
-      if(rolePool[i][0]!="Random"){
-        role_filter = roles.filter(r => r.Alignment == `${rolePool[i][0]}`);
-        if(rolePool[i][1]!="Random"){
-          role_filter = role_filter.filter(r => r.Type == `${rolePool[i][1]}`);
-          if(rolePool[i][2]!="Random"){
-            role_filter = role_filter.filter(r => r.Name == `${rolePool[i][2]}`);
-          }
-        }
-      }
-
-      let r = Math.floor((Math.random() * role_filter.length) + 0);
-      let picked_role = role_filter[r];
-      if(picked_role.Unique){
-        let check = rolled_roles.filter(r=>r.Name==picked_role.Name);
-        if(check.length>0){
-          i--;
-        }else{
-          rolled_roles.push(picked_role);
-        }
-      }else{
-        rolled_roles.push(picked_role);
-      }
-    }
-
-    rolled_roles = util.shuffleArray(rolled_roles);
-
-    for(let i=0;i<rolled_roles.length;i++){
-      let player = new Player(this.game,i+1,players[i],new Role(rolled_roles[i]));
-      this.game.pushPlayer(player);
-      this.game.setGuild(players[i].guild);
-      await this.setupChannels(player);
-      player.getRole().setPlayer(player);
-    } 
-
-    return new Promise((resolve)=> {
-      resolve(true);
-    });
-  }
-
-  async setupChannels(player){
-    let temp;
-
-    temp = await player.getGuild().channels.create(`🌹﹕salem`, {
-      type: "text",
-      permissionOverwrites: [
-        {
-          id: player.getGuild().roles.everyone, 
-          allow: [],
-          deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
-        },
-        {
-          id: player.getId(), 
-          allow: ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
-          deny: []
         },
       ],
     })
-    player.pushChannel(new Channel("house",temp));
-    player.getHouse().setPlayer(player);
 
-    temp = await player.getGuild().channels.create(`📜﹕notepad`, {
-      type: "text",
-      permissionOverwrites: [
-        {
-          id: player.getGuild().roles.everyone, 
-          allow: [],
-          deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
-        },
-        {
-          id: player.getId(), 
-          allow: ['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
-          deny: []
-        },
-      ],
-    });
-    temp.setRateLimitPerUser(3600);
-    player.pushChannel(new Channel("notepad",temp));
-    player.getNotepad().setPlayer(player);
-
-    return new Promise((resolve)=> {
-      resolve(true);
-    });
+    return channel
   }
 
-  async createGameRole(){
-
+  createGameRole = async () => {
     const guild = this.game.getGuild();
-    
     const gameRole = await guild.roles.create({
       name: 'Salem',
       color: '#0f0f0f',
       permissions:[]
     });
     this.game.setGameKey(gameRole);
-
   }
 
-  async distributeGameRole(){
-    const key = this.game.getGameKey();
-    this.game.getPlayers().map(player => player.getDiscord().roles.add(key));
+  distributeGameRole = () =>{
+    this.game.getPlayers().map(player => player.getDiscord().roles.add( this.game.getGameKey() ));
   }
-
-
 }

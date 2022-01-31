@@ -8,19 +8,27 @@ export const clock = ({messageManager}:Params) => {
   const game = messageManager.getGame();
   const clock = game.getClock();
   const phase = clock.getPhase();
+  const round = clock.getRound();
+  const half = phase.name=='Night' ? 'Night' : 'Day';
   const secondsRemaining = clock.getSecondsRemaining();
+
+  const roundString = `${half} ${round}`
+  const phaseString = `Phase: ${phase}`;
+  const secondsString = `Seconds Remaining: ${secondsRemaining}`;
+
   const title = `Clock`;
-  const description = `Phase: ${phase}\nSeconds Remaining: ${secondsRemaining}`
+  const description = `${roundString}\n${phaseString}\n${secondsString}`
+
   return createEmbed({title,description})
 }
 
 export const  judge = ({messageManager}:Params) => {
   const game = messageManager.getGame();
   const player = messageManager.getPlayer();
-  const votes = game.getVotes();
+  const judgements = game.getJudgements();
   const title = `⚖️ The Judgement`
   const options = (player.isAlive()) ? `\n\n🙆‍♂️ - Innocent\n🙅 - Guilty` : ``;
-  const voteString = votes.join(`\n`);
+  const voteString = judgements.join(`\n`);
   const description = `**Accused: ${game.getVotedUp().getUsername()}**\n\n${voteString}\n\n${options}`
   return createEmbed({ title, description });
 }

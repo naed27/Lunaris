@@ -1,4 +1,4 @@
-import { Message, TextChannel }  from 'discord.js';
+import { MessagePayload, TextChannel, MessageOptions }  from 'discord.js';
 import Game from '../game';
 
 interface ConstructorParams{
@@ -32,53 +32,55 @@ export default class ChannelManager{
 
     //  --------------------- Functions
 
-    showAndUnlock = ( id:string=this.defaultId )=>{
-        this.channel.permissionOverwrites.edit(id,{
+    showAndUnlock = async ( id:string=this.defaultId )=>{
+        return await this.channel.permissionOverwrites.edit(id,{
             SEND_MESSAGES:true,
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY:true 
         })
     }
     
-    hideAndLock = ( id:string=this.defaultId ) =>{
-        this.channel.permissionOverwrites.edit(id,{ 
+    hideAndLock = async ( id:string=this.defaultId ) =>{
+        return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:false,
             VIEW_CHANNEL: false,
             READ_MESSAGE_HISTORY:false 
         });
     }
 
-    unlock = ( id:string=this.defaultId ) =>{
+    unlock = async ( id:string=this.defaultId ) =>{
         if(!this.isLocked)return
-        this.channel.permissionOverwrites.edit(id,{ 
+        this.isLocked = false;
+        return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:true,
         });
-        this.isLocked = false;
     }
 
-    lock = ( id:string=this.defaultId ) =>{
+    lock = async ( id:string=this.defaultId ) =>{
         if(this.isLocked)return
-        this.channel.permissionOverwrites.edit(id,{ 
+        this.isLocked = true;
+        return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:false,
         });
-        this.isLocked = true;
     }
 
-    hide = ( id:string=this.defaultId ) =>{
+    hide = async ( id:string=this.defaultId ) =>{
         if(this.isHidden)return
-        this.channel.permissionOverwrites.edit(id,{ 
+        this.isHidden = true;
+        return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: false,
             READ_MESSAGE_HISTORY:false 
         });
-        this.isHidden = true;
     }
 
-    show = ( id:string=this.defaultId ) =>{
+    show = async ( id:string=this.defaultId ) =>{
         if(!this.isHidden)return
-        this.channel.permissionOverwrites.edit(id,{ 
+        this.isHidden = false;
+        return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY:true,
         });
-        this.isHidden = false;
     }
+
+    send = async (a: string | MessagePayload | MessageOptions) => await this.channel.send(a);
 }

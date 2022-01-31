@@ -2,10 +2,7 @@ import { Message, MessageEmbed, MessagePayload, TextChannel }  from 'discord.js'
 import Game from '../../game';
 import Player from '../../player'
 import PlayerChannelManager from '../playerChannelManager';
-
-interface ReactCollector {
-  (manager:MessageManager):Promise<void>|void
-}
+import { ReactCollector } from './collectors';
 
 interface ConstructorParams{
   channel: PlayerChannelManager
@@ -39,12 +36,12 @@ export default class MessageManager{
   getMessage = () => this.message;
   setMessage = (a:Message) => this.message = a;
   editMessage = (a:MessagePayload) => this.message.edit(a);
-  applyReactionCollector = (collector: ReactCollector) => collector(this);
+  applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
 
-  create = async () => {
+  create = async (messageEmbed: MessageEmbed = null) => {
     this.delete();
     this.page = 1;
-    const embed = this.cardGenerator({messageManager:this})
+    const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
     this.message = await this.channel.send({embeds:[embed]})
   }
 
@@ -62,16 +59,17 @@ export default class MessageManager{
 
   pagePrev = () => {
     this.page>this.minPage && this.page--
-    this.updateMessage();
+    this.update();
   };
 
   pageNext = () => {
     this.page<this.maxPage && this.page++;
-    this.updateMessage();
+    this.update();
   }
 
-  updateMessage = () => {
-    const embed = this.cardGenerator({messageManager:this})
-    this.message.edit({embeds:[embed]})
+  update = (messageEmbed: MessageEmbed = null) => {
+    if(this.message === null) return
+    const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
+    this.message.edit({embeds:[embed]});
   }
 }

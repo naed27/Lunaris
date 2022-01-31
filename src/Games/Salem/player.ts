@@ -1,17 +1,17 @@
-import { Guild, GuildMember, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
-import { MessageEmbed } from 'discord.js';
+import { Guild, GuildMember, MessageEmbed, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
 import roles from "./roles";
 import Role from "./role";
 import Game from "./game";
-import { arrayContainsElement, createMarkDown, delay, parseCommand, splitStringByComma } from "../../Helpers/toolbox";
+import { arrayContainsElement, createEmbed, jsonWrap, delay, parseCommand, splitStringByComma } from "../../Helpers/toolbox";
 import PlayerChannelManager from "./channel/playerChannelManager";
+import Notif from "./notif";
 
 interface ConstructorParams{
   game: Game,
   role: Role,
   listnumber: number,
-  player: GuildMember,
-  discord: User,
+  discord: GuildMember,
+  channel: TextChannel,
 }
 
 export default class Player{
@@ -21,7 +21,7 @@ export default class Player{
   exRoles: DiscordRole[] = [];
   
   id: string;
-  discord: User;
+  discord: GuildMember;
   
   listnumber: string;
   username: string;
@@ -33,41 +33,43 @@ export default class Player{
   role: Role;
   maskRole: Role;
   cleanedName: string;
-  cleanedNotes = "";
+  cleanedNotes = '';
   disguiseStatus = false;
  
-  notes = "";
-  status = "Alive";
-  isJailed = false;
-  voteCount = 1;
-  target: Player;
+  notes = '';
+  status: 'Alive' | 'Dead' = 'Alive';
+
+  voteCount = 1
  
   causeOfDeath = [];
+  winStatus = false;
   jailStatus = false;
   douseStatus = false;
   cleanStatus = false;
   seanceStatus = false;
+  blackmailStatus = false;
+  roleBlockStatus = false;
   
   buffs = [];
   visitors = [];
   judgement = [];
   killerNotes = [];
-  winStatus = false;
-  notifs = [];
-  muteStatus = false;
-  roleBlockStatus = false;
+  notifs: Notif[] = [];
+  executionerTarget: Player;
 
-  constructor({ game, listnumber, player, role, discord}:ConstructorParams){
+  constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
     this.game = game;
     this.role = role;
     this.maskRole = role;
     this.discord = discord;
-    this.id = player.user.id;
-    this.guild = player.guild;
-    this.discord = player.user;
+    this.channel = channel;
+    this.id = discord.user.id;
+    this.guild = discord.guild;
     this.listnumber = listnumber+'';
-    this.username = player.user.username;
-    this.maskName = player.user.username;
+    this.username = discord.user.username;
+    this.maskName = discord.user.username;
+
+    this.role.setPlayer(this);
   }
 
   // ------------------------------------- FUNCTION DUMP
@@ -81,30 +83,32 @@ export default class Player{
 
     if(aliveBuddies.length===winBuddies.length){
       aliveBuddies.map((p)=>p.setWinStatus(true))
-      this.game.getClock().gameOver();
+      this.game.getClock().endGame();
     }
   }
 
   async resetMask(){
     if(!this.disguiseStatus){
-      const face = roles.find(r=>r.name==this.getRole().getName());
+      const face = roles.find(r=>r.name==this.getRole().getName()); 
       this.maskRole = new Role(face);
       this.maskName = this.username;
     }
     if(this.isAlive()){
-      this.setNotes([]);
+      this.setNotes(null);
       this.getMaskRole().setName(this.cleanedName);
     }
   }
 
-  sendToChannel = (message: string) => this.getChannel().send(message)
+  sendMessageToChannel = (message: string) => this.getChannel().send(message)
+  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message));
+  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]});
 
   showNote = async () => {
     if(this.getNotes().length===0) return 
 
     const message1 = `We found a note beside ${this.getUsername()}'s body.`;
     this.game.getPlayers().map(async (p)=>{
-      const notepad = await p.getHouse().getChannel().send(message1);
+      const notepad = await p.getChannel().send(message1);
       await notepad.react('📜');
       const filter = (reaction: MessageReaction, user: User) => !user.bot;
       const collector = notepad.createReactionCollector({filter, dispose:true});
@@ -112,12 +116,12 @@ export default class Player{
         const react = reaction.emoji.name;
         switch(react){
           case "📜": 
-            const message2 = createMarkDown(`"${this.getNotes()}"\n\n- ${this.getUsername()}`);
+            const message2 = jsonWrap(`"${this.getNotes()}"\n\n- ${this.getUsername()}`);
             notepad.edit(message2);
             notepad.react('↩️');
           break;
           case "↩️": 
-            const message3 = createMarkDown(`We found a note beside ${this.getUsername()}'s body.`);
+            const message3 = jsonWrap(`We found a note beside ${this.getUsername()}'s body.`);
             notepad.edit(message3);
             notepad.react('📜');
           break;
@@ -155,258 +159,260 @@ export default class Player{
     this.showNote();
   }
 
-  async cleanHelpers(){
-    this.getHouse().deleteHelper();
-    this.getHouse().deletePhaseSign();
+  cleanHelpers = async () => {
+    this.getChannelManager().manageGuide().delete();
+    this.getChannelManager().managePhaseCommands().delete();
   }
 
-
-  async setupCollector(){
-      let filter = m => m.author.bot && m.author.id != "818019699979190313" || m.author.id===this.getId();
-      this.getChannels().forEach(channel => {
-      channel.setCollector(channel.getChannel().createMessageCollector(filter));
-      switch(channel.getName()){
-        case "house":
-          channel.getCollector().on('collect', async m => {
-            await m.delete().catch();
-            if(m.content.startsWith(this.game.getPrefix())){
-              const {COMMAND, ARGS} = parseCommand(this.game.getPrefix(),m.content);
-              const cmd = COMMAND;
-              const inputs = splitStringByComma(ARGS.join(''));
-              let body="";
-              let footer="";
-              let duration=0;
-
-              let all_commands = this.getRole().getCommands();
-              let phase = this.game.getClock().getPhase();
-              let role_commands = all_commands.filter(c=>c.getStocks()>0 && c.getStatus()==this.getStatus() && arrayContainsElement(c.getPhase(),phase) && c.getPermission()=="Role Holder")
-              let player_commands = all_commands.filter(c=>c.getPermission()=="Player" && arrayContainsElement(c.getPhase(),phase));
-              let host_commands = all_commands.filter(c=>c.getPermission()=="Host" && arrayContainsElement(c.getPhase(),phase));
-              let admin_commands = all_commands.filter(c=>c.getPermission()=="Admin" && arrayContainsElement(c.getPhase(),phase));
-              let your_commands = [];
-              
-              your_commands.push(...role_commands);
-              your_commands.push(...player_commands);
-
-              if(this.game.getSetup().isHost(this.getId())){
-                your_commands.push(...host_commands);
-              }
-
-              if(this.getId()=="481672943659909120"){
-                your_commands.push(...admin_commands);
-              }
-
-              let keyword = cmd;
-
-              let result = this.game.getFunctions().findCommand(your_commands,keyword);
-
-              if(result){
-                if(result.length==1){
-                  let command = result[0];
-
-                  if(command.getQueue() != "Instant"){ // role commands
-
-                    if(command.getRequiredTargets()>0){
+  getCommands = () => { 
     
-                      let targetables = command.ValidTargets(this,this.game);
-                      if(inputs.length==command.getRequiredTargets()){
-                        let res = this.game.getFunctions().areValidTargets(this,command.getName(),inputs,targetables,this.game.getPlayers());
-                        if(res){
-                          let targets = res;
-                          body = await command.ActionResponse(this,command,targets,this.game);
-                          footer = `type .cancel to cancel this action.`;
-                          let performer = command.Performer(this,command,this.game);
-                          this.game.pushAction(this,performer,command,targets);
-                        }
-                      }else{
-                        let targetGrammar;
-                        if(command.getRequiredTargets()>1){targetGrammar = "targets";}
-                        else{targetGrammar = "target";}
-                        body = `Please enter **${command.getRequiredTargets()}** ${targetGrammar}.\n\nCommand: ${command.getGuide()}`;
-                        if(command.getRequiredTargets()>1){
-                          body+=`\n\n(Targets separated by a comma!)`
-                        }
-                      }
-                    }else{
-                      let targets = command.AutoTargets(this,this.game);
-                      let performer = command.Performer(this,command,this.game);
-                      body = await command.ActionResponse(this,command,targets,this.game);
-                      this.game.pushAction(this,performer,command,targets);
-                    }
-                    if(body.length>0){
-                      this.sendResponse(body,footer,duration);
-                    }
-                  }else{ // non role commands
-                    command.Process(this,this.game,inputs);
-                  }
-                }else{
-                  body = `There are multiple commands with the keyword "${cmd}":`;
-                  result.forEach(c => {
-                    body+=`\n- ${c.getName()}`;
-                  });
-                  footer = `Please re-enter your command and be more specific.`
-                  this.getHouse().updateHelper(body,footer,duration);
-                }
-              }else{
-                body = `Command either unavailable or not found.`;
-                footer = `Type .help to see the list of commands.`
-                this.getHouse().updateHelper(body,footer,duration);
-              }
+    const phase = this.game.getClock().getPhase();
+    
+    const playerIsHost = this.game.isHost(this);
+    const playerIsAdmin = this.game.isAdmin(this);
 
-              
+    const availableCommands = this.getRole().getCommands().map((command)=>{
 
-              
-              
+      const phases = command.getPhases();
+      const stocks = command.getStocks();
+      const playerStatus = this.getStatus();
+      const commandStatus = command.getStatus();
+      const permission = command.getPermission().toLowerCase();
 
+      const hasStocks = stocks > 0;
+      const isHostCommand = permission === 'host';
+      const isAdminCommand = permission === 'admin';
+      const matchCurrentPhase = phases.includes(phase.name);
+      const matchPlayerStatus = commandStatus
+        .map((status) => status.toLowerCase())
+        .includes(playerStatus.toLowerCase())
 
+      if(!hasStocks) return;
+      if(!matchCurrentPhase) return;
+      if(!matchPlayerStatus) return;
+      if(isHostCommand && !playerIsHost) return
+      if(isAdminCommand && !playerIsAdmin) return 
 
-
-
-
-
-
-              
-
-
-
-
-
-
-
-
-
-
-
-            //  -------------- NON  COMMANDS ----------------
-            }else{
-              let body="";
-              let footer="";
-              let duration=0;
-              switch(this.game.getClock().getPhase()){
-                case "In Lobby":
-                case "Discussion": 
-                case "Voting":
-                case "Judgement":
-                case "Execution":
-                case "Defense":
-                case "Game Over":
-                  if(this.getStatus()=="Alive"){
-                    if(!this.getMuteStatus()){
-                      let msg = `‎\n**${this.getUsername()}:** ${m.content}`;
-                      this.game.getFunctions().messagePlayers(msg);
-                    }else{
-                      let body = `‎You are being blackmailed. You can't talk right now.`;
-                      this.sendResponse(body,"",0);
-                    }
-                  }else{
-                    let msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
-                    this.game.getFunctions().messageGhosts(msg);
-                  }
-                  break;
-                case "Final Words":
-                  if(this.getStatus()=="Alive"){
-                    let msg = `‎\n**${this.getUsername()}:** ${m.content}`;
-                    this.game.getFunctions().messagePlayers(msg);
-                  }else{
-                    let msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
-                    this.game.getFunctions().messageGhosts(msg);
-                  }
-                break;
-                case "Night":
-                case "Night (Full Moon)":
-                  if(!this.getSeanceStatus()){
-                    if(this.getStatus()=="Alive"){
-                      if(this.getJailStatus()){
-                        let msg = `‎\n**${this.getUsername()} (Jailed):** ${m.content}`;
-                        this.game.getJailor().getHouse().getChannel().send(msg);
-                        this.getHouse().getChannel().send(msg);
-                      }else{
-                        if(this.getRole().getAlignment()==="Mafia"){
-                          let mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()==="Mafia");
-                          mafias.forEach(mafia => {
-                            mafia.getHouse().getChannel().send(`‎\n**${this.getUsername()} (${this.getRole().getName()}):** ${m.content}`);
-                          });
-                          let spies = this.game.getPlayers().filter(p=>p.getRole().getName()==="Spy");
-                          if(spies.length>0){
-                            spies.forEach(spy => {
-                              spy.getHouse().getChannel().send(`‎\n**Mafia:** ${m.content}`);
-                            });
-                          }
-                        }else
-                         if(this.getRole().getName()=="Jailor"){
-                          if(this.game.getJailedPerson()){
-                            let msg = `‎\n**Jailor:** ${m.content}`;
-                            this.game.getJailedPerson().getHouse().getChannel().send(msg);
-                            this.getHouse().getChannel().send(msg);
-                          }
-                        }else if(this.getRole().getName()=="Medium"){
-                          let msg = `‎\n**Medium:** ${m.content}`;
-                          let dead = this.game.getPlayers().filter(p=>p.getStatus()=="Dead");
-                          if(dead.length>0){
-                            dead.forEach(d => {
-                              d.getHouse().getChannel().send(msg);
-                            });
-                            this.getHouse().getChannel().send(msg);
-                          }
-                        }else{
-                          body = `You can't talk at night.`
-                          this.getHouse().updateHelper(body,footer,duration);
-                        }
-                      }
-                    }else{
-                      let msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
-                      this.game.getFunctions().messageGhosts(msg);
-                      let mediums = this.game.getPlayers().filter(p=>p.getRole().getName()=="Medium" && p.getStatus()=="Alive");
-                      if(mediums.length>0){
-                        mediums.forEach(m => {
-                          m.getHouse().getChannel().send(msg);
-                        });
-                      }
-                    }
-                  }else{
-                    let msg = `‎\n**${this.getUsername()} (Seance):** ${m.content}`;
-                    let seanced = this.game.getPlayers().filter(p=>p.getSeanceStatus());
-                    seanced.forEach(s => {
-                      s.getHouse().getChannel().send(msg)
-                    });
-                  }
-                    
-                break;
-              }
-            }
-          });
-        break;
-        case "notepad":
-          channel.getCollector().on('collect', async m => { 
-            this.setNotes(m.content);
-          });
-          break;
-      }
+      return command;
     });
+
+    return availableCommands;
   }
 
-  async sendResponse(body,footer,duration){
-    if(this.game.getClock().getHourSand()<duration){
-      duration = this.game.getClock().getHourSand()*1000;
+  // async setupCollector(){
+  //     let filter = m => m.author.bot && m.author.id != "818019699979190313" || m.author.id===this.getId();
+  //     this.getChannels().forEach(channel => {
+  //     channel.setCollector(channel.getChannel().createMessageCollector(filter));
+  //     switch(channel.getName()){
+  //       case "house":
+  //         channel.getCollector().on('collect', async m => {
+  //           await m.delete().catch();
+  //           if(m.content.startsWith(this.game.getPrefix())){
+  //             const {COMMAND, ARGS} = parseCommand(this.game.getPrefix(),m.content);
+  //             const cmd = COMMAND;
+  //             const inputs = splitStringByComma(ARGS.join(''));
+  //             let body="";
+  //             let footer="";
+  //             let duration=0;
+
+  //             let all_commands = this.getRole().getCommands();
+  //             let phase = this.game.getClock().getPhase();
+  //             let role_commands = all_commands.filter(c=>c.getStocks()>0 && c.getStatus()==this.getStatus() && arrayContainsElement(c.getPhase(),phase) && c.getPermission()=="Role Holder")
+  //             let player_commands = all_commands.filter(c=>c.getPermission()=="Player" && arrayContainsElement(c.getPhase(),phase));
+  //             let host_commands = all_commands.filter(c=>c.getPermission()=="Host" && arrayContainsElement(c.getPhase(),phase));
+  //             let admin_commands = all_commands.filter(c=>c.getPermission()=="Admin" && arrayContainsElement(c.getPhase(),phase));
+  //             let your_commands = [];
+              
+  //             your_commands.push(...role_commands);
+  //             your_commands.push(...player_commands);
+
+  //             if(this.game.getSetup().isHost(this.getId())){
+  //               your_commands.push(...host_commands);
+  //             }
+
+  //             if(this.getId()=="481672943659909120"){
+  //               your_commands.push(...admin_commands);
+  //             }
+
+  //             let keyword = cmd;
+
+  //             let result = this.game.getFunctions().findCommand(your_commands,keyword);
+
+  //             if(result){
+  //               if(result.length==1){
+  //                 let command = result[0];
+
+  //                 if(command.getQueue() != "Instant"){ // role commands
+
+  //                   if(command.getRequiredTargets()>0){
+    
+  //                     let targetables = command.ValidTargets(this,this.game);
+  //                     if(inputs.length==command.getRequiredTargets()){
+  //                       let res = this.game.getFunctions().areValidTargets(this,command.getName(),inputs,targetables,this.game.getPlayers());
+  //                       if(res){
+  //                         let targets = res;
+  //                         body = await command.ActionResponse(this,command,targets,this.game);
+  //                         footer = `type .cancel to cancel this action.`;
+  //                         let performer = command.Performer(this,command,this.game);
+  //                         this.game.pushAction(this,performer,command,targets);
+  //                       }
+  //                     }else{
+  //                       let targetGrammar;
+  //                       if(command.getRequiredTargets()>1){targetGrammar = "targets";}
+  //                       else{targetGrammar = "target";}
+  //                       body = `Please enter **${command.getRequiredTargets()}** ${targetGrammar}.\n\nCommand: ${command.getGuide()}`;
+  //                       if(command.getRequiredTargets()>1){
+  //                         body+=`\n\n(Targets separated by a comma!)`
+  //                       }
+  //                     }
+  //                   }else{
+  //                     let targets = command.AutoTargets(this,this.game);
+  //                     let performer = command.Performer(this,command,this.game);
+  //                     body = await command.ActionResponse(this,command,targets,this.game);
+  //                     this.game.pushAction(this,performer,command,targets);
+  //                   }
+  //                   if(body.length>0){
+  //                     this.sendResponse(body,footer,duration);
+  //                   }
+  //                 }else{ // non role commands
+  //                   command.Process(this,this.game,inputs);
+  //                 }
+  //               }else{
+  //                 body = `There are multiple commands with the keyword "${cmd}":`;
+  //                 result.forEach(c => {
+  //                   body+=`\n- ${c.getName()}`;
+  //                 });
+  //                 footer = `Please re-enter your command and be more specific.`
+  //                 this.getHouse().updateHelper(body,footer,duration);
+  //               }
+  //             }else{
+  //               body = `Command either unavailable or not found.`;
+  //               footer = `Type .help to see the list of commands.`
+  //               this.getHouse().updateHelper(body,footer,duration);
+  //             }
+
+
+  //           //  -------------- NON  COMMANDS ----------------
+  //           }else{
+  //             let body="";
+  //             let footer="";
+  //             let duration=0;
+  //             switch(this.game.getClock().getPhase().name){
+  //               case "Lobby":
+  //               case "Discussion": 
+  //               case "Voting":
+  //               case "Judgement":
+  //               case "Execution":
+  //               case "Defense":
+  //               case "Game Over":
+  //                 if(this.getStatus()=="Alive"){
+  //                   if(!this.getMuteStatus()){
+  //                     let msg = `‎\n**${this.getUsername()}:** ${m.content}`;
+  //                     this.game.getFunctions().messagePlayers(msg);
+  //                   }else{
+  //                     let body = `‎You are being blackmailed. You can't talk right now.`;
+  //                     this.sendResponse(body,"",0);
+  //                   }
+  //                 }else{
+  //                   let msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
+  //                   this.game.getFunctions().messageGhosts(msg);
+  //                 }
+  //                 break;
+  //               case "Final Words":
+  //                 if(this.getStatus()=="Alive"){
+  //                   let msg = `‎\n**${this.getUsername()}:** ${m.content}`;
+  //                   this.game.getFunctions().messagePlayers(msg);
+  //                 }else{
+  //                   let msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
+  //                   this.game.getFunctions().messageGhosts(msg);
+  //                 }
+  //               break;
+  //               case "Night":
+  //               case "Night (Full Moon)":
+  //                 if(!this.getSeanceStatus()){
+  //                   if(this.getStatus()=="Alive"){
+  //                     if(this.getJailStatus()){
+  //                       let msg = `‎\n**${this.getUsername()} (Jailed):** ${m.content}`;
+  //                       this.game.getJailor().getHouse().getChannel().send(msg);
+  //                       this.getHouse().getChannel().send(msg);
+  //                     }else{
+  //                       if(this.getRole().getAlignment()==="Mafia"){
+  //                         let mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()==="Mafia");
+  //                         mafias.forEach(mafia => {
+  //                           mafia.getHouse().getChannel().send(`‎\n**${this.getUsername()} (${this.getRole().getName()}):** ${m.content}`);
+  //                         });
+  //                         let spies = this.game.getPlayers().filter(p=>p.getRole().getName()==="Spy");
+  //                         if(spies.length>0){
+  //                           spies.forEach(spy => {
+  //                             spy.getHouse().getChannel().send(`‎\n**Mafia:** ${m.content}`);
+  //                           });
+  //                         }
+  //                       }else
+  //                        if(this.getRole().getName()=="Jailor"){
+  //                         if(this.game.getJailedPerson()){
+  //                           let msg = `‎\n**Jailor:** ${m.content}`;
+  //                           this.game.getJailedPerson().getHouse().getChannel().send(msg);
+  //                           this.getHouse().getChannel().send(msg);
+  //                         }
+  //                       }else if(this.getRole().getName()=="Medium"){
+  //                         let msg = `‎\n**Medium:** ${m.content}`;
+  //                         let dead = this.game.getPlayers().filter(p=>p.getStatus()=="Dead");
+  //                         if(dead.length>0){
+  //                           dead.forEach(d => {
+  //                             d.getHouse().getChannel().send(msg);
+  //                           });
+  //                           this.getHouse().getChannel().send(msg);
+  //                         }
+  //                       }else{
+  //                         body = `You can't talk at night.`
+  //                         this.getHouse().updateHelper(body,footer,duration);
+  //                       }
+  //                     }
+  //                   }else{
+  //                     const msg = `‎\n**Ghost ${this.getUsername()}:** ${m.content}`;
+  //                     this.game.getFunctions().messageGhosts(msg);
+  //                     const mediums = this.game.getMediums();
+  //                     mediums.forEach(medium => medium.getChannel().send(msg))
+  //                   }
+  //                 }else{
+  //                   const message = `‎\n**${this.getUsername()} (Seance):** ${m.content}`;
+  //                   const seanced = this.game.getSeanced()
+  //                   seanced.getChannel().send(message)
+  //                 }
+                    
+  //               break;
+  //             }
+  //           }
+  //         });
+  //       break;
+  //       case "notepad":
+  //         channel.getCollector().on('collect', async m => { 
+  //           this.setNotes(m.content);
+  //         });
+  //         break;
+  //     }
+  //   });
+  // }
+
+  sendResponse = async (description: string, footer: string, duration: number) => {
+    const secondsRemaining = this.game.getClock().getSecondsRemaining();
+    if(secondsRemaining<duration){
+      duration = secondsRemaining * 1000;
     }
-    let embed = new MessageEmbed()
-    .setColor("#000000")
-    .setDescription(`${body}`)
-    .setFooter(`${footer}`);
-    await this.getHouse().getChannel().send("‎\n",embed).catch()
-    .then(msg => {
-      if(duration!=0){
-        msg.delete({timeout: duration}).catch();
-      } 
-    });
+    const embed = createEmbed({description,footer});
+    const message = await this.getChannel().send({embeds:[embed]}).catch()
+    if(duration!=0){
+      await delay(duration);
+      message.delete().catch();
+    }
   }
 
   // ------------------------------------- SETTERS / GETTERS
 
 
 
-  getMuteStatus = () => this.muteStatus
-  setMuteStatus = (a:boolean) => this.muteStatus = a
+  getMuteStatus = () => this.blackmailStatus
+  setMuteStatus = (a:boolean) => this.blackmailStatus = a
 
   getJailStatus = () => this.jailStatus
   setJailStatus = (a:boolean) => this.jailStatus = a
@@ -423,9 +429,14 @@ export default class Player{
   getSeanceStatus = () => this.seanceStatus
   setSeanceStatus = (a:boolean) => this.seanceStatus = a
 
-  getRoleBlockStatus = () => this.roleBlockStatus
+  isRoleBlocked = () => this.roleBlockStatus === true
   setRoleBlockStatus = (a:boolean) => this.roleBlockStatus = a
 
+  isBlackmailed = () => this.blackmailStatus === true;
+  setBlackmailStatus = ( a: boolean ) => this.blackmailStatus = a
+  
+  getExecutionTarget = () => this.executionerTarget;
+  setExecutionerTarget = (a: Player) => this.executionerTarget = a;
 
   removeJudgement = (a:string) => {
     const index = this.judgement.findIndex(j => j == a);
@@ -445,55 +456,46 @@ export default class Player{
 
   clearVisitors = () => this.visitors = []
 
-  getTarget = () => this.target
-  setTarget = (a:Player) => this.target = a
-
   kill(){
     this.status="Dead";
-    this.setWinStatus(false);
-    this.getHouse().close();
+    this.winStatus = false;
+    this.channelManager.lock();
     this.game.pushFreshDeath(this);
   }
 
-  calcBuff(target,performer,n1,n2){
+  calculateBuff(target: Player, killer: Player, targetNotif: Notif, killerNotif: Notif){
     this.getBuffs().forEach(buff => {
       switch(buff){
-        case "Heal":{
-          n1.player = `You were attacked last night, but someone healed you back to health!`;
-          let doctor = this.game.getActions().filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRole().getName()=="Doctor");
-          let n3 = {
-              player: `Your target was attacked last night!`,
-              spy: null
-          }
-          doctor.forEach(d => {
-            if(d.getPerformer().getId()==target.getId()){
-              n1.player=`You were attacked last night, but you healed yourself!`
-            }else{
-              d.getPerformer().pushNotif(n3);
-            }
-          });}
-          break;
+        case "Heal":
+          const selfHeal = this.game.getActions().filter(a=>a.isSelfTarget() && a.getPerformer().roleNameIs('Doctor'));
+          const inbox = selfHeal ?
+            `You were attacked last night, but you healed yourself!` : 
+            `You were attacked last night, but someone healed you back to health!`
+          const newsForSpy = `Your target was attacked last night!`
+          targetNotif.setInbox(inbox);
+          targetNotif.setNewsForSpy(newsForSpy);
+        break;
+
         case "Protect":{
-            n1.player = `You were attacked last night, but someone protected you!`;
-            n2.player = `Your target fought back!`,
-            performer.pushNotif(n2);
-            performer.kill();
-            performer.pushCauseOfDeath(`killed by a Bodyguard.`);
-            let bodyguard = this.game.getActions().filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRole().getName()=="Bodyguard");
-            let n4 = {
-                player: `You protected your target from an attack last night!`,
-                spy: null
-            }
-            bodyguard.forEach(b => {
-              b.getPerformer().pushNotif(n4);
-            });}
-            break;
-          case "Vest":
-            n1.player = `Someone attacked you last night but you were immune!`;
-            break;
+          killerNotif.setInbox(`Your target fought back!`)
+          killer.kill();
+          killer.pushCauseOfDeath(`killed by a Bodyguard.`);
+          targetNotif.setInbox(`You were attacked last night, but someone protected you!`)
+          const bodyguards = this.game.getActions()
+          .filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRoleName()=="Bodyguard")
+          .map((bodyguardAction) => bodyguardAction.getPerformer());
+          const bodyguardNotif = new Notif({ inbox: `You protected your target from an attack last night!` })
+          bodyguards.forEach( bg => bg.pushNotif(bodyguardNotif))}
+        break;
+
+        case "Vest":
+          targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
+          killerNotif.setInbox(`You attacked your target last night but they were immune!`);
+        break;
       }
     });
-    target.pushNotif(n1);
+    target.pushNotif(targetNotif);
+    killer.pushNotif(killerNotif);
   }
 
   resurrect = () => this.status = 'Alive'
@@ -511,23 +513,29 @@ export default class Player{
   getMaskName = () => this.maskName
   setMaskName = (a:string) => this.maskName = a
 
+  isDisguised = () => this.disguiseStatus === true;
   getDisguiseStatus = () => this.disguiseStatus
   setDisguiseStatus = (a:boolean) => this.disguiseStatus = a
 
   getChannelManager = () => this.channelManager;
   setChannelManager = (a: PlayerChannelManager) => this.channelManager = a;
 
+  isJailed = () => this.jailStatus === true;
+  setJailedStatus = (a: boolean) => this.jailStatus = a;
+
   getId = () => this.id
 
   getExRoles = () => this.exRoles
 
   isAlive = () => this.status==='Alive'
+  isVotedUp = () => this.game.getVotedUp().getId() === this.id;
 
   getNotes = () => this.notes
   setNotes = (a:string) => this.notes = a
 
   getWinStatus = () => this.winStatus
   setWinStatus = (a:boolean) => this.winStatus = a
+  isAWinner = () => this.winStatus === true;
 
   getCauseOfDeath = () => this.causeOfDeath
 
@@ -546,9 +554,10 @@ export default class Player{
 
   getRole = () => this.role
   setRole = (a:Role) => this.role = a
+  getRoleName = () => this.role.getName();
 
   getStatus = () => this.status
-  setStatus = (a:string) => this.status = a
+  setStatus = (a:'Alive' | 'Dead') => this.status = a
 
   getChannel = () => this.channel
   setChannel = (a: TextChannel) => this.channel = a;
@@ -564,5 +573,10 @@ export default class Player{
   getGame = () => this.game
   getGuild = () => this.guild
 
+  isImmuneTo = (a: string) => arrayContainsElement(this.role.getImmunities(),a);
+
+  roleNameIs = (a: string) => this.getRoleName() === a;
+  alignmentIs = (a: string) => this.getRole().getAlignment() === a;
+  alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
 }

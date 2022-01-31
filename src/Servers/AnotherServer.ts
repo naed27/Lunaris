@@ -1,44 +1,33 @@
-const {containsElement} = require('../Helpers/toolbox');
+import { Guild } from 'discord.js';
+import Game from '../Games/Another/game';
+import { arrayContainsElement } from '../Helpers/toolbox';
 
 export default class Server{
 
-  games=[];
-  connectedGuilds = [];
+  games: Game[] =  [];
+  connectedGuilds: string[] = [];
 
   //--------------------- Server Functions ----------------------
 
-  connectGuild(guild_id){
-
-    // check if the guild is already playing
-    if(containsElement(this.connectedGuilds,guild_id))
+  connectGuild(guild: Guild){
+    const guildId = guild.id;
+    
+    if(arrayContainsElement(this.connectedGuilds,guildId))  // check if the guild is already playing
       return false;
 
-    // if not, let the guild connect
-    this.connectedGuilds.push(guild_id);
+    this.connectedGuilds.push(guildId);                     // if not, let the guild connect
     return true;
-
   }
 
-  disconnectGuild(guild_id){
-
-    const i = this.connectedGuilds.findIndex(g => g == guild_id);
+  disconnectGuild(guild: Guild){
+    const guildId = guild.id;
+    const i = this.connectedGuilds.findIndex(g => g == guildId);
     if(i>=0)this.connectedGuilds.splice(i,1);
-
   }
 
-  pushGame(game){ this.games.push(game) }
+  pushGame = (game: Game) => this.games.push(game) 
 
-  removeGame(game_id){
-    
-    const connectedGuilds = this.games[0].getConnectedGuilds();
-    
-    connectedGuilds.forEach(guild => {
-        this.disconnectGuild(guild.id);
-    });
-
-    const i = this.games.findIndex(game => game.getId() == game_id);
-    if(i>=0){this.games.splice(i,1);}
-  }
+  removeGame = (game:Game) => this.games = this.games.filter((g) => g.getId() != game.getId());
 
   getGames(){ return this.games }
   getConnectedGuilds(){ return this.connectedGuilds }

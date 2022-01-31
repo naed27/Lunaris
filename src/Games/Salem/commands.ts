@@ -1,340 +1,278 @@
-import { splitStringByComma } from "../../Helpers/toolbox";
+import { jsonWrap, splitStringByComma } from '../../Helpers/toolbox';
+import { SalemCommand } from './roles';
 
-export interface Command{
-    name: string,
-    guide: string,
-    description: string,
-    priority: number,
-    stocks: number,
-    permission: string,
-    queue: string,
-    requiredTargets: number,
-    phase: string [],
-    status: string,
-    process: any
-}
 
-export default [
+const commands: SalemCommand[] =  [
 
     {
-        name:"vote",
-        guide:"vote <player>",
-        description:"Votes the target.",
+        name:'vote',
+        guide:'vote <player>',
+        description:'Votes the target.',
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:1,
-        phase:["Voting"],
-        status:"Alive",
-
-        process: (user,town,inputs)=>{
-            let body = "";
-            let footer = "";
-            let duration = 0;
-            if(inputs.length>0){
-                inputs = inputs.join("");
-                inputs = splitStringByComma(inputs);
-                let targetables = town.getPlayers().filter(p=>p.getStatus()==="Alive" && p.getId()!=user.getId()); 
-                if(inputs.length==1){
-                  let res = town.getFunctions().areValidTargets(user,"vote",inputs,targetables,town.getPlayers());
-                  if(res){
-                    let voted = res[0];
-                    body = town.pushVote(user,voted);
-                    footer = `Type ${town.getPrefix()}cancel to cancel a vote`;
-                  }
-                }else{
-                  body = `Please input 1 target:\n\n${town.getPrefix()}vote <player>`;
-                  footer = `To see the player list, type ${town.getPrefix()}players`;
-                }
-            }else{
-                body = `**${user.getUsername()}**, the command is:\n\n${town.getPrefix()}vote <player>.\n\nExamples:\n.vote julius caesar (full name)`;
-                footer = `Type ${town.getPrefix()}players to see the player list`;
-            }
-            if(body){
-                user.getHouse().updateHelper(body,footer,duration);
-            }
+        permission:'Player',
+        queue:'Instant',
+        targetCount:1,
+        phase:['Voting'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run: ({user,game,targetOne: target})=>{
+            game.pushVote({voter: user, voted: target});      
+            game.getFunctions().messagePlayers(`**${user.getUsername()}** has voted for **${target.getUsername()}**.`);
         },
     },
     {
-        name:"unvote",
-        guide:"unvote <Player>",
-        description:"Cancels your vote.",
+        name:'unvote',
+        guide:'unvote <Player>',
+        description:'Cancels your vote.',
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Voting"],
-        status:"Alive",
-        
-        process:(user,town)=>{
-            let body = town.removeVote(user);
-            let footer = "";
-            let duration = 5000;
-            if(body){
-                user.getHouse().updateHelper(body,footer,duration);
-            }
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Voting'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user,game})=>{
+            const response = game.removeVoteOf(user);
+            game.getFunctions().messagePlayers(response);
         }
     },
 
     {
-        name:"cancel",
-        guide:"cancel",
-        description:"Cancels your action.",
+        name:'cancel',
+        guide:'cancel',
+        description:'Cancels your action.',
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Night","Night (Full Moon)","Voting"],
-        status:"Alive",
-        
-        process:(user,town)=>{
-            let phase = town.getClock().getPhase();
-            let body="no message";
-            let footer ="";
-            let duration = 0;
-            switch(phase){
-                case "Night":
-                case "Night(Full Moon)":
-                    body = town.removeAction(user);
-                    footer = "";
-                    duration = 0;
-                    if(body){
-                        user.sendResponse(body,footer,duration);
-                    }
-                    break;
-                case "Voting":
-                    body = town.removeVote(user);
-                    footer = "";
-                    duration = 5000;
-                    if(body){
-                        user.getHouse().updateHelper(body,footer,duration);
-                    }
-                    break;
-            }
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Night','Night (Full Moon)','Voting'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user,game})=>{
+            const phase = game.getClock().getPhase().name;
+            if(phase !=='Night' && phase !=='Voting') return
+            if(phase === 'Night') return game.getFunctions().messagePlayers(game.removeActionOf(user));
+            if(phase === 'Voting') return game.getFunctions().messagePlayers(game.removeVoteOf(user));
         }
     },
 
     {
-        name:"start",
-        guide:"start",
-        description:"Starts the game. (Only for hosts)",
+        name:'start',
+        guide:'start',
+        description:'Starts the game. (Only for hosts)',
         priority:0,
         stocks:99,
-        permission:"Host",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["In Lobby"],
-        status:"Alive",
-        
-        process:(user,town)=>{
-            if(town.getSetup().isHost(user.getId())){town.gameStart();}
-        }
+        permission:'Host',
+        queue:'Instant',
+        targetCount:0,
+        phase:['In Lobby'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user,game})=> game.isHost(user) && game.gameStart(),
     },
 
     {
-        name:"quit",
-        guide:"quit",
-        description:"Quits the game. (Only for developers)",
+        name:'quit',
+        guide:'quit',
+        description:'Quits the game. (Only for developers)',
         priority:0,
         stocks:99,
-        permission:"Admin",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)","In Lobby","Game Over"],
-        status:"Alive",
-        
-        process:(town)=>{
-            town.quit();
-        }
+        permission:'Admin',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)','In Lobby','Game Over'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({game}) => game.quit()
     },
 
     {
-        name:"skip",
-        guide:"skip",
-        description:"Skips the current game. (Only for developers)",
+        name:'skip',
+        guide:'skip',
+        description:'Skips the current game. (Only for developers)',
         priority:0,
         stocks:99,
-        permission:"Admin",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Reporting","Defense","Judgement","Execution","Final Words","Night","Night (Full Moon)"],
-        status:"Alive",
-        
-        process:(town)=>{
-            town.getClock().skipPhase();
-        }
+        permission:'Admin',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night','Night (Full Moon)'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({game}) => game.getClock().skipPhase()
     },
 
     {
-        name:"players",
-        guide:"players",
-        description:"Shows a list of players.",
+        name:'players',
+        guide:'players',
+        description:'Shows a list of players.',
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
-        status:"Alive",
-        
-        process:(user)=>{
-            user.getHouse().updatePlayerList();
-        }
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user})=>user.getChannelManager().managerPlayerList().create()
     },
 
     {
-        name:"role",
-        guide:"role",
+        name:'role',
+        guide:'role',
         description:"Shows the user's role.",
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)"],
-        status:"Alive",
-        
-        process:(user)=>{
-            user.getHouse().updatePlayerCard();
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user})=>user.getChannelManager().managePlayersRole().create()
+    },
+
+    {
+        name:'help',
+        guide:'help',
+        description:'Shows a list of commands',
+        priority:0,
+        stocks:99,
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)','In Lobby'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user})=>user.getChannelManager().manageAvailableCommands().create()
+    },
+
+    {
+        name:'short guide',
+        guide:'shortguide',
+        description:'Shows a short guide.',
+        priority:0,
+        stocks:99,
+        permission:'Player',
+        queue:'Instant',
+        targetCount:0,
+        phase:['Discussion','Voting','Judgement','Night','Night (Full Moon)','In Lobby'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user})=>user.getChannelManager().manageGuide().create()
+    },
+
+    {
+        name:'whisper',
+        guide:'whisper <player>',
+        description:'Whispers to the target.',
+        priority:0,
+        stocks:99,
+        permission:'Player',
+        queue:'Instant',
+        targetCount:1,
+        phase:['Discussion','Voting','Judgement'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user,game,targetOne: target,args})=>{
+            const parseArgs = args.join(' ');
+            const whisperMessage = jsonWrap(`**${user.getUsername()} (Whisper):** ${parseArgs}`);
+            user.getChannelManager().send(whisperMessage);
+            target.getChannelManager().send(whisperMessage);
+
+            const others = game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getId()!=target.getId());
+            const observation = jsonWrap(`${user.getUsername()} is whispering to ${target.getUsername()}`);
+            others.forEach(p => p.getChannelManager().send(observation));
         }
     },
 
     {
-        name:"help",
-        guide:"help",
-        description:"Shows a list of commands",
+        name:'change name',
+        guide:'changename <name>',
+        description:'Changes your in-game nickname.',
         priority:0,
         stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
-        status:"Alive",
-        
-        process:(user)=>{
-            user.getHouse().updateCommandList();
-        }
-    },
-
-    {
-        name:"short guide",
-        guide:"shortguide",
-        description:"Shows a short guide.",
-        priority:0,
-        stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:0,
-        phase:["Discussion","Voting","Judgement","Night","Night (Full Moon)","In Lobby"],
-        status:"Alive",
-        
-        process:(user)=>{
-            user.getHouse().updateShortGuide();
-        }
-    },
-
-    // {
-    //     name:"vote start",
-    //     guide:"shortguide",
-    //     description:"Shows a short guide.",
-    //     priority:0,
-    //     stocks:99,
-    //     permission:"Player",
-    //     queue:"Instant",
-    //     requiredTargets:0,
-    //     phase:["In Lobby"],
-    //     status:"Alive",
-        
-    //     process:(user,town,inputs)=>{
-    //         user.getHouse().updateVoteStart();
-    //     }
-    // },
-
-    {
-        name:"whisper",
-        guide:"whisper <player>",
-        description:"Whispers to the target.",
-        priority:0,
-        stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:1,
-        phase:["Discussion","Voting","Judgement"],
-        status:"Alive",
-        
-        process:(user,town,inputs)=>{
-            let body = "";
-            let footer = "";
-            let duration = 0;
-            if(inputs.length>0){
-                let whisper_target = inputs[0];
-                inputs.shift();
-                let whisper_message = inputs.join(" ");
-
-                let Lwrap = `‎\n\`\`\`json\n`;
-                let Rwrap = `\`\`\``;
-
-                let targetables = town.getPlayers().filter(p=>p.getStatus()==="Alive" && p.getId()!=user.getId());//
-                let res = town.getFunctions().areValidTargets(user,"whisper to",[whisper_target],targetables,town.getPlayers());
-                if(res){
-                    let target = res[0];
-                    let target_message = `‎\n**${user.getUsername()} (Whisper):** ${whisper_message}`;
-                    target.getHouse().getChannel().send(target_message);
-                    user.getHouse().getChannel().send(target_message);
-
-                    let others = town.getPlayers().filter(p=>p.getId()!=user.getId() && p.getId()!=target.getId());
-                    let others_message = `${Lwrap}${user.getUsername()} is whispering to ${target.getUsername()}${Rwrap}`;
-
-                    if(others.length>0){
-                        others.forEach(p => {
-                            p.getHouse().getChannel().send(others_message);
-                        });
-                    }
-                }
-                
+        permission:'Player',
+        queue:'Instant',
+        targetCount:1,
+        phase:['In Lobby'],
+        requiredStatus:['Alive'],
+        lethal: false,
+        performer:({ user }) => user,
+        visitsTarget:() => false,
+        defaultTarget:() => [],        
+        targetables: () => [],
+        callResponse: () => null,
+        run:({user,args})=>{
+            const message = args.join(' ');
+            if(args.length>0){
+                user.setUsername(message);
+                const response = jsonWrap(`Your name has been changed to ${message}`)
+                user.getChannelManager().send(response);
             }else{
-                body = `**${user.getUsername()}**, the command is:\n\n${town.getPrefix()}whisper <player> <message>.\n\nExamples:\n${town.getPrefix()}whisper julius hello!`;
-                footer = `Type ${town.getPrefix()}players to see the player list`;
-            }
-            if(body){
-                user.getHouse().updateHelper(body,footer,duration);
-            }
-        }
-    },
-
-    {
-        name:"change name",
-        guide:"changename <name>",
-        description:"Changes your in-game nickname.",
-        priority:0,
-        stocks:99,
-        permission:"Player",
-        queue:"Instant",
-        requiredTargets:1,
-        phase:["In Lobby"],
-        status:"Alive",
-        
-        process:(user,town,inputs)=>{
-            let body = "";
-            let footer = "";
-            let duration = 0;
-            if(inputs.length>0){
-                inputs = inputs.join(" ");
-                user.setUsername(inputs);
-                body=`You have set your nickname to **${inputs}**!`;
-            }else{
-                body = `**${user.getUsername()}**, the command is:\n\n${town.getPrefix()}changename <name>\n\nExamples:\n${town.getPrefix()}cn julius`;
-            }
-            if(body){
-                user.sendResponse(body,footer,duration);
-            }
+                const response = jsonWrap(`Please enter a name.`)
+                user.getChannelManager().send(response);
+            }   
         }
     },
     
-  
-    
-
 ];
+
+export default commands

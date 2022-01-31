@@ -9,7 +9,7 @@ export default class Server{
 
   //--------------------- Server Functions ----------------------
 
-  connectGuild(guild:Guild){
+  connectGuild(guild: Guild){
     const guildId = guild.id;
     
     if(arrayContainsElement(this.connectedGuilds,guildId))  // check if the guild is already playing
@@ -17,17 +17,15 @@ export default class Server{
 
     this.connectedGuilds.push(guildId);                     // if not, let the guild connect
     return true;
-
   }
 
-  disconnectGuild(guild:Guild){
+  disconnectGuild(guild: Guild){
     const guildId = guild.id;
     const i = this.connectedGuilds.findIndex(g => g == guildId);
     if(i>=0)this.connectedGuilds.splice(i,1);
-
   }
 
-  pushGame = (game:Game) => this.games.push(game) 
+  pushGame = (game: Game) => this.games.push(game) 
 
   removeGame = (game:Game) => this.games = this.games.filter((g) => g.getId() != game.getId());
 

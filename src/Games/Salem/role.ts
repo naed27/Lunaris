@@ -1,9 +1,8 @@
 import globalCommands from "./commands";
 import Result from "./result";
-import Ability from "./command/command";
-import GlobalAbility from "./command/global";
 import Player from "./player";
 import { SalemRole } from "./roles";
+import Command from "./command";
 
 export default class Role{
 
@@ -22,7 +21,7 @@ export default class Role{
     immunities: string[];
     roleMessage: string;
     nightMessage: string;
-    commands: (Ability|GlobalAbility)[];
+    commands: Command[];
 
     constructor(role: SalemRole){
         
@@ -34,13 +33,13 @@ export default class Role{
         this.defense = role.defense;
         this.abilities = role.abilities;
         this.alignment = role.alignment;
-        this.immunities = role.immunities;
         this.winBuddies = role.winBuddies
+        this.immunities = role.immunities;
         this.roleMessage = role.roleMessage;
         this.nightMessage = role.nightMessage;
         this.results = new Result(role.results);
-        const roleCommands = role.commands.map(command => new Ability(command));
-        const gameCommands = globalCommands.map(command => new GlobalAbility(command));
+        const roleCommands = role.commands.map(command => new Command(command));
+        const gameCommands = globalCommands.map(command => new Command(command));
         this.commands = [...roleCommands,...gameCommands];
     }
 
@@ -81,18 +80,18 @@ export default class Role{
     setRoleMessage = (a:string) => this.roleMessage = a;
 
     getWinBuddies = () => this.winBuddies
+    clearwinBuddies = () => this.winBuddies = [];
     setWinBuddies = (a:string[]) => this.winBuddies = a;
+    pushFriendly = (a:string) => this.winBuddies.push(a);
 
     getImmunities = () => this.immunities
     pushImmunity = (a:string) => this.immunities.push(a);
 
-    clearwinBuddies = () => this.winBuddies = [];
-    pushFriendly = (a:string) => this.winBuddies.push(a);
 
     getNightMessage = () => this.nightMessage
     setNightMessage = (a:string) => this.nightMessage = a;
 
     getCommands = () => this.commands
-    pushCommand = (a:Ability|GlobalAbility) => this.commands.push(a);
+    pushCommand = (a:Command) => this.commands.push(a);
 
 }

@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
 import { createEmbed, getStringSearchResults, sortWordsAlphabetically, removeDuplicates } from "../Helpers/toolbox";
-import roles, { SalemRoleCommand } from "../Games/Salem/roles";
+import roles, { SalemCommand } from "../Games/Salem/roles";
 import guidebook from '../Games/Salem/archive/guide';
 import SalemServer from '../Servers/SalemServer';
 import Game from "../Games/Salem/game";
@@ -60,7 +60,7 @@ export const getSalemRole = (message:Message,args:string[])=>{
   const goalsString = role.goals.map(goal=>`- ${goal}`).join("\n");
   const goalsHeader = (role.goals.length>1) ? "Goals" : "Goal";
 
-  const commandsString = role.commands.map((roleCommand:SalemRoleCommand)=>`${salemPrefix}${roleCommand.guide}`).join("\n");
+  const commandsString = role.commands.map((roleCommand:SalemCommand)=>`${salemPrefix}${roleCommand.guide}`).join("\n");
   const commandsHeader = (role.commands.length>1) ? "Commands" : "Command";
 
   const result  = `**[${role.name}]**\n\n**Alignment:** ${role.alignment}\n**Type:** ${role.type}\n\n**${goalsHeader}:**\n${goalsString}\n**${abilityHeader}:**\n${abilitiesString}\n**${commandsHeader}:**\n${commandsString}`;
@@ -71,28 +71,21 @@ export const getSalemRole = (message:Message,args:string[])=>{
 
 export const initializeSalem = (message:Message,server:SalemServer)=>{
 
-  if (message.channel.type === 'DM') return
+  if(message.channel.type !== 'GUILD_TEXT') return
 
-  const channelSummoned:TextChannel = message.channel as TextChannel;
+  const channel = message.channel;
   const summoner = message.author;
   const guild = message.guild;
 
-  const game = new Game({
-    guild: guild,
-    server: server,
-  });
-
-  const host = new Host({
-    initiator:summoner,
-    channelSummoned:channelSummoned,
-    game:game,
-  })
+  const game = new Game({ guild, server });
+  const host = new Host({ game, channel, summoner})
 
   game.setHost(host);
   server.pushGame(game);
-  
   if(server.connectGuild(message.guild))
-    game.getHost().sendGameInvite(channelSummoned,summoner);
+    game.getHost().sendGameInvite({ channel, summoner });
+  else
+    channel.send({embeds:[createEmbed({title:"Error",description:"Could not connect to the server."})]});
 }
 
 
@@ -113,8 +106,8 @@ export const salemGuide = async (message:Message) =>{
   const updatePageNumber = (reaction:MessageReaction)=>{
     const pageStart = 1;
     const pageEnd = guidebook.pages.length;
-    if( reaction.emoji.name == '⬅️' && page > pageStart ) return pageUpdater(page--,embed,guide);
-    if( reaction.emoji.name == '➡️' && page < pageEnd ) return pageUpdater(page++,embed,guide);
+    if( reaction.emoji.name == '⬅️' && page > pageStart ) return pageUpdater(--page,embed,guide);
+    if( reaction.emoji.name == '➡️' && page < pageEnd ) return pageUpdater(++page,embed,guide);
   }
   
   collector.on('collect', async (reaction) => updatePageNumber(reaction));
