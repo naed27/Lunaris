@@ -1,7 +1,7 @@
 const responses = {
 
   blackmailed: `You are being blackmailed! You can't talk right now, `,
-  commandNeitherFoundNorAvailable: `Such command is neither found nor available.`,
+  commandNeitherFoundNorAvailable: `That command is neither found nor available.`,
 
   multipleCommandsFound: ({ searchResults }: { searchResults: string[] }) => {
     const commands = searchResults.map(c => `**${c}**`).join(', ');
