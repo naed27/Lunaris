@@ -1,8 +1,9 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
-import { createEmbed } from '../../Helpers/toolbox';
+import { createEmbed, parseCommand } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './modes';
 import { SalemRole } from './roles';
+import { PREFIX } from '../../main';
 
 interface ConstructorParams {
     game:Game
@@ -20,6 +21,7 @@ export default class Host{
     joinedPlayers: GuildMember[] = [];
     rolePool: RolePoolElement[] = [];
 
+    hostPrefix = PREFIX;
     gameTitle:string;
     gameInvite: Message;
     reactCollector: ReactionCollector;
@@ -49,6 +51,8 @@ export default class Host{
         const gameInvite = await channel.send({embeds:[embed]});
         this.gameInvite = gameInvite;
         await this.updatePlayerList();
+        
+        // ------------- Reaction Collector -------------
 
         const reactionFilter = (reaction:MessageReaction, user:User) => !user.bot;
         const reactCollector = gameInvite.createReactionCollector({filter:reactionFilter, time: 180000, dispose:true });
@@ -82,7 +86,22 @@ export default class Host{
         await gameInvite.react('🚪');
         if(this.isHost(summoner)) await gameInvite.react('▶️');
         await gameInvite.react('❌');
-    }
+
+        // ------------- Message Collector -------------
+
+        const messageFilter = (message:Message) => message.author.id === summoner.id;
+        const messageCollector = this.channel.createMessageCollector({filter:messageFilter});
+
+        messageCollector.on('collect',async (m)=>{
+            
+            const MESSAGE = m.content;
+            const PREFIX = this.hostPrefix
+
+            if(!MESSAGE.startsWith(PREFIX)) return
+
+            const { COMMAND } = parseCommand( MESSAGE, PREFIX );
+        })
+     }
     
 
     closeInvite = () => this.reactCollector.stop();

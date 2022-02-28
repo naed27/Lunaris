@@ -21,7 +21,7 @@ const client = new Client(
     ]}
 );
 
-const PREFIX = "$";
+export const PREFIX = "$";
 
 client.on('ready',function(){
     client.user.setActivity('Dice with God', { type: 'PLAYING' });
