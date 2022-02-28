@@ -55,15 +55,11 @@ export default class Host{
         this.reactCollector = reactCollector;
 
         reactCollector.on('collect', async (reaction, user) => {
-            
             const reactionName = reaction.emoji.name;
-
             if(reactionName=="🚪") return this.addPlayer(user);
             if(reactionName=="▶️") return this.activateGoFlag(user);
             if(reactionName=="❌") return this.closeInvite();
-
             gameInvite.reactions.resolve(reaction.emoji.name).users.remove(user.id);
-
         });
 
         reactCollector.on('remove', async (reaction, user) => {
@@ -77,11 +73,9 @@ export default class Host{
         reactCollector.on('end', async () => {
             if(this.goFlag===`start`) return this.beginGame();
             if(this.goFlag!==`standby`) return
-
             await gameInvite.reactions.removeAll();
             this.game.getServer().disconnectGuild(gameInvite.guild);
             this.cancelInvite()
-
             return this.game.getServer().removeGame(this.game);
         });
 
