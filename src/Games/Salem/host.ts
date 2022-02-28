@@ -99,7 +99,7 @@ export default class Host{
 
             if(!MESSAGE.startsWith(PREFIX)) return
 
-            const { COMMAND } = parseCommand( MESSAGE, PREFIX );
+            const { COMMAND, ARGS } = parseCommand( MESSAGE, PREFIX, ',' );
         })
      }
     
