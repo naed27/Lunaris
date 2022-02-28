@@ -146,8 +146,16 @@ export default class Host{
 
     updatePlayerList = async () => {
         const title = this.gameTitle;
-        const player_list = this.joinedPlayers.map(p => `- ${p.user.username}`).join('\n');
-        const description = `Players:\n${player_list}\n\nClick the 🚪 to join.`
+        const playerList = this.joinedPlayers.map(p => `- ${p.user.username}`).join('\n');
+        const roleList = this.rolePool.map(role => `- ${role.name}`).join('\n');
+        const description = 
+            `Players:\n
+            ${playerList}\n
+            \n
+            Role Pool:\n
+            ${roleList}\n
+            \n
+            Click the 🚪 to join.`
         const footer = `Hosted by: ${this.host.username}`;
         const embed = createEmbed({ title,description,footer });
         await this.editHostMessage(embed);
