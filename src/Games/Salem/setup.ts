@@ -17,62 +17,7 @@ export default class Setup{
     this.guild = game.getGuild();
   }
 
-  async calculateJudgements(){
-    const chosens= [];
-    let guiltyCount=0;
-    let innoCount=0;
-
-    this.game.getJudgements().filter(j => j.final).map(j => {
-      switch(j.choice){
-        case 'Guilty': guiltyCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
-        case 'Innocent': innoCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
-        case 'Abstain': chosens.push(`${j.judge.getUsername()} has abstained`); break;
-      }
-    })
-
-    const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
-    this.game.getPlayers().map(( p ) => p.getChannelManager().manageJudgement().update());
-
-    if(guiltyCount>innoCount)
-      return true;
-    return false;
-  }
-
-  async setupExeTarget(){
-    const executioner = this.game.getPlayers().find(p=>p.getRole().getName()=="Executioner");
-    if(!executioner)return
-
-    const townies = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
-    const target = shuffleArray(townies)[0];
-    executioner.setExecutionerTarget(target);
-  }
-
-
-  listenHouseChannel = async () => {
-    const phase = this.game.getClock().getPhase().name;
-    if(phase !== 'Discussion' && phase !== 'Night') return 
-    this.game.getPlayers().map(player => {
-      player.cleanHelpers();
-      if(player.isJailed())return
-      player.getChannelManager().managePhaseCommands().create();
-    });
-  }
-
-  async cleanChannel(channel: TextChannel){
-    let fetched: Collection<string, Message<boolean>>;
-    do {
-      fetched = await channel.messages.fetch({limit: 100});
-      await channel.bulkDelete(fetched);
-    }
-    while(fetched.size >= 2);
-  }
-
-
-  setupPlayerCollectors = async () => this.game.getPlayers().map(p => p.getChannelManager().listen());
-  lockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().lock());
-  unlockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().unlock());
-  showPlayerChannels = async () => this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
-
+  
   determineRolePool = (rolePool: RolePoolElement[]) => {
     const rolledPool: SalemRole[] = [];
     
@@ -153,4 +98,60 @@ export default class Setup{
   distributeGameRole = () =>{
     this.game.getPlayers().map(player => player.getDiscord().roles.add( this.game.getGameKey() ));
   }
+
+  calculateJudgements = async () => {
+    const chosens= [];
+    let guiltyCount=0;
+    let innoCount=0;
+
+    this.game.getJudgements().filter(j => j.final).map(j => {
+      switch(j.choice){
+        case 'Guilty': guiltyCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
+        case 'Innocent': innoCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
+        case 'Abstain': chosens.push(`${j.judge.getUsername()} has abstained`); break;
+      }
+    })
+
+    const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
+    this.game.getPlayers().map(( p ) => p.getChannelManager().manageJudgement().update());
+
+    if(guiltyCount>innoCount)
+      return true;
+    return false;
+  }
+
+  setupExeTarget = async () => {
+    const executioner = this.game.getPlayers().find(p=>p.getRole().getName()=="Executioner");
+    if(!executioner)return
+
+    const townies = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=="Town");
+    const target = shuffleArray(townies)[0];
+    executioner.setExecutionerTarget(target);
+  }
+
+  listenHouseChannel = async () => {
+    const phase = this.game.getClock().getPhase().name;
+    if(phase !== 'Discussion' && phase !== 'Night') return 
+    this.game.getPlayers().map(player => {
+      player.cleanHelpers();
+      if(player.isJailed())return
+      player.getChannelManager().managePhaseCommands().create();
+    });
+  }
+
+  cleanChannel = async (channel: TextChannel) => {
+    let fetched: Collection<string, Message<boolean>>;
+    do {
+      fetched = await channel.messages.fetch({limit: 100});
+      await channel.bulkDelete(fetched);
+    }
+    while(fetched.size >= 2);
+  }
+
+
+  setupPlayerCollectors = async () => this.game.getPlayers().map(p => p.getChannelManager().listen());
+  lockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().lock());
+  unlockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().unlock());
+  showPlayerChannels = async () => this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));
+
 }
