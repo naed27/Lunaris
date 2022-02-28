@@ -1,7 +1,7 @@
 import { MessageEmbed,ColorResolvable } from 'discord.js';
 
-export const parseCommand = (PREFIX:string,message:string) =>{
-  const [COMMAND, ...ARGS] = message.slice(PREFIX.length).split(' ');
+export const parseCommand = (PREFIX:string,message:string, splitter = ' ') =>{
+  const [COMMAND, ...ARGS] = message.slice(PREFIX.length).split(splitter);
   return {COMMAND,ARGS};
 }
 
