@@ -156,7 +156,7 @@ export default class Host{
     async notifyGameStart(){
         const playerList = this.joinedPlayers.map(p => `- ${p.user.username}`).join("\n");
         const title = this.gameTitle;
-        const description = `Players:\n\n${playerList}`;
+        const description = `Players:\n${playerList}`;
         const footer = `Game is currently ongoing.`
         const embed = createEmbed({title,description,footer});
         await this.editHostMessage(embed);
