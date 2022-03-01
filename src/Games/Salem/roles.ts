@@ -5,7 +5,7 @@ import Game from './game';
 import Notif from './notif';
 import Command from './command';
 
-export type salemRoleName = 
+export type SalemRoleName = 
     | 'Jailor'
     | 'Transporter'
     | 'Jester' 
