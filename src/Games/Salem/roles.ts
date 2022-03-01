@@ -90,7 +90,7 @@ export interface Results{
 
 export interface SalemRole{
     id: string;
-    name: salemRoleName;
+    name: SalemRoleName;
     alignment: string;
     type: string;
     immunities: string[];
