@@ -5,6 +5,41 @@ import Game from './game';
 import Notif from './notif';
 import Command from './command';
 
+export type salemRoleName = 
+    | 'Jailor'
+    | 'Transporter'
+    | 'Jester' 
+    | 'Medium'
+    | 'Veteran'
+    | 'Retributionist'
+    | 'Witch'
+    | 'Escort'
+    | 'Consort'
+    | 'Survivor'
+    | 'Forger'
+    | 'Framer'
+    | 'Arsonist'
+    | 'Blackmailer'
+    | 'Bodyguard'
+    | 'Doctor'
+    | 'Janitor'
+    | 'Investigator'
+    | 'Consigliere'
+    | 'Sheriff'
+    | 'Lookout'
+    | 'Spy'
+    | 'Disguiser'
+    | 'Godfather'
+    | 'Vampire'
+    | 'Mafioso'
+    | 'Vigilante'
+    | 'Serial Killer'
+    | 'Werewolf'
+    | 'Arsonist'
+    | 'Executioner'
+
+
+
 export interface SalemCommand{
     name: string;
     guide: string;
@@ -55,7 +90,7 @@ export interface Results{
 
 export interface SalemRole{
     id: string;
-    name: string;
+    name: salemRoleName;
     alignment: string;
     type: string;
     immunities: string[];
