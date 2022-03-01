@@ -38,6 +38,22 @@ export type SalemRoleName =
     | 'Arsonist'
     | 'Executioner'
 
+export type SalemRoleAlignment = 
+    | 'Random'
+    | 'Mafia'
+    | 'Town'
+    | 'Neutral'
+
+export type SalemRoleType = 
+    | 'Random'
+    | 'Killing'
+    | 'Investigative'
+    | 'Support'
+    | 'Evil'
+    | 'Leader'
+    | 'Chaos'
+    | 'Protective'
+    | 'Benign'
 
 
 export interface SalemCommand{
@@ -91,8 +107,8 @@ export interface Results{
 export interface SalemRole{
     id: string;
     name: SalemRoleName;
-    alignment: string;
-    type: string;
+    alignment: SalemRoleAlignment;
+    type: SalemRoleType;
     immunities: string[];
     attack: number;
     defense: number;
