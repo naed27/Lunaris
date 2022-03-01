@@ -5,10 +5,13 @@ import Game from './game';
 import Notif from './notif';
 import Command from './command';
 
-export type RolePoolElement = { alignment: SalemRoleAlignment, type: SalemRoleType, name: SalemRoleName } 
+export type RolePoolElement = { 
+    name: SalemRoleName | 'Random',
+    type: SalemRoleType | 'Random', 
+    alignment: SalemRoleAlignment | 'Random', 
+} 
 
 export type SalemRoleName = 
-    | 'Random'
     | 'Jailor'
     | 'Transporter'
     | 'Jester' 
@@ -42,13 +45,11 @@ export type SalemRoleName =
     | 'Executioner'
 
 export type SalemRoleAlignment = 
-    | 'Random'
     | 'Mafia'
     | 'Town'
     | 'Neutral'
 
 export type SalemRoleType = 
-    | 'Random'
     | 'Killing'
     | 'Investigative'
     | 'Support'
