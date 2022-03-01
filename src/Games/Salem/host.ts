@@ -1,7 +1,7 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
 import { createEmbed, getStringSearchResults, parseCommand } from '../../Helpers/toolbox';
 import Game from './game';
-import { RolePoolElement } from './modes';
+import { RolePoolElement } from './roles';
 import roles, { SalemRole } from './roles';
 import { PREFIX } from '../../main';
 
@@ -10,8 +10,6 @@ interface ConstructorParams {
     summoner:User,
     channel:TextChannel,
 }
-
-
 
 export default class Host{
 

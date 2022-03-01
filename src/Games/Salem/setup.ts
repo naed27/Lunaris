@@ -1,4 +1,4 @@
-import sampleRolePool, { RolePoolElement } from "./modes";
+import { RolePoolElement } from "./roles";
 import roles, { SalemRole } from "./roles";
 import Role from "./role";
 import Player from "./player";

@@ -1,4 +1,4 @@
-export type RolePoolElement = { alignment: string, type: string, name:string } 
+import { RolePoolElement } from "./roles";
 
 const sampleRolePool: RolePoolElement[] = [
     { alignment: 'Random', type: 'Random', name: 'Random' },
