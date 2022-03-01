@@ -1,8 +1,8 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
-import { createEmbed, parseCommand } from '../../Helpers/toolbox';
+import { createEmbed, getStringSearchResults, parseCommand } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './modes';
-import { SalemRole } from './roles';
+import roles, { SalemRole } from './roles';
 import { PREFIX } from '../../main';
 
 interface ConstructorParams {
@@ -100,9 +100,25 @@ export default class Host{
             if(!MESSAGE.startsWith(PREFIX)) return
 
             const { COMMAND, ARGS } = parseCommand( MESSAGE, PREFIX, ',' );
+
+            switch(COMMAND){
+                case 'replacerole': 
+                    const word = 'bruh';
+                    break;
+
+                case 'addrole':
+
+
+            }
         })
      }
     
+    addRoleToGame = (roleInput:string) => {
+        const roleNames = roles.map((role)=>role.name);
+        const searchResults = getStringSearchResults( roleNames, roleInput );
+        const firstResult = searchResults[0];
+        roles.filter( role => role.name === firstResult );
+    } 
 
     closeInvite = () => this.reactCollector.stop();
 
