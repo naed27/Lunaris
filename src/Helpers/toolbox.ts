@@ -1,19 +1,23 @@
 import { MessageEmbed,ColorResolvable } from 'discord.js';
 
-export const parseCommand = (PREFIX:string,message:string, argsSpliter = ' ') =>{
-  const [rawCommand, ...rawArgs] = message.slice(PREFIX.length).split(' ');
+export const parseCommand = (PREFIX:string,input:string, argsSpliter = ' ') =>{
+  const inputWithoutPrefix = input.replace(PREFIX, '');
+  const [rawCommand, ...rawArgs] = removeExtraWhitespaces(inputWithoutPrefix).split(' ');
   const COMMAND = rawCommand.toLowerCase();
-  const ARGS = rawArgs.join(' ').split(argsSpliter);
+  const ARGS = rawArgs
+    .join(' ')
+    .split(argsSpliter)
+    .map(args => removeExtraWhitespaces(args));
   return { COMMAND, ARGS };
 }
 
-export const splitStringByLineBreak = (message:string) =>{
-  return message.split('\n');
-}
+export const removeExtraLineBreaks = (str:string) => str.replace(/^\n+/,'');
 
-export const splitStringBySpaces = (message:string) =>{
-  return message.split(/\s+/);
-}
+export const removeExtraWhitespaces = (str:string) => str.replace(/\s+/g,' ').trim();
+
+export const splitStringByLineBreak = (input:string) =>  removeExtraLineBreaks(input).split('\n');
+
+export const splitStringByWhitespaces = (input:string) => removeExtraWhitespaces(input).split(' ');
 
 export const splitStringByComma = (message:string)=>{
   const [...blargs] = message.split(',');
@@ -28,34 +32,19 @@ export const splitStringByComma = (message:string)=>{
 
 export const getMapSize = (map:any) =>{
   let size=0;
-  map.forEach(() => {
-    size++;
-  });
+  map.forEach(() => size++);
   return size;
 }
 
-export const getCurrentTime = () =>{
-  return Math.floor(Date.now()/1000);
-}
+export const getCurrentTime = () => Math.floor(Date.now()/1000)
 
-export const delay = async (milliseconds:number) =>{ 
-  return new Promise(res=>setTimeout(res, milliseconds));
-}
+export const delay = async (milliseconds:number) => new Promise(res=>setTimeout(res, milliseconds))
 
-export const sortWordsAlphabetically = (words:string[])=>{
-  const sortedWords = words.sort();
-  return sortedWords;
-}
+export const sortWordsAlphabetically = (words:string[])=> words.sort()
 
-export const sortNumbersAscending = (numbers:number[]) =>{
-  const sortedNumbers = numbers.sort((a,b)=>a-b);
-  return sortedNumbers;
-}
+export const sortNumbersAscending = (numbers:number[]) => numbers.sort((a,b)=>a-b)
 
-export const sortNumbersDescending = (numbers:number[]) =>{
-  const sortedNumbers = numbers.sort((a,b)=>b-a);
-  return sortedNumbers;
-}
+export const sortNumbersDescending = (numbers:number[]) => numbers.sort((a,b)=>b-a)
 
 export const stringContainsKeyword = (mainWord:string,keyword:string) =>{
   const result = mainWord.toLowerCase().includes(keyword.toLowerCase());
@@ -92,10 +81,7 @@ export const getStringSearchResults=(arrayOfWords: string[],keyword:string): str
   return [];
 }
 
-export const arrayContainsElement = (array:any[],element:any) =>{
-  const result = array.includes(element);
-  return result;
-}
+export const arrayContainsElement = (array:any[],element:any) => array.includes(element)
 
 export const removeDuplicates = <Type>(array:Type[]):Type[]=>{
   const result:Type[] = [];
@@ -128,7 +114,6 @@ export const shuffleArray=<T>(array:T[])=>{
   return array;
 }
 
-
 export const stringifyArrayOfNames = (arrayOfNames:string[])=>{
   const result = arrayOfNames.slice(0,arrayOfNames.length-1).join(', ') + ', and ' + arrayOfNames.slice(-1);
   return result;
@@ -157,7 +142,6 @@ export const createEmbed = ({
 
   return embed;
 } 
-
 
 export const jsonWrap = (message:string)=>{
   const wrapper = `\`\`\``;
