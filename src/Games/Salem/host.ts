@@ -1,5 +1,5 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
-import { createEmbed, getStringSearchResults, parseCommand } from '../../Helpers/toolbox';
+import { createEmbed, getStringSearchResults, parseCommand, removeDuplicates } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './roles';
 import roles, { SalemRole } from './roles';
@@ -27,6 +27,10 @@ export default class Host{
     goFlag = `standby`;
     minimumRequiredPlayers = 2;
     maximumNumberOfPlayers = 5;
+
+    salemRoleNames = removeDuplicates(roles.map(role => role.name));
+    salemRoleTypes = removeDuplicates(roles.map(role => role.type));
+    salemRoleAlignment = removeDuplicates(roles.map(role => role.alignment));
 
     constructor({ summoner, game, channel }:ConstructorParams){
         this.game = game;
@@ -105,6 +109,7 @@ export default class Host{
                     break;
 
                 case 'addrole':
+                    const roleName = ARGS[0];
 
 
             }
