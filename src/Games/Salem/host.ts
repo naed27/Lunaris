@@ -1,9 +1,10 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
-import { createEmbed, getStringSearchResults, parseCommand, removeDuplicates } from '../../Helpers/toolbox';
+import { arrayContainsElement, createEmbed, findElementInArray, getStringSearchResults, parseCommand, removeDuplicates, removeExtraWhitespaces } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './roles';
-import roles, { SalemRole } from './roles';
+import roles from './roles';
 import { PREFIX } from '../../main';
+import { uniqueId } from 'lodash';
 
 interface ConstructorParams {
     game:Game
@@ -28,6 +29,7 @@ export default class Host{
     minimumRequiredPlayers = 2;
     maximumNumberOfPlayers = 5;
 
+    salemRoles = roles;
     salemRoleNames = removeDuplicates(roles.map(role => role.name));
     salemRoleTypes = removeDuplicates(roles.map(role => role.type));
     salemRoleAlignment = removeDuplicates(roles.map(role => role.alignment));
@@ -45,14 +47,37 @@ export default class Host{
     isHost = ( user: User ) => user.id==this.host.id;
 
     getRolePool = () => this.rolePool;
-    setRolePool = ( a: SalemRole[] ) => this.rolePool = a
+    setRolePool = ( a: RolePoolElement[] ) => this.rolePool = a
 
     async sendGameInvite({channel, summoner}: {channel: TextChannel, summoner: User}){
-
         const embed = createEmbed({description: 'Loading...'});
         const gameInvite = await channel.send({embeds:[embed]});
         this.gameInvite = gameInvite;
         await this.updatePlayerList();
+
+        // ------------- Message Collector -------------
+
+        const messageFilter = (message:Message) => message.author.id === summoner.id;
+        const messageCollector = this.channel.createMessageCollector({filter:messageFilter});
+
+        messageCollector.on('collect',async (m)=>{
+            const MESSAGE = m.content;
+            const PREFIX = this.hostPrefix
+
+            if(!MESSAGE.startsWith(PREFIX)) return
+
+            const { COMMAND, ARGS } = parseCommand( PREFIX, MESSAGE, ',' );
+
+            switch(COMMAND){
+                case 'roleadd': this.addRolesToGame(ARGS); break;
+                case 'roleremove': this.removeRolesFromGame(ARGS); break;
+                case 'rolereplace': this.replaceRolesInGame(ARGS); break;
+            }
+
+            this.updatePlayerList();
+
+            return
+        })
         
         // ------------- Reaction Collector -------------
 
@@ -62,8 +87,8 @@ export default class Host{
 
         reactCollector.on('collect', async (reaction, user) => {
             const reactionName = reaction.emoji.name;
-            if(reactionName=="🚪") return this.addPlayer(user);
-            if(reactionName=="▶️") return this.activateGoFlag(user);
+            if(reactionName=="🚪") if(this.addPlayer(user)) return;
+            if(reactionName=="▶️") if(this.activateGoFlag(user)) return;
             if(reactionName=="❌") return this.closeInvite();
             gameInvite.reactions.resolve(reaction.emoji.name).users.remove(user.id);
         });
@@ -89,39 +114,7 @@ export default class Host{
         if(this.isHost(summoner)) await gameInvite.react('▶️');
         await gameInvite.react('❌');
 
-        // ------------- Message Collector -------------
-
-        const messageFilter = (message:Message) => message.author.id === summoner.id;
-        const messageCollector = this.channel.createMessageCollector({filter:messageFilter});
-
-        messageCollector.on('collect',async (m)=>{
-            
-            const MESSAGE = m.content;
-            const PREFIX = this.hostPrefix
-
-            if(!MESSAGE.startsWith(PREFIX)) return
-
-            const { COMMAND, ARGS } = parseCommand( MESSAGE, PREFIX, ',' );
-
-            switch(COMMAND){
-                case 'replacerole': 
-                    const word = 'bruh';
-                    break;
-
-                case 'addrole':
-                    const roleName = ARGS[0];
-
-
-            }
-        })
-     }
-    
-    addRoleToGame = (roleInput:string) => {
-        const roleNames = roles.map((role)=>role.name);
-        const searchResults = getStringSearchResults( roleNames, roleInput );
-        const firstResult = searchResults[0];
-        roles.filter( role => role.name === firstResult );
-    } 
+    }
 
     closeInvite = () => this.reactCollector.stop();
 
@@ -133,13 +126,14 @@ export default class Host{
         this.gameInvite.edit({embeds:[embed]});
     }
 
-    editHostMessage = async(embed:MessageEmbed) => this.gameInvite.edit({embeds:[embed]})
+    editHostMessage = async(embed:MessageEmbed) => this.gameInvite.edit({embeds:[embed]});
 
     activateGoFlag = ( user:User) =>{
-        if(!this.isHost(user)) return
-        if(this.joinedPlayers.length<this.minimumRequiredPlayers) return
+        if(!this.isHost(user)) return false
+        if(this.joinedPlayers.length<this.minimumRequiredPlayers) return false
         this.goFlag='start';
-        return this.reactCollector.stop();
+        this.reactCollector.stop();
+        return true
     }
 
     beginGame = async() => {
@@ -156,11 +150,12 @@ export default class Host{
     }
 
     addPlayer = async ( user:User ) => {
-        if( this.joinedPlayers.length >= this.maximumNumberOfPlayers ) return
+        if( this.joinedPlayers.length >= this.maximumNumberOfPlayers ) return false
         const player = this.game.getGuild().members.cache.get(user.id);
-        if( !this.isNewPlayer(player) ) return 
+        if( !this.isNewPlayer(player) ) return false
         this.joinedPlayers.push( player );
         this.updatePlayerList();
+        return true
     }
 
     removePlayer = async ( user:User ) => {
@@ -179,15 +174,11 @@ export default class Host{
     updatePlayerList = async () => {
         const title = this.gameTitle;
         const playerList = this.joinedPlayers.map(p => `- ${p.user.username}`).join('\n');
-        const roleList = this.rolePool.map(role => `- ${role.name}`).join('\n');
+        const roleList = this.rolePool
+            .map(({name,type,alignment},i) =>`${i+1}. ${name!=='Random'?name:alignment+' '+type}`).join('\n');
+
         const description = 
-            `Players:\n
-            ${playerList}\n
-            \n
-            Role Pool:\n
-            ${roleList}\n
-            \n
-            Click the 🚪 to join.`
+            `Players:\n${playerList}\n\nRole Pool:\n${roleList}\n\nClick the 🚪 to join.`
         const footer = `Hosted by: ${this.host.username}`;
         const embed = createEmbed({ title,description,footer });
         await this.editHostMessage(embed);
@@ -209,6 +200,111 @@ export default class Host{
         const footer = `Game has ended.`
         const embed = createEmbed({title,description,footer});
         await this.editHostMessage(embed);
+    }
+
+    replaceRolesInGame = (args: string[]) =>{
+        const indexes = args.map(arg => {
+            const noExtraWhitespaces = removeExtraWhitespaces(arg);
+            const inputs = noExtraWhitespaces.split(' ');
+            const [rawIndex,...roleInput] = inputs;
+            const index = (parseInt(rawIndex)-1) || 'invalid';
+            if(index < this.rolePool.length) return ({index,roleInput})
+            return ({index: 'invalid',roleInput: 'invalid'})
+        });
+        if(arrayContainsElement(indexes,'invalid'))return
+
+        const rolesToReplace = indexes.map(({index, roleInput}:{index:number,roleInput:string[]}) => {
+            return ({ id: this.rolePool[index].id, newData: roleInput.join(' ') })
+        });
+        
+        this.rolePool = this.rolePool.map((roleElement)=>{
+            const newInput = rolesToReplace.find(({id})=>id === roleElement.id)
+            if( !newInput ) return roleElement
+            return (
+                this.findSpecificRole(newInput.newData) || 
+                this.findAlignmentRole(newInput.newData)
+            )
+        })
+    }
+
+    removeRolesFromGame = (args: string[]) => {
+        const indexes = args.map(arg => {
+            const index = parseInt(arg)-1 || 'invalid';
+            if(index < this.rolePool.length) return index;
+            return 'invalid'
+        });
+        if(arrayContainsElement(indexes,'invalid')) return;
+        const rolesToRemove = indexes.map((index:number) => this.rolePool[index].id);
+        this.rolePool = this.rolePool.filter(({id}) => !rolesToRemove.includes(id));
+    }
+
+    addRolesToGame = (args: string[]) => {
+        const roleInputs = args
+        roleInputs.map((input)=>{
+            const inputElements = input.split(' ');
+            if(inputElements.length > 3) return
+            const roleQuantity = parseInt(input[0]) || 1;
+            const roleString = inputElements.slice(1).join(' ') || input
+            this.addRoleToGame(roleString, roleQuantity);
+        })
+    }
+
+    addRoleToGame = (roleInput:string, roleQuantity: number) => {
+        this.pushSpecificRole(roleInput, roleQuantity);
+        this.pushAlignmentRole(roleInput, roleQuantity);
+    } 
+
+    findSpecificRole = (input: string):RolePoolElement =>{
+        const inputs = input.split(' ').map(word=>word.toLowerCase());
+        if(inputs.length!==1)return null
+        const nameResult = getStringSearchResults(this.salemRoleNames,input);
+        if(nameResult.length===0)return null
+        const roleName = nameResult[0];
+        const role = this.salemRoles.find((role)=>role.name===roleName);
+        return ({
+            id: uniqueId(),
+            name: role.name,
+            type: role.type,
+            alignment: role.alignment,
+        })
+    }
+
+    pushSpecificRole = (input: string, roleQuantity:number) =>{
+        const role = this.findSpecificRole(input);
+        if(role){
+            for(let i=0;i<roleQuantity;i++)
+                this.rolePool.push(role)
+        }
+    }
+
+    findAlignmentRole = (input:string): RolePoolElement =>{
+        const inputs = input.split(' ').map(word=>word.toLowerCase());
+        if(inputs.length===0 || inputs.length>2) return null
+
+        const alignmentInput: string = inputs[0];
+        const typeInput: string | undefined | null = inputs[1];
+
+        const alignmentResult = getStringSearchResults(this.salemRoleAlignment,alignmentInput);
+        if(alignmentResult.length===0) return null
+        const roleAlignment = this.salemRoleAlignment.find((a)=>a===alignmentResult[0]);
+
+        const typeResult = typeInput ? getStringSearchResults(this.salemRoleTypes,typeInput) : [];
+        const roleType = typeResult[0] ? this.salemRoleTypes.find((a)=>a===typeResult[0]) : 'Random';
+     
+        return ({
+            id: uniqueId(),
+            name: 'Random',
+            type: roleType,
+            alignment: roleAlignment,
+        })
+    }
+
+    pushAlignmentRole = (input:string, roleQuantity:number) =>{
+        const role = this.findAlignmentRole(input)
+        if(role){
+            for(let i=0;i<roleQuantity;i++)
+                this.rolePool.push(role)
+        }
     }
 
 }
