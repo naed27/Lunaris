@@ -31,14 +31,14 @@ client.on('ready',function(){
 client.on('messageCreate', async (message) =>{
     if(message.author.bot || !message.content.startsWith(PREFIX))return;
 
-    const {COMMAND,ARGS} = parseCommand(PREFIX,message.content);
+    const {COMMAND,ARGS} = parseCommand(PREFIX,message.content,',');
 
     switch(COMMAND){
         case 'test': break;
         case 'sg':  salemGuide(message) ;break;
         case 'roles': getSalemRoles(message) ;break;
         case 'role': getSalemRole(message, ARGS) ;break;
-        case 'salem': initializeSalem(message, salemServer) ;break;
+        case 'salem': initializeSalem(message, salemServer, ARGS) ;break;
         case 'another': initializeAnother(message, anotherServer) ;break;
         case 'cloverClub': initializeCloverClub(message, cloverClubServer) ;break;
         default:break;
