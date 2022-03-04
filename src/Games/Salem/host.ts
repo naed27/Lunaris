@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember } from 'discord.js';
+import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember, MessageCollector } from 'discord.js';
 import { arrayContainsElement, createEmbed, findElementInArray, getStringSearchResults, parseCommand, removeDuplicates, removeExtraWhitespaces } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './roles';
@@ -24,6 +24,7 @@ export default class Host{
     gameTitle:string;
     gameInvite: Message;
     reactCollector: ReactionCollector;
+    messageCollector: MessageCollector;
 
     goFlag = `standby`;
     minimumRequiredPlayers = 2;
@@ -59,6 +60,7 @@ export default class Host{
 
         const messageFilter = (message:Message) => message.author.id === summoner.id;
         const messageCollector = this.channel.createMessageCollector({filter:messageFilter});
+        this.messageCollector = messageCollector;
 
         messageCollector.on('collect',async (m)=>{
             const MESSAGE = m.content;
@@ -124,6 +126,8 @@ export default class Host{
         const description = `Game has been cancelled.`;
         const embed = createEmbed({title,description});
         this.gameInvite.edit({embeds:[embed]});
+        this.reactCollector.stop();
+        this.messageCollector.stop();
     }
 
     editHostMessage = async(embed:MessageEmbed) => this.gameInvite.edit({embeds:[embed]});
