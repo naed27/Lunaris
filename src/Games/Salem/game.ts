@@ -395,8 +395,6 @@ export default class Game{
 
     getId = () => this.id;
 
-    
-
     getJailor = () => this.players.filter( p => p.getRole().getName() === 'Jailor')[0];
     
     getJailedPerson = () => {
