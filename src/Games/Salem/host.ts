@@ -203,17 +203,18 @@ export default class Host{
     }
 
     replaceRolesInGame = (args: string[]) =>{
-        const indexes = args.map(arg => {
+        const indexes:{index:number|string,roleInput:string[]}[] = args.map(arg => {
             const noExtraWhitespaces = removeExtraWhitespaces(arg);
             const inputs = noExtraWhitespaces.split(' ');
             const [rawIndex,...roleInput] = inputs;
-            const index = (parseInt(rawIndex)-1) || 'invalid';
+            const index = parseInt(rawIndex) ? (parseInt(rawIndex)-1) : 'invalid';
             if(index < this.rolePool.length) return ({index,roleInput})
-            return ({index: 'invalid',roleInput: 'invalid'})
+            return ({index: 'invalid',roleInput: ['invalid']})
         });
-        if(arrayContainsElement(indexes,'invalid'))return
 
-        const rolesToReplace = indexes.map(({index, roleInput}:{index:number,roleInput:string[]}) => {
+        if(indexes.find(({index})=>index === 'invalid'))return
+
+        const rolesToReplace = indexes.map(({index, roleInput}) => {
             return ({ id: this.rolePool[index].id, newData: roleInput.join(' ') })
         });
         
