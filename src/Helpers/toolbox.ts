@@ -1,5 +1,10 @@
 import { MessageEmbed,ColorResolvable } from 'discord.js';
 
+export const countSimilarElements = <Type>(array:Type[], element: Type):number => {
+    const count = array.filter((e)=>e===element).length;
+    return count;
+}
+
 export const parseCommand = (PREFIX:string,input:string, argsSpliter = ' ') =>{
   const inputWithoutPrefix = input.replace(PREFIX, '');
   const [rawCommand, ...rawArgs] = removeExtraWhitespaces(inputWithoutPrefix).split(' ');
@@ -58,30 +63,33 @@ export const stringContainsInitials = (fullName:string,initials:string) =>{
 }
 
 export const stringStartsWithKeyword = (string:string,keyword:string) =>{
-  const result = string.toLocaleLowerCase().startsWith(keyword.toLowerCase());
+  const result = string.toLowerCase().startsWith(keyword.toLowerCase());
   return result;
 }
 
 export const getStringSearchResults=(arrayOfWords: string[],keyword:string): string[] => {
+  if(keyword === '') return []
 
   const startWiths = [];
   const keysFound = [];
   const initialsFound = [];
 
   arrayOfWords.map((mainWord)=>{
-    if(stringStartsWithKeyword(mainWord,keyword))return startWiths.push(mainWord);
-    if(stringContainsKeyword(mainWord,keyword))return keysFound.push(mainWord);
-    if(stringContainsInitials(mainWord,keyword))return initialsFound.push(mainWord);
+    if(stringStartsWithKeyword(mainWord,keyword))return startWiths.push(mainWord)
+    if(stringContainsKeyword(mainWord,keyword))return keysFound.push(mainWord)
+    if(stringContainsInitials(mainWord,keyword))return initialsFound.push(mainWord)
   })
 
-  if(startWiths.length>1)return startWiths
-  if(keysFound.length>1)return keysFound
-  if(initialsFound.length>1)return initialsFound
+  if(startWiths.length>0)return startWiths
+  if(keysFound.length>0)return keysFound
+  if(initialsFound.length>0)return initialsFound
 
   return [];
 }
 
 export const arrayContainsElement = (array:any[],element:any) => array.includes(element)
+
+export const findElementInArray = <Type>(array: Type[], element: Type): Type => array.find(e=>e===element)
 
 export const removeDuplicates = <Type>(array:Type[]):Type[]=>{
   const result:Type[] = [];
