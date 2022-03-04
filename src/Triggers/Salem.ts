@@ -69,7 +69,7 @@ export const getSalemRole = (message:Message,args:string[])=>{
 }
 
 
-export const initializeSalem = (message:Message,server:SalemServer)=>{
+export const initializeSalem = (message:Message,server:SalemServer, args: string[])=>{
 
   if(message.channel.type !== 'GUILD_TEXT') return
 
@@ -82,10 +82,13 @@ export const initializeSalem = (message:Message,server:SalemServer)=>{
 
   game.setHost(host);
   server.pushGame(game);
-  if(server.connectGuild(message.guild))
+  if(server.connectGuild(message.guild)){
+    game.getHost().addRolesToGame(args);
     game.getHost().sendGameInvite({ channel, summoner });
-  else
+  }else{
     channel.send({embeds:[createEmbed({title:"Error",description:"Could not connect to the server."})]});
+  }
+
 }
 
 
