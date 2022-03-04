@@ -6,9 +6,10 @@ import Notif from './notif';
 import Command from './command';
 
 export type RolePoolElement = { 
-    name: SalemRoleName | 'Random',
-    type: SalemRoleType | 'Random', 
+    id: string,
     alignment: SalemRoleAlignment | 'Random', 
+    type: SalemRoleType | 'Random', 
+    name: SalemRoleName | 'Random',
 } 
 
 export type SalemRoleName = 
