@@ -79,12 +79,12 @@ export default class Game{
     setupGame = async () => {
         await this.getSetup().setupPlayers();
         await this.getSetup().createGameRole();
-        await this.getSetup().distributeGameRole();
+        this.getSetup().distributeGameRole();
         await this.getSetup().setupPlayerCollectors();
         await this.getSetup().unlockPlayerChannels();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
-        await this.getClock().runTimer();
+        this.getClock().runTimer();
         await this.getClock().playLobby();
     }
 
