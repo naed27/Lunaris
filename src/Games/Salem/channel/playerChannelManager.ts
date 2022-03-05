@@ -1,16 +1,25 @@
-import { GuildMember, Message, TextChannel }  from 'discord.js';
-import ChannelManager from './channelManager';
 import Game from '../game';
 import Player from '../player'
-import MessageManager from './messageManagers/messageManager';
-import { guide, playerRole, playerList, judge, clock, phaseCommands, availableCommands, countDown  } from './messageManagers/generators';
-import { createEmbed, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
 import responses from '../archive/responses';
+import ChannelManager from './channelManager';
+import MessageManager from './messageManagers/messageManager';
+import { GuildMember, Message, TextChannel }  from 'discord.js';
+import { createEmbed, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
+import { 
+  guide, 
+  judge, 
+  clock, 
+  countDown,
+  playerRole, 
+  playerList, 
+  phaseCommands, 
+  availableCommands } from './messageManagers/generators';
 
 interface ConstructorParams{
-  game: Game
-  channel: TextChannel,
-  discord: GuildMember,
+  game: Game, 
+  player: Player,
+  defaultId:string,
+  channel:TextChannel, 
 }
 
 export default class PlayerChannelManager extends ChannelManager{
@@ -18,17 +27,30 @@ export default class PlayerChannelManager extends ChannelManager{
   readonly player: Player;
   readonly discord: GuildMember;
 
-  readonly clockMessageManager = new MessageManager({ channel: this,  generator: clock });
-  readonly guideMessageManager = new MessageManager({ channel: this,  generator: guide });
-  readonly judgementMessageManager = new MessageManager({ channel: this,  generator: judge });
-  readonly countDownMessageManager = new MessageManager({ channel: this,  generator: countDown });
-  readonly playersRoleMessageManager = new MessageManager({ channel: this,  generator: playerRole });
-  readonly playersListMessageManager = new MessageManager({ channel: this,  generator: playerList });
-  readonly phaseCommandsMessageManager = new MessageManager({ channel: this,  generator: phaseCommands });
-  readonly availableCommandsMessageManager = new MessageManager({ channel: this,  generator: availableCommands });
+  readonly clockMessageManager: MessageManager;
+  readonly guideMessageManager: MessageManager;
+  readonly judgementMessageManager: MessageManager;
+  readonly countDownMessageManager: MessageManager;
+  readonly playersRoleMessageManager: MessageManager;
+  readonly playersListMessageManager: MessageManager;
+  readonly phaseCommandsMessageManager: MessageManager;
+  readonly availableCommandsMessageManager: MessageManager;
 
-  constructor({ channel, discord: { id : defaultId } , game }: ConstructorParams){
-    super({ game, channel, defaultId });
+  constructor({player, game, defaultId, channel}: ConstructorParams){
+    super({ game, defaultId, channel });
+
+    this.player = player;
+    this.discord = player.getDiscord();
+
+    this.clockMessageManager = new MessageManager({ channelManager: this,  generator: clock });
+    this.guideMessageManager = new MessageManager({ channelManager: this,  generator: guide });
+    this.judgementMessageManager = new MessageManager({ channelManager: this,  generator: judge });
+    this.countDownMessageManager = new MessageManager({ channelManager: this,  generator: countDown });
+    this.playersRoleMessageManager = new MessageManager({ channelManager: this,  generator: playerRole });
+    this.playersListMessageManager = new MessageManager({ channelManager: this,  generator: playerList });
+    this.phaseCommandsMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommands });
+    this.availableCommandsMessageManager = new MessageManager({ channelManager: this,  generator: availableCommands });
+
   }
 
   getPlayer = () => this.player;
@@ -58,7 +80,7 @@ export default class PlayerChannelManager extends ChannelManager{
 
         const { COMMAND } = parseCommand( MESSAGE, PREFIX );
         const playerCommands = this.player.getCommands();
-        const searchedCommands = getStringSearchResults(playerCommands.map(c => c.name),COMMAND);
+        const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
 
         if(searchedCommands.length > 1) {
           const response = createEmbed({description: responses.multipleCommandsFound({searchResults:searchedCommands})});

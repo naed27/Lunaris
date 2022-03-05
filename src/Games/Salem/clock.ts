@@ -106,7 +106,7 @@ class Clock{
         if ( this.phase.shouldLockChannel )
           this.game.getFunctions()
         else 
-          this.game.getStageChannelManager().unlock();
+          this.game.getSetup().unlockPlayerChannels();
     
         const next = this.phase.next;
         this.nextPhase = this.phases.find(p => p.name === next.normal);

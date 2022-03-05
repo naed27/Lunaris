@@ -104,7 +104,7 @@ export default class Host{
         });
 
         reactCollector.on('end', async () => {
-            if(this.goFlag===`start`) return this.beginGame();
+            if(this.goFlag===`start`) { this.beginGame(); return }
             if(this.goFlag!==`standby`) return
             await gameInvite.reactions.removeAll();
             this.game.getServer().disconnectGuild(gameInvite.guild);
@@ -144,13 +144,13 @@ export default class Host{
         this.goFlag = `done`;
         const title = this.gameTitle;
         const players = this.joinedPlayers.map(p => `- ${p.user.username}`).join("\n");
-        const description = `Players:\n\n${players}`;
+        const description = `Players:\n${players}`;
         const footer = `Loading up the game. Please wait...`;
         
         const embed = createEmbed({ title,description,footer });
         this.gameInvite.reactions.removeAll();
-        this.gameInvite.edit({embeds:[embed]});
-        this.game.setupGame();
+        await this.gameInvite.edit({embeds:[embed]});
+        await this.game.setupGame();
     }
 
     addPlayer = async ( user:User ) => {

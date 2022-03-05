@@ -9,7 +9,6 @@ import SalemServer from '../../Servers/SalemServer';
 import Player from './player';
 import { SalemRole } from './roles';
 import { createEmbed, delay, jsonWrap } from '../../Helpers/toolbox';
-import StageChannelManager from './channel/stageChannelManager';
 import Notif from './notif';
 
 type JudgementChoices = 'Abstain' | 'Guilty' | 'Innocent'
@@ -62,7 +61,6 @@ export default class Game{
     freshReborn: Player[] = [];
     jailedPlayer: Player | null = null;
 
-    stageChannelManager: StageChannelManager;
 
     constructor({server,guild}: ConstructorParams){
         this.guild = guild;
@@ -78,9 +76,9 @@ export default class Game{
 
     setupGame = async () => {
         await this.getSetup().setupPlayers();
-        await this.getSetup().createGameRole();
-        this.getSetup().distributeGameRole();
-        await this.getSetup().setupPlayerCollectors();
+        // await this.getSetup().createGameRole();
+        await this.getSetup().distributeGameRole();
+        await this.getSetup().activatePlayerListeners();
         await this.getSetup().unlockPlayerChannels();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
@@ -389,9 +387,7 @@ export default class Game{
     clearActions = () => this.actions = [];
 
     getActionOf = (player:Player) => this.actions.find((a)=>a.getPerformer().getId() === player.getId());
-    
-    getStageChannelManager = () => this.stageChannelManager;
-    setStageChannelManager = (a: StageChannelManager) => this.stageChannelManager = a;
+
 
     getId = () => this.id;
 

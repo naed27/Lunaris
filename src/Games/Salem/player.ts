@@ -2,7 +2,7 @@ import { Guild, GuildMember, MessageEmbed, MessageReaction, Role as DiscordRole,
 import roles from "./roles";
 import Role from "./role";
 import Game from "./game";
-import { arrayContainsElement, createEmbed, jsonWrap, delay, parseCommand, splitStringByComma } from "../../Helpers/toolbox";
+import { arrayContainsElement, createEmbed, jsonWrap, delay } from "../../Helpers/toolbox";
 import PlayerChannelManager from "./channel/playerChannelManager";
 import Notif from "./notif";
 
@@ -63,13 +63,18 @@ export default class Player{
     this.maskRole = role;
     this.discord = discord;
     this.channel = channel;
+    this.role.setPlayer(this);
     this.id = discord.user.id;
     this.guild = discord.guild;
     this.listnumber = listnumber+'';
     this.username = discord.user.username;
     this.maskName = discord.user.username;
-
-    this.role.setPlayer(this);
+    this.channelManager = new PlayerChannelManager({
+      game: game,
+      player: this,
+      channel: channel,
+      defaultId: discord.user.id,
+    });
   }
 
   // ------------------------------------- FUNCTION DUMP
@@ -179,6 +184,8 @@ export default class Player{
       const commandStatus = command.getStatus();
       const permission = command.getPermission().toLowerCase();
 
+    
+
       const hasStocks = stocks > 0;
       const isHostCommand = permission === 'host';
       const isAdminCommand = permission === 'admin';
@@ -187,12 +194,28 @@ export default class Player{
         .map((status) => status.toLowerCase())
         .includes(playerStatus.toLowerCase())
 
+      console.log(`
+        name: ${command.getName()}
+        phase: ${phase}
+        phases: ${phases.join(', ')}
+        stocks: ${stocks}
+        playerStatus: ${playerStatus}
+        commandStatus: ${commandStatus.join(', ')}
+        permission: ${permission}
+        hasStocks: ${hasStocks}
+        isHostCommand: ${isHostCommand}
+        isAdminCommand: ${isAdminCommand}
+        matchCurrentPhase: ${matchCurrentPhase}
+        matchPlayerStatus: ${matchPlayerStatus}
+      `)
+
       if(!hasStocks) return;
       if(!matchCurrentPhase) return;
       if(!matchPlayerStatus) return;
       if(isHostCommand && !playerIsHost) return
       if(isAdminCommand && !playerIsAdmin) return 
 
+      console.log('returning command')
       return command;
     });
 

@@ -61,8 +61,8 @@ export const phaseCommands = ({messageManager}:Params) => {
   const description = player.getRole().getCommands().map((command)=>{
     const commandHasAStock = command.getStocks() > 0;
     const commandIsRoleCommand = command.getPermission() === 'Role Holder';
-    const commandMatchesPlayerStatus = command.getStatus() === playerStatus ;
     const commandAvailableDuringPhase = arrayContainsElement(command.getPhases(),phase);
+    const commandMatchesPlayerStatus = arrayContainsElement(command.getStatus(), playerStatus);
     if( commandHasAStock && commandIsRoleCommand && 
         commandMatchesPlayerStatus && commandAvailableDuringPhase ) {
           const commandName = command.getName();
@@ -91,7 +91,7 @@ export const availableCommands = ({messageManager}:Params)=>{
       case 'Player': return true
       case 'Host': return game.isHost(player)
       case 'Admin': return game.isAdmin(player)
-      case 'Role Holder': return (c.getStocks()>0 && c.getStatus()==playerStatus)
+      case 'Role Holder': return (c.getStocks()>0 && arrayContainsElement(c.getStatus(),playerStatus))
     }
   })
  

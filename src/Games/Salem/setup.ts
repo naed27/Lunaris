@@ -20,7 +20,7 @@ export default class Setup{
   
   determineRolePool = (rolePool: RolePoolElement[]) => {
     const rolledPool: SalemRole[] = [];
-    
+
     for(let i=0; i<rolePool.length; i++){
       let roleFilter = roles;
       if(rolePool[i].alignment !== 'Random'){
@@ -32,12 +32,13 @@ export default class Setup{
           }
         }
       }
-      const startRange = 0;
-      const endRange = roleFilter.length-1;
-      const rngIndex = Math.floor((Math.random() * endRange) + startRange);
-      const pickedRoled = roleFilter[rngIndex];
+
+      const rngStart = 0;
+      const rngEnd = roleFilter.length-1;
+      const rngChosenIndex = Math.floor((Math.random() * rngEnd) + rngStart);
+      const pickedRoled = roleFilter[rngChosenIndex];
       if(pickedRoled.unique){
-        const roleAlreadyExists = rolePool.find((r)=>r.name === pickedRoled.name);
+        const roleAlreadyExists = rolledPool.find((r)=>r.name === pickedRoled.name);
         if(roleAlreadyExists) i--;
         else rolledPool.push(pickedRoled);
       }else{
@@ -54,18 +55,16 @@ export default class Setup{
     const rolledRoles = shuffleArray( this.determineRolePool(rolePool) );
     const players = shuffleArray( this.game.getHost().getJoinedPlayers() );
 
-    rolledRoles.map( async (role, i)=>{
+    for(let i=0; i<rolledRoles.length; i++){
       const channel = await this.createChannel();
-      const player = new Player({
+      this.game.connectPlayer(new Player({
+        listnumber: i+1,
         game: this.game,
-        discord: players[i],
         channel: channel,
-        role: new Role(role),
-        listnumber: i+1
-      });
-
-      this.game.connectPlayer(player);
-    });
+        discord: players[i],
+        role: new Role(rolledRoles[i]),
+      }));
+    }
   }
 
   createChannel = async () => {
@@ -95,8 +94,11 @@ export default class Setup{
     this.game.setGameKey(gameRole);
   }
 
-  distributeGameRole = () =>{
-    this.game.getPlayers().map(player => player.getDiscord().roles.add( this.game.getGameKey() ));
+  distributeGameRole = async () =>{
+    if( !this.game.getGameKey() ) return
+    for( const player of this.game.getPlayers() ){
+      await player.getDiscord().roles.add( this.game.getGameKey() )
+    }
   }
 
   calculateJudgements = async () => {
@@ -149,7 +151,10 @@ export default class Setup{
   }
 
 
-  setupPlayerCollectors = async () => this.game.getPlayers().map(p => p.getChannelManager().listen());
+  activatePlayerListeners = async () => {
+    this.game.getPlayers().map(p => p.getChannelManager().listen())
+  };
+
   lockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().lock());
   unlockPlayerChannels = async () => this.game.getPlayers().map((p)=>p.getChannelManager().unlock());
   showPlayerChannels = async () => this.game.getPlayers().map(async p => p.getChannelManager().show(p.getId()));

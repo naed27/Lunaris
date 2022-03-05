@@ -4,9 +4,13 @@ import Player from '../../player'
 import PlayerChannelManager from '../playerChannelManager';
 import { ReactCollector } from './collectors';
 
+interface CardGenerator{
+  ({messageManager}:{messageManager:MessageManager}): MessageEmbed
+};
+
 interface ConstructorParams{
-  channel: PlayerChannelManager
-  generator:{({messageManager}:{messageManager:MessageManager}): MessageEmbed};
+  generator: CardGenerator
+  channelManager: PlayerChannelManager
 }
 
 export default class MessageManager{
@@ -16,19 +20,18 @@ export default class MessageManager{
   readonly channelManager: PlayerChannelManager;
   readonly channel: TextChannel;
 
-  message: Message | null;
+  message: Message | null = null;
   page = 0;
   minPage = 1;
   maxPage = 1;
-  cardGenerator:{({messageManager}:{messageManager:MessageManager}): MessageEmbed};
+  cardGenerator: CardGenerator;
     
-  constructor({channel, generator}:ConstructorParams){
-    this.channelManager = channel;
-
+  constructor({channelManager, generator}:ConstructorParams){
+    this.channelManager = channelManager;
     this.cardGenerator = generator;
-    this.game = channel.getGame();
-    this.player = channel.getPlayer();
-    this.channel = channel.getChannel();
+    this.game = channelManager.getGame();
+    this.player = channelManager.getPlayer();
+    this.channel = channelManager.getChannel();
   }
   
   getGame = () => this.game;
@@ -68,7 +71,7 @@ export default class MessageManager{
   }
 
   update = (messageEmbed: MessageEmbed = null) => {
-    if(this.message === null) return
+    if(this.message === null || this.message === undefined) return
     const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
     this.message.edit({embeds:[embed]});
   }
