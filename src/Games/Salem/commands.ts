@@ -1,4 +1,4 @@
-import { jsonWrap, splitStringByComma } from '../../Helpers/toolbox';
+import { jsonWrap } from '../../Helpers/toolbox';
 import { SalemCommand } from './roles';
 
 
