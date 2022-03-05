@@ -176,15 +176,13 @@ export default class Player{
     const playerIsHost = this.game.isHost(this);
     const playerIsAdmin = this.game.isAdmin(this);
 
-    const availableCommands = this.getRole().getCommands().map((command)=>{
+    const availableCommands = this.getRole().getCommands().filter((command)=>{
 
       const phases = command.getPhases();
       const stocks = command.getStocks();
       const playerStatus = this.getStatus();
       const commandStatus = command.getStatus();
       const permission = command.getPermission().toLowerCase();
-
-    
 
       const hasStocks = stocks > 0;
       const isHostCommand = permission === 'host';
@@ -194,31 +192,15 @@ export default class Player{
         .map((status) => status.toLowerCase())
         .includes(playerStatus.toLowerCase())
 
-      console.log(`
-        name: ${command.getName()}
-        phase: ${phase}
-        phases: ${phases.join(', ')}
-        stocks: ${stocks}
-        playerStatus: ${playerStatus}
-        commandStatus: ${commandStatus.join(', ')}
-        permission: ${permission}
-        hasStocks: ${hasStocks}
-        isHostCommand: ${isHostCommand}
-        isAdminCommand: ${isAdminCommand}
-        matchCurrentPhase: ${matchCurrentPhase}
-        matchPlayerStatus: ${matchPlayerStatus}
-      `)
+      if(!hasStocks) return false;
+      if(!matchCurrentPhase) return false;
+      if(!matchPlayerStatus) return false;
+      if(isHostCommand && !playerIsHost) return false;
+      if(isAdminCommand && !playerIsAdmin) return false ;
 
-      if(!hasStocks) return;
-      if(!matchCurrentPhase) return;
-      if(!matchPlayerStatus) return;
-      if(isHostCommand && !playerIsHost) return
-      if(isAdminCommand && !playerIsAdmin) return 
-
-      console.log('returning command')
-      return command;
+      return true;
     });
-
+    
     return availableCommands;
   }
 
