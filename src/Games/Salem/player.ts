@@ -177,7 +177,7 @@ export default class Player{
       const phases = command.getPhases();
       const stocks = command.getStocks();
       const playerStatus = this.getStatus();
-      const commandStatus = command.getStatus();
+      const commandStatus = command.getRequiredStatus();
       const permission = command.getPermission().toLowerCase();
 
       const hasStocks = stocks > 0;

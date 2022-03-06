@@ -47,7 +47,7 @@ export default class Command{
   isLethal = () => this.lethal;
 
   getPhases = () => this.phase
-  getStatus = () => this.requiredStatus
+  getRequiredStatus = () => this.requiredStatus
 
   getQueue = () => this.queue;
   setQueue = (a: string) => this.queue=a;  
