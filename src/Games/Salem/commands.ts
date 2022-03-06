@@ -19,7 +19,9 @@ const commands: SalemCommand[] =  [
         performer:({ user }) => user,
         visitsTarget:() => false,
         defaultTarget:() => [],        
-        targetables: () => [],
+        targetables: ({game,user}) => {
+            return game.getPlayers().filter(player => player.isAlive() && player.getUsername() !== user.getUsername())
+        },
         callResponse: () => null,
         run: ({user,game,targetOne: target})=>{
             game.pushVote({voter: user, voted: target});      
