@@ -541,6 +541,8 @@ export default class Player{
   isJailed = () => this.jailStatus === true;
   setJailedStatus = (a: boolean) => this.jailStatus = a;
 
+  isMafia = () => this.getRole().getAlignment() === 'Mafia';
+
   getId = () => this.id
 
   getExRoles = () => this.exRoles
