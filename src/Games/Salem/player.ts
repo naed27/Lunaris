@@ -215,7 +215,7 @@ export default class Player{
 
   alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))
 
-  sendEmbedWithMenu = async (description: string, menu: MessageActionRow) =>
+  sendEmbedWithMenu = async ({description, menu}:{description: string, menu: MessageActionRow}) =>
     await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],})
   
 
