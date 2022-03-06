@@ -84,30 +84,28 @@ export default class PlayerChannelManager extends ChannelManager{
         const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
 
         if(searchedCommands.length > 1) {
-          const response = createEmbed({description: responses.multipleCommandsFound({searchResults:searchedCommands})});
-          this.player.sendEmbedToChannel(response);
+          this.player.alert(responses.multipleCommandsFound({searchResults:searchedCommands}));
           return
         };
 
         if(searchedCommands.length === 0) {
-          const embed = createEmbed({description: responses.commandNeitherFoundNorAvailable})
-          this.player.sendEmbedToChannel(embed)
+          this.player.alert(responses.commandNeitherFoundNorAvailable)
           return
         }
 
         const calledCommand = searchedCommands[0];
         const command = playerCommands.find(c => c.name === calledCommand);
-        this.player.getChannel().send(`you called the ${command.getName()} command`);
+        this.player.alert(`you called the ${command.getName()} command`);
 
       }else{
 
         if(PHASE.canTalk === false && PHASE.name !== 'Night'){
-          this.player.getChannelManager().send(responses.cantTalk)
+          this.player.alert(responses.cantTalk)
           return
         }
 
         if(this.player.isBlackmailed()) {
-          this.player.getChannelManager().send(responses.blackmailed)
+          this.player.alert(responses.blackmailed)
           return
         }
 
