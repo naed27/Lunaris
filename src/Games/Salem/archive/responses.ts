@@ -1,5 +1,6 @@
 const responses = {
 
+  cantTalk: `You can't talk right now.`,
   blackmailed: `You are being blackmailed! You can't talk right now, `,
   commandNeitherFoundNorAvailable: `That command is neither found nor available.`,
 
