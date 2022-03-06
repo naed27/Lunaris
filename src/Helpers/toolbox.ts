@@ -170,22 +170,13 @@ export const createMenu = ({
   customId:string,
   choices:string[]
 }) => {
-
   return new MessageActionRow()
   .addComponents(
     new MessageSelectMenu()
     .setCustomId(customId)
     .setPlaceholder(placeHolder)
-    .addOptions(
-      choices.map((choice: string)=>{
-        return {
-          label: choice,
-          value: choice
-        }
-      })
-    )
+    .addOptions(choices.map((choice: string)=> ({ label: choice, value: choice })))
   )
-
 }
 
 
