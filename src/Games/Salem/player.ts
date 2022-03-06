@@ -98,10 +98,6 @@ export default class Player{
       this.maskRole = new Role(face);
       this.maskName = this.username;
     }
-    if(this.isAlive()){
-      this.setNotes(null);
-      this.getMaskRole().setName(this.cleanedName);
-    }
   }
 
   sendMessageToChannel = (message: string) => this.getChannel().send(message)
