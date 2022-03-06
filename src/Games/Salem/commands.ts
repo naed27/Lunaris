@@ -20,7 +20,7 @@ const commands: SalemCommand[] =  [
         visitsTarget:() => false,
         defaultTarget:() => [],        
         targetables: ({game,user}) => {
-            return game.getPlayers().filter(player => player.isAlive() && player.getUsername() !== user.getUsername())
+            return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
         },
         callResponse: () => null,
         run: ({user,game,targetOne: target})=>{
