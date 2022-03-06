@@ -99,8 +99,11 @@ export default class PlayerChannelManager extends ChannelManager{
 
       }else{
 
+
         if(this.player.isAlive() === false){
-          this.player.messageGhosts(MESSAGE);
+          const playerMessage = `**(Ghost) ${this.player.getUsername()}**: ${MESSAGE}`
+          this.player.messageGhosts(playerMessage)
+          return
         }
 
         if(PHASE.canTalk === false && PHASE.name !== 'Night'){
@@ -115,11 +118,29 @@ export default class PlayerChannelManager extends ChannelManager{
 
         if(PHASE.name === 'Night'){
           if(this.player.isMafia()){
-            this.player.message
+            const playerMessage = `**(${this.player.getRoleName()}) ${this.player.getUsername()}**: ${MESSAGE}`
+            this.player.messageMafias(playerMessage);
+            return
+          }
+
+          if(this.player.isJailed()){
+            const playerMessage = `**(Jailed) ${this.player.getUsername()}**: ${MESSAGE}`
+            this.player.messageJailedPlayers(playerMessage);
+            this.player.messageJailor(playerMessage);
+            return
+          }
+
+          if(this.player.roleNameIs('Jailor')){
+            const messageToJailed = `**Jailor**: ${MESSAGE}`
+            const messageToSelf = `**Jailor (You)**: ${MESSAGE}`
+            this.player.messageJailedPlayers(messageToJailed);
+            this.player.messageJailor(messageToSelf);
+            return
           }
         }
 
-        this.player.getChannelManager().send(MESSAGE);
+        const playerMessage = `**${this.player.getUsername()}**: ${MESSAGE}`
+        this.player.messageAlivePlayers(playerMessage);
         return
         
       }
