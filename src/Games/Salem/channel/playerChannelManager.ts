@@ -74,7 +74,7 @@ export default class PlayerChannelManager extends ChannelManager{
 
       const MESSAGE = m.content;
       const PREFIX = this.game.getPrefix();
-      const PHASE = this.game.getClock().getPhase().name;
+      const PHASE = this.game.getClock().getPhase();
 
       if(MESSAGE.startsWith(PREFIX)){
 
@@ -100,6 +100,12 @@ export default class PlayerChannelManager extends ChannelManager{
         this.player.getChannel().send(`you called the ${command.getName()} command`);
 
       }else{
+
+        if(PHASE.canTalk === false){
+          this.player.getChannelManager().send(responses.cantTalk)
+          return
+        }
+
         if(this.player.isBlackmailed()) {
           this.player.getChannelManager().send(responses.blackmailed)
           return
