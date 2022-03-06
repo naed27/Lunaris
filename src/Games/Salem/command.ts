@@ -12,6 +12,7 @@ export default class Command{
   phase: string[];
   requiredStatus: string[];
   targetCount: number;
+  lethal: boolean;
 
   run: runFunc; 
   performer: performerFunc;
@@ -31,6 +32,7 @@ export default class Command{
     this.targetCount = command.targetCount;
     this.phase = command.phase;
     this.requiredStatus = command.requiredStatus;
+    this.lethal = command.lethal;
 
     this.run = command.run;
     this.performer = command.performer;
@@ -41,6 +43,8 @@ export default class Command{
   }
 
   // ------------------------------------- SETTERS AND GETTERS
+
+  isLethal = () => this.lethal;
 
   getPhases = () => this.phase
   getStatus = () => this.requiredStatus
