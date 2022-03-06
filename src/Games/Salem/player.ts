@@ -408,6 +408,8 @@ export default class Player{
     }
   }
 
+  alert = async (msg: string) => this.sendEmbedToChannel(createEmbed({description: msg}))
+
   messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(msg))
 
   messageGhosts = async (msg: string) => {
