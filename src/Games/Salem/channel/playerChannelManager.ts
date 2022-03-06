@@ -101,7 +101,7 @@ export default class PlayerChannelManager extends ChannelManager{
 
       }else{
 
-        if(PHASE.canTalk === false){
+        if(PHASE.canTalk === false && PHASE.name !== 'Night'){
           this.player.getChannelManager().send(responses.cantTalk)
           return
         }
