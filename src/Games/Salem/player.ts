@@ -1,5 +1,5 @@
 import { Guild, GuildMember, MessageEmbed, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
-import roles from "./roles";
+import roles, { SalemRoleName } from "./roles";
 import Role from "./role";
 import Game from "./game";
 import { arrayContainsElement, createEmbed, jsonWrap, delay } from "../../Helpers/toolbox";
@@ -611,7 +611,7 @@ export default class Player{
 
   isImmuneTo = (a: string) => arrayContainsElement(this.role.getImmunities(),a);
 
-  roleNameIs = (a: string) => this.getRoleName() === a;
+  roleNameIs = (a: SalemRoleName) => this.getRoleName() === a;
   alignmentIs = (a: string) => this.getRole().getAlignment() === a;
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
