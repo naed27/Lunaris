@@ -1,22 +1,23 @@
 import globalCommands from "./commands";
 import Result from "./result";
 import Player from "./player";
-import { SalemRole } from "./roles";
+import { SalemRole, SalemRoleAlignment, SalemRoleName, SalemRoleType } from "./roles";
 import Command from "./command";
 
 export default class Role{
 
     player: Player;
 
+    name: SalemRoleName | 'Cleaned';
+    type: SalemRoleType | 'Cleaned';
+    alignment: SalemRoleAlignment | 'Cleaned';
+
     id: string;
-    name: string;
-    type: string;
     goals: string[];
     attack: number;
     defense: number;
     results: Result;
     abilities: string[];
-    alignment: string;
     winBuddies: string[];
     immunities: string[];
     roleMessage: string;
@@ -50,10 +51,10 @@ export default class Role{
     setId = (a:string) => this.id = a
     
     getName = () =>  this.name
-    setName = (a:string) => this.name = a
+    setName = (a:SalemRoleName) => this.name = a
 
     getType = () => this.type
-    setType = (a:string) => this.type = a;
+    setType = (a:SalemRoleType) => this.type = a;
 
     getPlayer = () => this.player
     setPlayer = (a:Player) => this.player = a
@@ -71,7 +72,7 @@ export default class Role{
     setDefense = (a:number) => this.defense = a;
 
     getAlignment = () => this.alignment
-    setAlignment = (a:string) => this.alignment = a;
+    setAlignment = (a:SalemRoleAlignment) => this.alignment = a;
 
     getAbilities = () => this.abilities
     pushAbility = (a:string) => this.abilities.push(a);
