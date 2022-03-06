@@ -673,7 +673,7 @@ const roles: SalemRole[] = [
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({ game })=>{
-                        let targetables = game.getPlayers().filter(p => p.getStatus() == `Dead` && p.getMaskRole().getName() != `Cleaned` && p.getMaskRole().getAlignment()==`game`);
+                        let targetables = game.getPlayers().filter(p => p.getStatus() == `Dead` && p.getMaskRole().getName() != `Cleaned`);
                         return targetables;
                     },
                     defaultTarget:({} )=> [],
