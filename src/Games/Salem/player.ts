@@ -412,6 +412,21 @@ export default class Player{
     }
   }
 
+  messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(msg))
+
+  messageGhosts = async (msg: string) => {
+    this.game.getPlayers().map((p)=>!p.isAlive() && p.getChannelManager().send(msg))
+  }
+
+  messageSpies  = async (msg: string) => {
+    this.game.getPlayers().map((p)=>p.getRoleName() === 'Spy' && p.getChannelManager().send(msg))
+  }
+
+  messagePlayersWrapped = async (msg: string) => {
+    const content = jsonWrap(msg);
+    this.game.getPlayers().map((p)=>p.getChannelManager().send(content));
+  }
+
   // ------------------------------------- SETTERS / GETTERS
 
 
