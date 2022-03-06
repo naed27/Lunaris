@@ -1,4 +1,4 @@
-import { Guild, GuildMember, MessageEmbed, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
+import { Guild, GuildMember, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
 import roles, { SalemRoleName } from "./roles";
 import Role from "./role";
 import Game from "./game";
@@ -99,10 +99,6 @@ export default class Player{
       this.maskName = this.username;
     }
   }
-
-  sendMessageToChannel = (message: string) => this.getChannel().send(message)
-  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message));
-  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]});
 
   showNote = async () => {
     if(this.getNotes().length===0) return 
@@ -213,7 +209,15 @@ export default class Player{
     }
   }
 
-  alert = async (msg: string) => this.sendEmbedToChannel(createEmbed({description: msg}))
+  sendMessageToChannel = (message: string) => this.getChannel().send(message)
+  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message));
+  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]});
+
+  alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))
+
+  sendEmbedWithMenu = async (description: string, menu: MessageActionRow) =>
+    await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],})
+  
 
   messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(msg))
 
