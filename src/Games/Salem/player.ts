@@ -420,6 +420,14 @@ export default class Player{
     this.game.getPlayers().map((p)=>!p.isAlive() && p.getChannelManager().send(msg))
   }
 
+  messageJailedPlayers = async (msg: string) => {
+    this.game.getPlayers().map((p)=>p.isJailed() && p.getChannelManager().send(msg))
+  } 
+
+  messageJailor = async (msg: string) => {
+    this.game.getPlayers().map((p)=>p.getRoleName() === 'Jailor' && p.getChannelManager().send(msg))
+  } 
+
   messageSpies  = async (msg: string) => {
     this.game.getPlayers().map((p)=>p.getRoleName() === 'Spy' && p.getChannelManager().send(msg))
   }

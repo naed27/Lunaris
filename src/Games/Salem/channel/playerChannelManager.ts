@@ -99,6 +99,10 @@ export default class PlayerChannelManager extends ChannelManager{
 
       }else{
 
+        if(this.player.isAlive() === false){
+          this.player.messageGhosts(MESSAGE);
+        }
+
         if(PHASE.canTalk === false && PHASE.name !== 'Night'){
           this.player.alert(responses.cantTalk)
           return
@@ -109,7 +113,12 @@ export default class PlayerChannelManager extends ChannelManager{
           return
         }
 
-        const title = this.player.isJailed() ? `(Jailed) ` : ``;
+        if(PHASE.name === 'Night'){
+          if(this.player.isMafia()){
+            this.player.message
+          }
+        }
+
         this.player.getChannelManager().send(MESSAGE);
         return
         
