@@ -1,4 +1,4 @@
-import { Guild, GuildMember, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, TextChannel, User } from "discord.js";
+import { CacheType, Guild, GuildMember, InteractionCollector, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from "discord.js";
 import roles, { SalemRoleName } from "./roles";
 import Role from "./role";
 import Game from "./game";
@@ -30,6 +30,10 @@ export default class Player{
 
   channel: TextChannel;
   channelManager: PlayerChannelManager;
+  interactionCollectors: InteractionCollector<SelectMenuInteraction<CacheType> 
+  | SelectMenuInteraction<"cached">>[] = [];
+
+
 
   role: Role;
   maskRole: Role;
@@ -454,4 +458,15 @@ export default class Player{
     this.secondActionTarget = null
   }
 
+  setInteractionCollectors = ( collectors : InteractionCollector<SelectMenuInteraction<CacheType> 
+    | SelectMenuInteraction<"cached">>[]) =>{
+    this.interactionCollectors = collectors;
+  }
+
+  getInteractionCollectors = () => this.interactionCollectors;
+
+  endAllActionInteractions = () =>{
+    this.interactionCollectors.forEach(collector => collector.stop())
+    this.interactionCollectors = [];
+  }
 }
