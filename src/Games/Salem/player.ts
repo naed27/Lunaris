@@ -41,7 +41,7 @@ export default class Player{
   notes = '';
   status: 'Alive' | 'Dead' = 'Alive';
 
-  voteCount = 1
+  voteCount = 1;
  
   causeOfDeath = [];
   winStatus = false;
@@ -82,7 +82,7 @@ export default class Player{
     });
   }
 
-  // ------------------------------------- FUNCTION DUMP
+  // ------------------------- Functions 
 
   listenForTheWin(alivePlayers:Player[]){
     const winBuddies = this.getRole().getWinBuddies();
@@ -266,7 +266,7 @@ export default class Player{
     this.game.getPlayers().map((p)=>p.getChannelManager().send(content));
   }
 
-  // ------------------------------------- SETTERS / GETTERS
+  // ------------------------- Setters & Getters
 
 
 
