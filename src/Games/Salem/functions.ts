@@ -73,24 +73,24 @@ export default class Functions{
     return string+results;
   }
 
-  async messageMafias(message: string){
+  messageMafias = (message: string) => {
     const mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=='Mafia');
-    mafias.map((mafia)=>mafia.getChannelManager().send(message))
+    mafias.map((mafia) => mafia.getChannelManager().send(message));
   }
 
-  async messageOtherMafias(message: string, sender: Player){
+  messageOtherMafias = (message: string, sender: Player) => {
     const content = jsonWrap(message);
     const mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=='Mafia' && p.getUsername()!=sender.getUsername());
     mafias.map((mafia)=>mafia.getChannelManager().send(content))
   }
 
-  playerWithRoleIsAlive(role: string){
+  playerWithRoleIsAlive = (role: string) => {
     if(this.game.getPlayers().filter(p=>p.getRole().getName()==role && p.getStatus()=='Alive').length>0)
       return true;
     return false;
   }
 
-  roleExistsInActions(roleName: string){
+  roleExistsInActions = (roleName: string) => {
     if(this.game.getActions().filter(a=>a.getUser().getRole().getName()==roleName).length>0)
       return true;
     return false;

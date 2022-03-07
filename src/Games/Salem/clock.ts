@@ -12,7 +12,7 @@ class Clock{
     phases = [...Phases];
     phase: Phase = this.phases[0];
     previousPhase: Phase;
-    nextPhase: Phase;
+    nextPhase: Phase = this.phases.find(phase => phase.name === this.phases[0].next.normal);
     round: number;
     
     //durations
@@ -41,7 +41,7 @@ class Clock{
 
     constructor(game:Game){ this.game = game }
 
-    // ------------------------------------- FUNCTIONS
+    // ---------------------------- Functions
 
     remindPlayers(){
         if( this.secondsRemaining > 5 || this.secondsRemaining < 1 )
@@ -98,8 +98,8 @@ class Clock{
 
     updatePhase = () => {
         this.previousPhase = this.phase;
-    
-        this.phase = this.nextPhase;
+        this.phase = this.nextPhase
+        
         this.remindTime = this.phase.remindTime;
         this.increaseTime(this.phase.duration);
     
@@ -107,9 +107,8 @@ class Clock{
           this.game.getFunctions()
         else 
           this.game.getSetup().unlockPlayerChannels();
-    
-        const next = this.phase.next;
-        this.nextPhase = this.phases.find(p => p.name === next.normal);
+        
+        this.nextPhase = this.findPhase(this.phase.next.normal);
         
         return this.phase.name;
     }
