@@ -57,7 +57,9 @@ export default class Player{
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
-  actionTargets: Player[] = [];
+  firstActionTarget: Player | null = null;
+  secondActionTarget: Player | null = null;
+
 
   constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
     this.game = game;
@@ -94,12 +96,17 @@ export default class Player{
     }
   }
 
-  async resetMask(){
+  resetMask = () => {
     if(!this.disguiseStatus){
       const face = roles.find(r=>r.name==this.getRole().getName()); 
       this.maskRole = new Role(face);
       this.maskName = this.username;
     }
+  }
+
+  resetYesterdayStatus = () => {
+    this.clearActionTargets();
+    this.resetMask();
   }
 
   showNote = async () => {
@@ -427,31 +434,24 @@ export default class Player{
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
   
-  setFirstActionTarget = (a: Player) => {
-    if(this.actionTargets.length === 0) 
-      return this.actionTargets.push(a)
-    return this.actionTargets[0] = a;
-  }
+  setFirstActionTarget = (a: Player) => this.firstActionTarget = a
 
-  setSecondActionTarget = (a: Player) => {
-    if(this.actionTargets.length === 1) 
-      return this.actionTargets.push(a);
-    return this.actionTargets[1] = a;
-  }
+  setSecondActionTarget = (a: Player) => this.secondActionTarget = a
 
-  getFirstActionTarget = () => {
-    if(this.actionTargets.length<=0) 
-      return null;
-    return this.actionTargets[0];
-  }
+  getFirstActionTarget = () => this.firstActionTarget
   
-  getSecondActionTarget = () => {
-    if(this.actionTargets.length<=1) 
-      return null;
-    return this.actionTargets[1];
+  getSecondActionTarget = () => this.secondActionTarget
+
+  getActionTargets = () => {
+    const targets = [];
+    if(this.firstActionTarget !== null) targets.push(this.firstActionTarget);
+    if(this.secondActionTarget !== null) targets.push(this.secondActionTarget);
+    return targets;
   }
 
-  getActionTargets = () => this.actionTargets
-
+  clearActionTargets = () => {
+    this.firstActionTarget = null
+    this.secondActionTarget = null
+  }
 
 }
