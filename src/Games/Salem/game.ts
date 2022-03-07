@@ -141,7 +141,9 @@ export default class Game{
 
     pushAction( action: Action ){
         const index = this.actions.findIndex(a => a.user.getId() == action.getUser().getId());
-        (index>=0) ? this.actions[index]=action : this.actions.push(action)
+        if(index>=0) 
+            return this.actions[index]=action  
+        return this.actions.push(action)
     }
 
     removeActionOf = (player: Player) => {
