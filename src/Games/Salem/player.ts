@@ -145,7 +145,7 @@ export default class Player{
     await delay(3000);
   }
 
-  async playDeath(){
+  playDeath = async () => {
     await delay(2000);
     if(this.causeOfDeath.length>0){
       if(this.causeOfDeath[0]=="committed suicide"){
@@ -170,6 +170,13 @@ export default class Player{
     await this.game.getFunctions().sendMarkDownToPlayers(message3,1000);
 
     this.showNote();
+  }
+
+  playResurrection = async () => {
+    await delay(1000);
+    const  msg = `${this.getUsername()} has been resurrected!`;
+    await this.messagePlayers(jsonWrap(msg));
+    await delay(1000);
   }
 
   cleanHelpers = async () => {
