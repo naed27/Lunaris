@@ -111,16 +111,17 @@ export default class Game{
         this.getClock().setPeaceCount(currentPeaceCount+1);
         if(this.freshDeaths.length<=0)return
         this.getClock().setPeaceCount(0);
-        this.freshDeaths.map((p)=>p.playDeath());
+        for (const player of this.freshDeaths) {
+            await player.playDeath();
+        }
         this.freshDeaths=[];
     }
 
-    rebornListener = () => {
+    rebornListener = async () => {
         if(this.freshReborn.length<=0)return;
-        this.freshReborn.map(async reborn =>{
-            const  msg = `${reborn.getUsername()} has been resurrected!`;
-            await this.getFunctions().messagePlayersWrapped(msg);
-        });
+        for (const player of this.freshReborn) {
+            await player.playResurrection();
+        }
         this.clearFreshReborn();
     }
 
