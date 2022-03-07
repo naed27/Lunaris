@@ -222,6 +222,11 @@ const singleTargetMenu = async ({ command, game, player, ARGS }:{
     return
   })
 
+  collector.on('end',async (i)=>{
+    address.delete();
+    return
+  })
+
   return [collector];
 }
 
@@ -258,11 +263,21 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
     return
   })
 
+  collectorOne.on('end',async (i)=>{
+    addressOne.delete();
+    return
+  })
+
   collectorTwo.on('collect',async (i)=>{
     i.deferUpdate();
     const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
     player.setSecondActionTarget(player);
     preProcessAction();
+    return
+  })
+
+  collectorTwo.on('end',async (i)=>{
+    addressTwo.delete();
     return
   })
 
