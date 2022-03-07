@@ -5,6 +5,7 @@ import Game from "./game";
 import { arrayContainsElement, createEmbed, jsonWrap, delay } from "../../Helpers/toolbox";
 import PlayerChannelManager from "./channel/playerChannelManager";
 import Notif from "./notif";
+import Action from "./action";
 
 interface ConstructorParams{
   game: Game,
@@ -56,6 +57,7 @@ export default class Player{
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
+  actionTargets: Player[] = [];
 
   constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
     this.game = game;
@@ -423,5 +425,33 @@ export default class Player{
   roleNameIs = (a: SalemRoleName) => this.getRoleName() === a;
   alignmentIs = (a: string) => this.getRole().getAlignment() === a;
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
+
+  
+  setFirstActionTarget = (a: Player) => {
+    if(this.actionTargets.length === 0) 
+      return this.actionTargets.push(a)
+    return this.actionTargets[0] = a;
+  }
+
+  setSecondActionTarget = (a: Player) => {
+    if(this.actionTargets.length === 1) 
+      return this.actionTargets.push(a);
+    return this.actionTargets[1] = a;
+  }
+
+  getFirstActionTarget = () => {
+    if(this.actionTargets.length<=0) 
+      return null;
+    return this.actionTargets[0];
+  }
+  
+  getSecondActionTarget = () => {
+    if(this.actionTargets.length<=1) 
+      return null;
+    return this.actionTargets[1];
+  }
+
+  getActionTargets = () => this.actionTargets
+
 
 }
