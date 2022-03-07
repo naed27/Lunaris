@@ -78,6 +78,7 @@ export default class Game{
         await this.getSetup().createGameRole();
         await this.getSetup().distributeGameRole();
         await this.getSetup().activatePlayerListeners();
+        await this.getSetup().showPlayerChannels();
         await this.getSetup().unlockPlayerChannels();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
