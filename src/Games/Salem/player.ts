@@ -111,6 +111,12 @@ export default class Player{
   resetYesterdayStatus = () => {
     this.clearActionTargets();
     this.resetMask();
+    this.clearBuffs();
+    this.clearVisitors();
+    this.clearJudgement();
+    this.setSeanceStatus(false);
+    this.setJailedStatus(false);
+    this.setRoleBlockStatus(false);
   }
 
   showNote = async () => {
