@@ -3,8 +3,8 @@ import Player from '../player'
 import responses from '../archive/responses';
 import ChannelManager from './channelManager';
 import MessageManager from './messageManagers/messageManager';
-import { GuildMember, Message, TextChannel }  from 'discord.js';
-import { createEmbed, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
+import { GuildMember, Message, TextChannel, Interaction }  from 'discord.js';
+import { createEmbed, createMenu, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
 import { 
   guide, 
   judge, 
@@ -14,6 +14,8 @@ import {
   playerList, 
   phaseCommands, 
   availableCommands } from './messageManagers/generators';
+import Action from '../action';
+import Command from '../command';
 
 interface ConstructorParams{
   game: Game, 
@@ -78,7 +80,7 @@ export default class PlayerChannelManager extends ChannelManager{
 
       if(MESSAGE.startsWith(PREFIX)){
 
-        const { COMMAND } = parseCommand( PREFIX, MESSAGE );  
+        const { COMMAND, ARGS } = parseCommand( PREFIX, MESSAGE );  
 
         const playerCommands = this.player.getCommands();
         const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
@@ -95,10 +97,18 @@ export default class PlayerChannelManager extends ChannelManager{
 
         const calledCommand = searchedCommands[0];
         const command = playerCommands.find(c => c.name === calledCommand);
-        this.player.alert(`you called the ${command.getName()} command`);
+        const menuParams = { ARGS, command, game: this.game, player: this.player }
+        this.player.endAllActionInteractions();
 
+        if(command.targetCount===0) noTargetMenu(menuParams)
+
+        if(command.targetCount===1) 
+          this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+        
+        if(command.targetCount===2) 
+          this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+        
       }else{
-
 
         if(this.player.isAlive() === false){
           const playerMessage = `**(Ghost) ${this.player.getUsername()}**: ${MESSAGE}`
@@ -146,4 +156,120 @@ export default class PlayerChannelManager extends ChannelManager{
       }
     })
   }
+}
+
+const processAction = ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+
+  const performer = command.performer({game: game, user: player});
+
+  if(command.priority === 0){
+    command.run({
+      args:ARGS,
+      game:game,
+      targetOne: player.getFirstActionTarget(),
+      targetTwo: player.getSecondActionTarget(),
+      command:command,
+      user:player,
+    })
+  }
+
+  game.pushAction(new Action({
+    user: player,
+    args: ARGS,
+    command: command,
+    performer: performer,
+    targets: player.getActionTargets()
+  }))
+
+  command.callResponse({
+    args: ARGS,
+    game: game,
+    command: command,
+    user: player,
+    targetOne: player.getFirstActionTarget(),
+    targetTwo: player.getSecondActionTarget(),
+  })
+}
+
+const noTargetMenu = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) =>  
+    processAction({ command, game, player, ARGS });
+
+const singleTargetMenu = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) =>{
+
+  const targetables = command.targetables({game: game, user: player});
+
+  const menu = createMenu({
+    customId: `${player.getId()}_${command.name}_menu`,
+    placeHolder: `Player Picker`,
+    choices: targetables.map((player) => ({ label:player.getUsername(), value: player.getId() }))
+  })
+  const address = await player.sendEmbedWithMenu({
+    description: `Choose who to ${command.name}.`,
+    menu
+  });
+
+  const filter = (i:Interaction) => i.user.id === player.getId();
+  const collector = address.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
+  
+  collector.on('collect',async (i)=>{
+    i.deferUpdate();
+    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    player.setFirstActionTarget(player);
+    processAction({ command, game, player, ARGS });
+    return
+  })
+
+  return [collector];
+}
+
+const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) =>{
+
+  const targetables = command.targetables({game: game, user: user});
+
+  const menu = createMenu({
+    customId: `${user.getId()}_${command.name}_menu_one`,
+    placeHolder: `Player Picker`,
+    choices: targetables.map((player) => ({ label:player.getUsername(), value: player.getId() }))
+  })
+
+  const addressOne = await user.sendEmbedWithMenu({
+    description: `Choose first target to ${command.name}.`,
+    menu
+  });
+
+  const addressTwo = await user.sendEmbedWithMenu({
+    description: `Choose second target to ${command.name}.`,
+    menu
+  });
+
+  const filter = (i:Interaction) => i.user.id === user.getId();
+  const collectorOne = addressOne.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
+  const collectorTwo = addressTwo.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
+  
+  collectorOne.on('collect',async (i)=>{
+    i.deferUpdate();
+    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    player.setFirstActionTarget(player);
+    preProcessAction();
+    return
+  })
+
+  collectorTwo.on('collect',async (i)=>{
+    i.deferUpdate();
+    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    player.setSecondActionTarget(player);
+    preProcessAction();
+    return
+  })
+
+  function preProcessAction (){
+    if(user.getActionTargets().length!==2) return;
+    processAction({ command, game, player: user, ARGS });
+  }
+
+  return [collectorOne, collectorTwo];
 }
