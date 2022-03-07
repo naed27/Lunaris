@@ -1,15 +1,15 @@
-import roledump from './roledump';
-import Action from './action';
-import Setup from './setup';
-import Functions from './functions';
-import Clock from './clock';
 import Host from './host';
-import { Guild, Role as DiscordRole } from 'discord.js';
-import SalemServer from '../../Servers/SalemServer';
-import Player from './player';
-import { SalemRole } from './roles';
-import { createEmbed, delay, jsonWrap } from '../../Helpers/toolbox';
+import Clock from './clock';
+import Setup from './setup';
 import Notif from './notif';
+import Action from './action';
+import Player from './player';
+import roledump from './roledump';
+import Functions from './functions';
+import { SalemRole } from './roles';
+import SalemServer from '../../Servers/SalemServer';
+import { Guild, Role as DiscordRole } from 'discord.js';
+import { createEmbed, delay, jsonWrap } from '../../Helpers/toolbox';
 
 type JudgementChoices = 'Abstain' | 'Guilty' | 'Innocent'
 
@@ -60,7 +60,6 @@ export default class Game{
     freshDeaths: Player[] = [];
     freshReborn: Player[] = [];
     jailedPlayer: Player | null = null;
-
 
     constructor({server,guild}: ConstructorParams){
         this.guild = guild;
@@ -374,7 +373,6 @@ export default class Game{
 
     getActionOf = (player:Player) => this.actions.find((a)=>a.getPerformer().getId() === player.getId());
 
-
     getId = () => this.id;
 
     getJailor = () => this.players.filter( p => p.getRole().getName() === 'Jailor')[0];
@@ -399,7 +397,6 @@ export default class Game{
     
     isAdmin = (a:Player) => a.getId() === '481672943659909120';
     isHost = (a:Player) => this.host.getHostId() === a.getId();
-
 
     // ------------------------- Game Ender
 
