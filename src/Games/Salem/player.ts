@@ -5,7 +5,6 @@ import Game from "./game";
 import { arrayContainsElement, createEmbed, jsonWrap, delay } from "../../Helpers/toolbox";
 import PlayerChannelManager from "./channel/playerChannelManager";
 import Notif from "./notif";
-import Action from "./action";
 
 interface ConstructorParams{
   game: Game,
@@ -32,8 +31,6 @@ export default class Player{
   channelManager: PlayerChannelManager;
   interactionCollectors: InteractionCollector<SelectMenuInteraction<CacheType> 
   | SelectMenuInteraction<"cached">>[] = [];
-
-
 
   role: Role;
   maskRole: Role;
