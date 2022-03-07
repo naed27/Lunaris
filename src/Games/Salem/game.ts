@@ -76,7 +76,7 @@ export default class Game{
 
     setupGame = async () => {
         await this.getSetup().setupPlayers();
-        // await this.getSetup().createGameRole();
+        await this.getSetup().createGameRole();
         await this.getSetup().distributeGameRole();
         await this.getSetup().activatePlayerListeners();
         await this.getSetup().unlockPlayerChannels();
@@ -86,12 +86,10 @@ export default class Game{
         await this.getClock().playLobby();
     }
 
-    async updateWerewolf(){
+    updateWerewolf = () => {
         const round = this.clock.getRound();
         const werewolves = this.getPlayersWithRole('Werewolf');
-        const report = round%2==0 ? 
-            'Your target is suspicious! ': 
-            'Your target seems innocent.';
+        const report = round%2==0 ? 'Your target is suspicious! ': 'Your target seems innocent.';
         werewolves.forEach(werewolf => werewolf.getMaskRole().getResults().setSheriff(report) );
     }
 
@@ -99,27 +97,14 @@ export default class Game{
 
     updatePlayerLists = async () => this.players.map(p => p.getChannelManager().managerPlayerList().update());
 
-    async resetDay(){
-        const jester: Player = this.players.find(p=>p.getRole().getName()=='Jester' && p.getStatus()=='Dead');
-        if(jester){
-            jester.getRole().getCommands().filter(c=>c.getName()=='haunt')[0].setStocks(0);
-        }
-        
-        this.players.map(player => {
-            player.resetMask();
-            player.clearBuffs();
-            player.clearVisitors();
-            player.clearJudgement();
-            player.setSeanceStatus(false);
-            player.setRoleBlockStatus(false);
-        });
+    resetDay = () => {
+        this.players
+        .filter(p=>p.getRole().getName()=='Jester' && p.getStatus()=='Dead')
+        .map(jester => jester.getRole().getCommands().filter(c=>c.getName()=='haunt')[0].setStocks(0))
 
-        if(this.getJailedPerson())
-            this.getJailedPerson().setJailStatus(false);
-        
+        this.players.map(player => player.resetYesterdayStatus());
         this.getClock().resetVotingExcessTime();
     }
-
 
     deathListener = async () => {
         const currentPeaceCount = this.getClock().getPeaceCount();
@@ -130,7 +115,7 @@ export default class Game{
         this.freshDeaths=[];
     }
 
-    rebornListener = async () => {
+    rebornListener = () => {
         if(this.freshReborn.length<=0)return;
         this.freshReborn.map(async reborn =>{
             const  msg = `${reborn.getUsername()} has been resurrected!`;
@@ -139,7 +124,7 @@ export default class Game{
         this.clearFreshReborn();
     }
 
-    pushAction( action: Action ){
+    pushAction = (action: Action) => {
         const index = this.actions.findIndex(a => a.user.getId() == action.getUser().getId());
         if(index>=0) 
             return this.actions[index]=action  
@@ -228,7 +213,7 @@ export default class Game{
 
     getVisitorsOf = (a: Player) => a.getVisitors();
 
-    // ----------- Game Starter
+    // ----------------------- Game Starter
 
     gameStart = async () => {
     
@@ -254,7 +239,7 @@ export default class Game{
         this.getClock().startGame();
     }
     
-    // ------------------------------------- SETTERS / GETTERS
+    // ----------------------- Setters & Getters
 
     getJudgements = () => this.judgements;
     pushJudgement( rawJudgement : {judge: Player,choice: JudgementChoices} ){
@@ -316,7 +301,6 @@ export default class Game{
         return `**You** have voted against **${voted.getUsername()}**`;
     }
 
-
     removeVoteOf = (voter: Player) => {
         const vote = this.votes.find(v => v.voter.getId() === voter.getId());
         if(!vote) return `**You** can't remove a vote if you haven't voted yet.`;
@@ -329,7 +313,6 @@ export default class Game{
         this.functions.messagePlayers(msg);
         return `**You** have cancelled your vote.`;
     }
-    
 
     getHost = () => this.host;
     setHost = (a:Host) => this.host = a;
@@ -417,7 +400,7 @@ export default class Game{
     isHost = (a:Player) => this.host.getHostId() === a.getId();
 
 
-    // ------------------------------------- QUITTERS
+    // ------------------------- Game Ender
 
     quit = async () => {
         this.getClock().terminateTimer();
