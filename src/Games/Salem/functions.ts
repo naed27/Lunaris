@@ -123,10 +123,11 @@ export default class Functions{
     if(this.game.roleExists('Mafioso')) return
 
     const subordinates = this.game.getAliveMafias().filter((m) => m.getRoleName() !== 'Godfather');
+    if(subordinates.length === 0) return
     
-
     const promotee = subordinates[0];
     const mafiosoRole = roles.find( r => r.name === 'Mafioso' );
+    console.log(promotee)
     promotee.setRole( new Role( mafiosoRole ) );
     await delay(1000);
     const notif = jsonWrap( `${promotee.getUsername()} has been promoted to Mafioso!` );
