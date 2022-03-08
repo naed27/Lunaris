@@ -60,7 +60,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Voting Calculation',
-    duration: 20,
+    duration: 0,
     next: { normal: 'Defense', special: null },
     canTalk: false,
     shouldLockChannel: true,
@@ -68,7 +68,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Defense',
-    duration: 0,
+    duration: 15,
     next: { normal: 'Judgement', special: null },
     canTalk: true,
     shouldLockChannel: false,
@@ -76,7 +76,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Judgement',
-    duration: 0,
+    duration: 15,
     next: { normal: 'Judgement Calculation', special: null },
     canTalk: false,
     shouldLockChannel: true,
@@ -116,7 +116,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Night',
-    duration: 0,
+    duration: 20,
     next: { normal: 'Night Calculation', special: null },
     canTalk: false,
     shouldLockChannel: false,
