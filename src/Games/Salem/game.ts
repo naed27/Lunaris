@@ -217,17 +217,18 @@ export default class Game{
 
     gameStart = async () => {
     
-        this.getClock().setSecondsRemaining(0);
         this.getClock().freezeTime();
-        await this.unlockPlayerChannels();
+        this.getClock().setSecondsRemaining(0);
+        await this.lockPlayerChannels();
+        console.log('counting down')
 
-        this.players.map(async player => {
+        Promise.all(this.players.map(async player => {
             await this.getSetup().cleanChannel(player.getChannelManager().getChannel());
             const embed = createEmbed({description: `Game will start in 15...`})
             player.getChannelManager().manageCountDown().create(embed);
-        });
+        }))
 
-        for (let i = 15;i!<0;i--){
+        for (let i = 14;i!<0;i--){
             await delay(1500);
             this.players.map(player =>{
                 const embed = createEmbed({description: `Game will start in ${i}...`});
@@ -236,6 +237,7 @@ export default class Game{
         }
 
         this.players.map((p)=> p.getChannelManager().manageCountDown().delete());
+        console.log('starting game')
         this.getClock().startGame();
     }
     

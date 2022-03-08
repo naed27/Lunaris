@@ -13,7 +13,7 @@ export const clock = ({messageManager}:Params) => {
   const secondsRemaining = clock.getSecondsRemaining();
 
   const roundString = `${half} ${round}`
-  const phaseString = `Phase: ${phase}`;
+  const phaseString = `Phase: ${phase.name}`;
   const secondsString = `Seconds Remaining: ${secondsRemaining}`;
 
   const title = `Clock`;
@@ -84,7 +84,7 @@ export const availableCommands = ({messageManager}:Params)=>{
   const allCommands = player.getRole().getCommands();
 
   const availableCommands = allCommands.filter((c)=>{
-    const availableDuringPhase = arrayContainsElement(c.getPhases(),phase);
+    const availableDuringPhase = arrayContainsElement(c.getPhases(),phase.name);
     if(!availableDuringPhase) return false
     const permission = c.getPermission();
     switch(permission){
@@ -105,7 +105,7 @@ export const countDown = ({ messageManager }:Params) => {
   const clock = messageManager.getGame().getClock();
   const phase = clock.getPhase();
   const secondsRemaining = clock.getSecondsRemaining();
-  const description = `${phase} will end in ${secondsRemaining}...`;
+  const description = `${phase.name} will end in ${secondsRemaining}...`;
   return createEmbed({ description });
 }
 
