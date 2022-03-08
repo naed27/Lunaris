@@ -231,7 +231,9 @@ const commands: SalemCommand[] =  [
         performer:({ user }) => user,
         visitsTarget:() => false,
         defaultTarget:() => [],        
-        targetables: () => [],
+        targetables: ({ game, user }) => {
+            return  game.getPlayers().filter(p => p.getStatus() === 'Alive' && p.getId() !== user.getId())
+        },
         callResponse: () => null,
         run:({user,game,targetOne: target,args})=>{
             const parseArgs = args.join(' ');
