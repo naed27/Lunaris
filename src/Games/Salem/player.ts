@@ -1,4 +1,4 @@
-import { CacheType, Guild, GuildMember, InteractionCollector, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from "discord.js";
+import { CacheType, Collection, Guild, GuildMember, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from "discord.js";
 import roles, { SalemRoleName } from "./roles";
 import Role from "./role";
 import Game from "./game";
@@ -271,6 +271,23 @@ export default class Player{
   messagePlayersWrapped = async (msg: string) => {
     const content = jsonWrap(msg);
     this.game.getPlayers().map((p)=>p.getChannelManager().send(content));
+  }
+
+  cleanChannel = async () => {
+    let fetched: Collection<string, Message<boolean>>;
+    this.getChannelManager().manageGuide().clearCache();
+    this.getChannelManager().manageClock().clearCache();
+    this.getChannelManager().manageCountDown().clearCache();
+    this.getChannelManager().manageJudgement().clearCache();
+    this.getChannelManager().managePlayerList().clearCache();
+    this.getChannelManager().managePlayersRole().clearCache();
+    this.getChannelManager().managePhaseCommands().clearCache();
+    this.getChannelManager().manageAvailableCommands().clearCache();
+    do {
+      fetched = await this.channel.messages.fetch({limit: 100});
+      await this.channel.bulkDelete(fetched);
+    }
+    while(fetched.size >= 2);
   }
 
   // ------------------------- Setters & Getters
