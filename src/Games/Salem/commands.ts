@@ -153,7 +153,7 @@ const commands: SalemCommand[] =  [
         defaultTarget:() => [],        
         targetables: () => [],
         callResponse: () => null,
-        run:({user})=>user.getChannelManager().managerPlayerList().create()
+        run:({user})=>user.getChannelManager().managePlayerList().create()
     },
 
     {
