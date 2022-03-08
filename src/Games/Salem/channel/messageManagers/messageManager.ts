@@ -70,9 +70,9 @@ export default class MessageManager{
     this.update();
   }
 
-  update = (messageEmbed: MessageEmbed = null) => {
-    if(this.message === null || this.message === undefined) return this.create()
+  update = async (messageEmbed: MessageEmbed = null) => {
+    if(this.message === null || this.message === undefined) return await this.create()
     const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
-    this.message.edit({embeds:[embed]});
+    await this.message.edit({embeds:[embed]});
   }
 }
