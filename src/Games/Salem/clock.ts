@@ -106,7 +106,7 @@ class Clock{
         if ( this.phase.shouldLockChannel )
           this.game.getFunctions()
         else 
-          this.game.getSetup().unlockPlayerChannels();
+          this.game.unlockPlayerChannels();
         
         this.nextPhase = this.findPhase(this.phase.next.normal);
         
@@ -120,7 +120,7 @@ class Clock{
 
     playReporting = async () => {
         this.round++;
-        this.game.getSetup().lockPlayerChannels();
+        this.game.lockPlayerChannels();
         const message = jsonWrap(`Day ${this.round}.`);
         await this.game.getFunctions().messagePlayers(message);
         await this.game.deathListener();
@@ -131,7 +131,7 @@ class Clock{
 
     playDiscussion = async () =>{
         console.log('1')
-        this.game.getSetup().unlockPlayerChannels();
+        this.game.unlockPlayerChannels();
         if(this.round>1){
             this.increaseTime(this.discussionDuration);
             const message1 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
@@ -161,7 +161,7 @@ class Clock{
 
     playDefense = async () => {
         this.increaseTime(this.defenseDuration);
-        this.game.getSetup().lockPlayerChannels();
+        this.game.lockPlayerChannels();
 
         const message1 = jsonWrap(`The town seems to want to execute ${this.game.getVotedUp().getUsername()}.`);
         await this.game.getFunctions().messagePlayers(message1);
@@ -227,7 +227,7 @@ class Clock{
     playNight = async () =>{
         
         this.game.clearVotes();
-        await this.game.getSetup().lockPlayerChannels();
+        await this.game.lockPlayerChannels();
         this.game.resetNight();
 
         this.game.updateWerewolf();
@@ -236,7 +236,7 @@ class Clock{
         await this.game.getFunctions().promoteAGodfather();
 
         this.game.processActions();
-        await this.game.getSetup().unlockPlayerChannels();
+        await this.game.unlockPlayerChannels();
 
         this.unfreezeTime(); 
     }
@@ -310,7 +310,7 @@ class Clock{
 
     startGame = async () => {
         this.round = 1;
-        this.game.getSetup().unlockPlayerChannels();
+        this.game.unlockPlayerChannels();
         this.processPhase();
     }
 
