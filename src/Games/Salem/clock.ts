@@ -50,7 +50,6 @@ class Clock{
 
     runTimer(){
         this.timer = setInterval(async () => {
-            this.updateClocks();
             if(!this.moveTime) return
             if(this.remindTime) this.remindPlayers();
             if(this.secondsRemaining>0) return this.secondsRemaining--;
@@ -59,8 +58,6 @@ class Clock{
             this.processPhase();
         }, 1500);
     }
-
-    updateClocks = () => this.game.getPlayers().map(p => p.getChannelManager().manageClock().update());
 
     processPhase = async () => {
         const phase = this.updatePhase();
@@ -100,7 +97,7 @@ class Clock{
         this.phase = this.nextPhase
 
         this.remindTime = this.phase.remindTime;
-        this.increaseTime(this.phase.duration);
+        this.secondsRemaining = this.phase.duration;
     
         if ( this.phase.shouldLockChannel )
           this.game.getFunctions()
@@ -132,10 +129,8 @@ class Clock{
         console.log('1')
         this.game.unlockPlayerChannels();
         if(this.round>1){
-            this.increaseTime(this.discussionDuration);
             const message1 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
             await this.game.getFunctions().messagePlayers(message1);
-    
             if(this.maxPeaceCount-this.peaceCount==1){
                 await delay(1000);
                 const message2 = jsonWrap(`The game will end in a draw if no one dies tomorrow.`);
@@ -145,7 +140,7 @@ class Clock{
         }else{
             const specialPhase = this.phases.find((p)=>p.name==='Night');
             this.nextPhase = specialPhase
-            this.increaseTime(15);
+            this.secondsRemaining = 15
             const message2 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
             await this.game.getFunctions().messagePlayers(message2);
         }
@@ -330,7 +325,10 @@ class Clock{
     freezeTime = () => this.moveTime = false;
     unfreezeTime = () => this.moveTime = true;
     skipPhase = () => this.secondsRemaining = 0;
-    terminateTimer = () => clearInterval(this.timer)
+    terminateTimer = () => {
+        this.moveTime = false;
+        clearInterval(this.timer)
+    }
 
     getSecondsRemaining = () => this.secondsRemaining 
     setSecondsRemaining = (a:number) => this.secondsRemaining = a
