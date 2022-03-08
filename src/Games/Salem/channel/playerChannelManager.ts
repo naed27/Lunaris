@@ -158,13 +158,13 @@ export default class PlayerChannelManager extends ChannelManager{
   }
 }
 
-const processAction = ({ command, game, player, ARGS }:{
+const processAction = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
 
   const performer = command.performer({game: game, user: player});
 
   if(command.priority === 0){
-    command.run({
+    await command.run({
       args:ARGS,
       game:game,
       targetOne: player.getFirstActionTarget(),
