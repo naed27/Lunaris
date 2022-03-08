@@ -154,8 +154,6 @@ export default class Setup{
     this.game.getPlayers().map(p => p.getChannelManager().listen())
   };
 
-  showPlayerChannels = async () => this.game.getPlayers().map( p => p.getChannelManager().show());
-  lockPlayerChannels = async () => this.game.getPlayers().map( p => p.getChannelManager().lock());
-  unlockPlayerChannels = async () => this.game.getPlayers().map(p => p.getChannelManager().unlock())
+  
 
 }

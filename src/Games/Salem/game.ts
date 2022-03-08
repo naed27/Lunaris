@@ -78,8 +78,8 @@ export default class Game{
         await this.getSetup().createGameRole();
         await this.getSetup().distributeGameRole();
         await this.getSetup().activatePlayerListeners();
-        await this.getSetup().showPlayerChannels();
-        await this.getSetup().unlockPlayerChannels();
+        await this.showPlayerChannels();
+        await this.unlockPlayerChannels();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
         this.getClock().runTimer();
@@ -220,7 +220,7 @@ export default class Game{
     
         this.getClock().setSecondsRemaining(0);
         this.getClock().freezeTime();
-        await this.getSetup().unlockPlayerChannels();
+        await this.unlockPlayerChannels();
 
         this.players.map(async player => {
             await this.getSetup().cleanChannel(player.getChannelManager().getChannel());
@@ -314,6 +314,10 @@ export default class Game{
         this.functions.messagePlayers(msg);
         return `**You** have cancelled your vote.`;
     }
+
+    showPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().show());
+    lockPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().lock());
+    unlockPlayerChannels = async () => this.getPlayers().map(p => p.getChannelManager().unlock())
 
     getHost = () => this.host;
     setHost = (a:Host) => this.host = a;
