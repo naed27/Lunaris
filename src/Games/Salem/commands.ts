@@ -93,7 +93,7 @@ const commands: SalemCommand[] =  [
         defaultTarget:() => [],        
         targetables: () => [],
         callResponse: () => null,
-        run:({user,game})=> game.isHost(user) && game.gameStart(),
+        run: async ({user,game}) => game.isHost(user) && await game.gameStart(),
     },
 
     {
