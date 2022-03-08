@@ -43,24 +43,18 @@ export default class ChannelManager{
     }
 
     unlock = async ( id:string=this.defaultId ) =>{
-        const isLocked = this.channel.permissionsFor(id).has('SEND_MESSAGES');
-        if(!isLocked)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:true,
         });
     }
 
     lock = async ( id:string=this.defaultId ) =>{
-        const isLocked = this.channel.permissionsFor(id).has('SEND_MESSAGES');
-        if(isLocked)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:false,
         });
     }
 
     hide = async ( id:string=this.defaultId ) =>{
-        const isHidden = this.channel.permissionsFor(id).has('VIEW_CHANNEL');
-        if(isHidden)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: false,
             READ_MESSAGE_HISTORY:false 
@@ -68,8 +62,6 @@ export default class ChannelManager{
     }
 
     show = async ( id:string=this.defaultId ) =>{
-        const isHidden = this.channel.permissionsFor(id).has('SEND_MESSAGES');
-        if(!isHidden)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY:true,

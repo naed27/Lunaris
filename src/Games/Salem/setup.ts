@@ -56,7 +56,7 @@ export default class Setup{
     const players = shuffleArray( this.game.getHost().getJoinedPlayers() );
 
     for(let i=0; i<rolledRoles.length; i++){
-      const channel = await this.createChannel(players[i].id);
+      const channel = await this.createPrivateChannel();
       this.game.connectPlayer(new Player({
         listnumber: i+1,
         game: this.game,
@@ -67,20 +67,17 @@ export default class Setup{
     }
   }
 
-  createChannel = async (id?:string) => {
-    type Perms = ("VIEW_CHANNEL" | "SEND_MESSAGES" | "READ_MESSAGE_HISTORY")[];
+  createPrivateChannel = async () => {
     const guild = this.game.getGuild();
-    const defaultAllow: Perms = [];
-    const defaultDeny: Perms = ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
-    const authorized: (DiscordRole|string)[] = [guild.roles.everyone];
-    if(id) authorized.push(id);
     return await guild.channels.create(`🌹﹕salem`, {
       type: 'GUILD_TEXT',
-      permissionOverwrites: authorized.map((role)=>({
-        id: role,
-        allow: defaultAllow,
-        deny: defaultDeny
-      })),
+      permissionOverwrites: [
+        {
+          id: guild.roles.everyone,
+          allow: [],
+          deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
+        }
+      ],
     })
   }
 
