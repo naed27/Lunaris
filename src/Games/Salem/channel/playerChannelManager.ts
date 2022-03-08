@@ -100,7 +100,7 @@ export default class PlayerChannelManager extends ChannelManager{
         const menuParams = { ARGS, command, game: this.game, player: this.player }
         this.player.endAllActionInteractions();
 
-        if(command.targetCount===0) noTargetMenu(menuParams)
+        if(command.targetCount===0) await noTargetMenu(menuParams)
 
         if(command.targetCount===1) 
           this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
@@ -172,6 +172,7 @@ const processAction = async ({ command, game, player, ARGS }:{
       command:command,
       user:player,
     })
+    return
   }
 
   game.pushAction(new Action({
@@ -194,7 +195,7 @@ const processAction = async ({ command, game, player, ARGS }:{
 
 const noTargetMenu = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>  
-    processAction({ command, game, player, ARGS });
+    await processAction({ command, game, player, ARGS });
 
 const singleTargetMenu = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>{
