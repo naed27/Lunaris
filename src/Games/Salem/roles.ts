@@ -87,7 +87,7 @@ export type visitsTargetFunc =  (a: gameAndPlayer) => boolean
 export type targetablesFunc =  (a: gameAndPlayer) => Player[]
 export type defaultTargetFunc = (a: gameAndPlayer) => Player[]
 
-export type runFunc =  (a: actionParams)=>void
+export type runFunc =  (a: actionParams) => (any | Promise<any>)
 export type callResponseFunc = (a: actionParams) => Promise< string | void >
 
 export interface gameAndPlayer{
