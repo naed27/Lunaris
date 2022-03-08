@@ -78,8 +78,7 @@ export default class Game{
         await this.getSetup().createGameRole();
         await this.getSetup().distributeGameRole();
         await this.getSetup().activatePlayerListeners();
-        await this.showPlayerChannels();
-        await this.unlockPlayerChannels();
+        await this.showAndUnlockPlayerChannels();
         await this.getSetup().setupExeTarget();
         await this.getHost().notifyGameStart();
         this.getClock().runTimer();
@@ -318,6 +317,7 @@ export default class Game{
     showPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().show());
     lockPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().lock());
     unlockPlayerChannels = async () => this.getPlayers().map(p => p.getChannelManager().unlock())
+    showAndUnlockPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().showAndUnlock());
 
     getHost = () => this.host;
     setHost = (a:Host) => this.host = a;

@@ -62,6 +62,7 @@ export default class ChannelManager{
     }
 
     show = async ( id:string=this.defaultId ) =>{
+        console.log(`showing channel for ${id}`)
         return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY:true,
