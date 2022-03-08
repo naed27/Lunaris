@@ -9,7 +9,7 @@ export const clock = ({messageManager}:Params) => {
   const clock = game.getClock();
   const phase = clock.getPhase();
   const round = clock.getRound();
-  const half = phase.name=='Night' ? 'Night' : 'Day';
+  const half = phase.name === 'Night' ? 'Night' : 'Day';
   const secondsRemaining = clock.getSecondsRemaining();
 
   const roundString = `${half} ${round}`

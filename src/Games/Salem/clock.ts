@@ -13,7 +13,7 @@ class Clock{
     phase: Phase = this.phases[0];
     previousPhase: Phase;
     nextPhase: Phase = this.phases.find(phase => phase.name === this.phases[0].next.normal);
-    round: number;
+    round: number = 0;
     
     //durations
     lobbyDuration = 90;
