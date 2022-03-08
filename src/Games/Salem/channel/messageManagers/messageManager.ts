@@ -41,18 +41,22 @@ export default class MessageManager{
   editMessage = (a:MessagePayload) => this.message.edit(a);
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
 
-  create = async (messageEmbed: MessageEmbed = null) => {
+  create = async (messageEmbed?: MessageEmbed ) => {
     this.delete();
     this.page = 1;
-    const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
+    const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
     this.message = await this.channel.send({embeds:[embed]})
   }
 
-  delete = () => { 
-    this.message && this.message.delete(); 
+  delete = async () => { 
+    this.message && await this.message.delete(); 
+    this.clearCache();
+  };
+
+  clearCache = () => {
     this.message = null
     this.page = 0;
-  };
+  }
 
   getPage = () => this.page;
   setPage = (a:number) => this.page = a;
@@ -70,9 +74,9 @@ export default class MessageManager{
     this.update();
   }
 
-  update = async (messageEmbed: MessageEmbed = null) => {
+  update = async (messageEmbed?: MessageEmbed) => {
     if(this.message === null || this.message === undefined) return await this.create()
-    const embed = messageEmbed === null ? this.cardGenerator({messageManager:this}) : messageEmbed
+    const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
     await this.message.edit({embeds:[embed]});
   }
 }
