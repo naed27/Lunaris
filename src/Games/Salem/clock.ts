@@ -99,7 +99,7 @@ class Clock{
     updatePhase = () => {
         this.previousPhase = this.phase;
         this.phase = this.nextPhase
-        
+
         this.remindTime = this.phase.remindTime;
         this.increaseTime(this.phase.duration);
     
@@ -130,6 +130,7 @@ class Clock{
     }
 
     playDiscussion = async () =>{
+        console.log('1')
         this.game.getSetup().unlockPlayerChannels();
         if(this.round>1){
             this.increaseTime(this.discussionDuration);

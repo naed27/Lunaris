@@ -25,7 +25,7 @@ export default class Functions{
     return await delay(secondsDelay);
   }
 
-  async gameOverMessage(message: string){
+  gameOverMessage = async (message: string) => {
     this.game.getPlayers().map(async (player)=>{
       const address = await player.getChannelManager().send(message);
       address.react('🚪');
@@ -41,7 +41,10 @@ export default class Functions{
     });
   }
 
-  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(a))
+  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>{
+    console.log(`messaging ${p.getUsername()}`)
+    p.getChannelManager().send(a)
+  })
 
   messageGhosts = async (message: string) => {
     this.game.getPlayers().map((p)=>p.getStatus()=='Dead' && p.getChannelManager().send(message))
@@ -112,20 +115,22 @@ export default class Functions{
     promotee.setRole(new Role(godFatherRole));
     await delay(1000);
     const notif = jsonWrap(`${promotee.getUsername()} has been promoted to Godfather!`);
-    await this.messageMafias(notif);
+    this.messageMafias(notif);
+    this.promoteAMafioso();
   }
 
-  promoteAMafioso = async() => {
+  promoteAMafioso = async () => {
+    if(this.game.roleExists('Mafioso')) return
+
     const subordinates = this.game.getAliveMafias().filter((m) => m.getRoleName() !== 'Godfather');
     
-    if(this.game.roleExists('Mafioso')) return
 
     const promotee = subordinates[0];
     const mafiosoRole = roles.find( r => r.name === 'Mafioso' );
     promotee.setRole( new Role( mafiosoRole ) );
     await delay(1000);
     const notif = jsonWrap( `${promotee.getUsername()} has been promoted to Mafioso!` );
-    await this.messageMafias( notif );
+    this.messageMafias( notif );
   }
 }
 

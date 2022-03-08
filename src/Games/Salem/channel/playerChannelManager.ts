@@ -52,7 +52,7 @@ export default class PlayerChannelManager extends ChannelManager{
     this.playersListMessageManager = new MessageManager({ channelManager: this,  generator: playerList });
     this.phaseCommandsMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommands });
     this.availableCommandsMessageManager = new MessageManager({ channelManager: this,  generator: availableCommands });
-
+ 
   }
 
   getPlayer = () => this.player;

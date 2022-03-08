@@ -12,23 +12,17 @@ export default class ChannelManager{
     readonly channel:TextChannel;
     readonly defaultId:string;
     readonly game:Game;
-
-    isLocked: boolean ;
-    isHidden: boolean ;
-
     constructor({channel,defaultId,game}:ConstructorParams){
         this.game = game;
         this.channel = channel;
         this.defaultId = defaultId;
-        this.isLocked = channel.permissionsFor(defaultId).has('SEND_MESSAGES');
-        this.isHidden = channel.permissionsFor(defaultId).has('VIEW_CHANNEL');
     }
 
     //  --------------------- Getters 
 
     getGame = () => this.game;
     getChannel = () => this.channel;
-    getDefaultId = () => this.defaultId
+    getDefaultId = () => this.defaultId;
 
     //  --------------------- Functions
 
@@ -49,24 +43,24 @@ export default class ChannelManager{
     }
 
     unlock = async ( id:string=this.defaultId ) =>{
-        if(!this.isLocked)return
-        this.isLocked = false;
+        const isLocked = this.channel.permissionsFor(id).has('SEND_MESSAGES');
+        if(!isLocked)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:true,
         });
     }
 
     lock = async ( id:string=this.defaultId ) =>{
-        if(this.isLocked)return
-        this.isLocked = true;
+        const isLocked = this.channel.permissionsFor(id).has('SEND_MESSAGES');
+        if(isLocked)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             SEND_MESSAGES:false,
         });
     }
 
     hide = async ( id:string=this.defaultId ) =>{
-        if(this.isHidden)return
-        this.isHidden = true;
+        const isHidden = this.channel.permissionsFor(id).has('VIEW_CHANNEL');
+        if(isHidden)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: false,
             READ_MESSAGE_HISTORY:false 
@@ -74,8 +68,8 @@ export default class ChannelManager{
     }
 
     show = async ( id:string=this.defaultId ) =>{
-        if(!this.isHidden)return
-        this.isHidden = false;
+        const isHidden = this.channel.permissionsFor(id).has('SEND_MESSAGES');
+        if(!isHidden)return
         return await this.channel.permissionOverwrites.edit(id,{ 
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY:true,
