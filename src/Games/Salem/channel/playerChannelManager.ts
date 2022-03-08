@@ -62,8 +62,8 @@ export default class PlayerChannelManager extends ChannelManager{
   manageGuide = () => this.guideMessageManager;
   manageJudgement = () => this.judgementMessageManager;
   manageCountDown = () => this.countDownMessageManager;
+  managePlayerList = () => this.playersListMessageManager;
   managePlayersRole = () => this.playersRoleMessageManager;
-  managerPlayerList = () => this.playersListMessageManager;
   managePhaseCommands = () => this.phaseCommandsMessageManager;
   manageAvailableCommands = () => this.availableCommandsMessageManager;
   
