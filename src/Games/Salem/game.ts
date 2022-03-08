@@ -94,7 +94,7 @@ export default class Game{
 
     resetNight = async () => this.players.map(p =>  p.setMuteStatus(false));
 
-    updatePlayerLists = async () => this.players.map(p => p.getChannelManager().managerPlayerList().update());
+    updatePlayerLists = async () => this.players.map(p => p.getChannelManager().managePlayerList().update());
 
     resetDay = () => {
         this.players
@@ -216,28 +216,29 @@ export default class Game{
     // ----------------------- Game Starter
 
     gameStart = async () => {
-    
+        
+        const time = 5;
         this.getClock().freezeTime();
         this.getClock().setSecondsRemaining(0);
         await this.lockPlayerChannels();
-        console.log('counting down')
 
-        Promise.all(this.players.map(async player => {
-            await this.getSetup().cleanChannel(player.getChannelManager().getChannel());
-            const embed = createEmbed({description: `Game will start in 15...`})
-            player.getChannelManager().manageCountDown().create(embed);
-        }))
+        this.players.map( async (player) => {
+            await player.cleanChannel();
+            const embed = createEmbed({description: `Game will start in ${time}...`})
+            await player.getChannelManager().manageCountDown().create(embed);
+        })
+        
+        await delay(1500);
 
-        for (let i = 14;i!<0;i--){
-            await delay(1500);
+        for (let i = time-1;i>0;i--){
             this.players.map(player =>{
                 const embed = createEmbed({description: `Game will start in ${i}...`});
                 player.getChannelManager().manageCountDown().update(embed);
             });
+            await delay(1500);
         }
 
         this.players.map((p)=> p.getChannelManager().manageCountDown().delete());
-        console.log('starting game')
         this.getClock().startGame();
     }
     
