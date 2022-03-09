@@ -112,11 +112,14 @@ export default class PlayerChannelManager extends ChannelManager{
         }else{
           if(command.targetCount===0) await noTargetPopUp(menuParams)
 
-          if(command.targetCount===1) 
-            this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
-          
-          if(command.targetCount===2) 
-            this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+          if(command.hasMenu()){
+            if(command.targetCount===1) 
+              this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+            if(command.targetCount===2) 
+              this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+          }else{
+            this.player.alert(responses.commandRequiresTarget(command))
+          }
         }
 
       }else{
@@ -161,7 +164,7 @@ export default class PlayerChannelManager extends ChannelManager{
         }
 
         const playerMessage = `**${this.player.getUsername()}**: ${MESSAGE}`
-        this.player.messageAlivePlayers(playerMessage);
+        this.player.messagePlayers(playerMessage);
         return
         
       }
@@ -208,29 +211,29 @@ const noTargetPopUp = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>  
     await processAction({ command, game, player, ARGS });
 
-const singleTargetMenu = async ({ command, game, player, ARGS }:{
+const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>{
 
-  const targetables = command.targetables({game: game, user: player});
+  const targetables = command.targetables({game: game, user: user});
 
   const menu = createMenu({
-    customId: `${player.getId()}_${command.name}_menu`,
+    customId: `${user.getId()}_${command.name}_menu`,
     placeHolder: `Player Picker`,
     choices: targetables.map((player) => ({ label:player.getUsername(), value: player.getId() }))
   })
-  const address = await player.sendEmbedWithMenu({
+  const address = await user.sendEmbedWithMenu({
     description: `Choose who to ${command.name}.`,
     menu
   });
 
-  const filter = (i:Interaction) => i.user.id === player.getId();
+  const filter = (i:Interaction) => i.user.id === user.getId();
   const collector = address.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
   
   collector.on('collect',async (i)=>{
     i.deferUpdate();
-    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    player.setFirstActionTarget(player);
-    processAction({ command, game, player, ARGS });
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    user.setFirstActionTarget(target);
+    processAction({ command, game, player: user, ARGS });
     return
   })
 
@@ -269,8 +272,8 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
   
   collectorOne.on('collect',async (i)=>{
     i.deferUpdate();
-    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    player.setFirstActionTarget(player);
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    user.setFirstActionTarget(target);
     preProcessAction();
     return
   })
@@ -282,8 +285,8 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
 
   collectorTwo.on('collect',async (i)=>{
     i.deferUpdate();
-    const player = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    player.setSecondActionTarget(player);
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
+    user.setSecondActionTarget(target);
     preProcessAction();
     return
   })
