@@ -76,6 +76,7 @@ export interface SalemCommand{
     lethal: boolean;
     hasMenu: boolean;
     hasArguments: boolean;
+    inputSeparator: string;
     run: runFunc;
     performer: performerFunc;
     defaultTarget: defaultTargetFunc;
@@ -169,6 +170,7 @@ const roles: SalemRole[] = [
                     lethal: false,
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer: ({ user }) => user,
                     visitsTarget: () => false,
                     targetables: ({user,game}) => game.getPlayers().filter(p=>p.getId()!=user.getId() && p.isAlive()),
@@ -198,6 +200,7 @@ const roles: SalemRole[] = [
                     lethal: false,
                     hasMenu: false,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:( { user } ) => user,
                     visitsTarget:() => false,
                     targetables:() => null,
@@ -258,6 +261,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game }) => game.getAlivePlayers(),
@@ -319,6 +323,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: false,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:() => null,
@@ -371,6 +376,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{
@@ -439,6 +445,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -504,6 +511,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -572,6 +580,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: false,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:() => null,defaultTarget:({ user } ) => [user],
@@ -621,6 +630,7 @@ const roles: SalemRole[] = [
         //             status:`Alive`,
         //             hasMenu: true,
                     // hasArguments: false,
+                    // inputSeparator: ',',
                     // performer:(user,command,game)=>{
         //                 return user;
         //             },
@@ -692,6 +702,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({ game })=>{
@@ -748,6 +759,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{
@@ -805,6 +817,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{
@@ -873,6 +886,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game }) => game.getNonMafias().filter(p => p.isAlive()),
@@ -928,6 +942,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -984,6 +999,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1040,6 +1056,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{
@@ -1102,6 +1119,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({user, game})=>{
@@ -1168,6 +1186,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({user, game})=>{
                         if(game.roleExists(`Mafioso`)){
                             return game.getPlayers().filter(p=>p.getRole().getName()==`Mafioso`)[0];
@@ -1255,6 +1274,7 @@ const roles: SalemRole[] = [
         //             status:`Alive`,
         //             hasMenu: true,
         //             hasArguments: false,
+                    // inputSeparator: ',',
         //             performer:(user,command,game)=>{
         //                 return user;
         //             },
@@ -1348,6 +1368,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{
@@ -1428,6 +1449,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1496,6 +1518,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1565,6 +1588,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1652,6 +1676,7 @@ const roles: SalemRole[] = [
         //             status:`Alive`,
         //             hasMenu: true,
                     // hasArguments: false,
+                    // inputSeparator: ',',
                     // performer:(user,command,game)=>{
         //                 return user;
         //             },
@@ -1683,6 +1708,7 @@ const roles: SalemRole[] = [
         //             status:`Alive`,
         //             hasMenu: true,
                     // hasArguments: false,
+                    // inputSeparator: ',',
                     // performer:(user,command,game)=>{
         //                 return user;
         //             },
@@ -1746,6 +1772,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1775,6 +1802,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: false,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:() => null,
@@ -1828,6 +1856,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({user, game})=>{
@@ -1857,6 +1886,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: false,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:() => null,
@@ -1908,6 +1938,7 @@ const roles: SalemRole[] = [
         //             status:`Alive`,
         //             hasMenu: true,
                     // hasArguments: false,
+                    // inputSeparator: ',',
                     // performer:(user,command,game)=>{
         //                 return user;
         //             },
@@ -1969,6 +2000,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Dead`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({ game })=>{
@@ -2026,6 +2058,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({user, game})=>{
@@ -2112,6 +2145,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Dead`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => false,
                     targetables:({ game })=>{
@@ -2170,6 +2204,7 @@ const roles: SalemRole[] = [
                     requiredStatus:[`Alive`],
                     hasMenu: true,
                     hasArguments: false,
+                    inputSeparator: ',',
                     performer:({ user }) => user,
                     visitsTarget:() => true,
                     targetables:({ game })=>{

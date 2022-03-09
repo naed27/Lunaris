@@ -80,8 +80,7 @@ export default class PlayerChannelManager extends ChannelManager{
 
       if(MESSAGE.startsWith(PREFIX)){
 
-        const { COMMAND, ARGS } = parseCommand( PREFIX, MESSAGE, ',' );  
-        console.log(ARGS)
+        const { COMMAND } = parseCommand( PREFIX, MESSAGE );  
         const playerCommands = this.player.getCommands();
         const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
 
@@ -99,6 +98,8 @@ export default class PlayerChannelManager extends ChannelManager{
 
         const calledCommand = searchedCommands[0];
         const command = playerCommands.find(c => c.name === calledCommand);
+        const { ARGS } = parseCommand( PREFIX, MESSAGE, command.getInputSeparator() );
+
         const menuParams = { ARGS, command, game: this.game, player: this.player }
         this.player.endAllActionInteractions();
 
@@ -311,31 +312,30 @@ const noTargetUsingArgs = async ({ command, game, player, ARGS }:{
 const findOneTargetUsingArgs = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
 
-  if(ARGS.length !== 1) 
+  if(ARGS.length === 0 || (ARGS.length !== 1 && !command.hasArguments)) 
     return player.alert(responses.actionRequireOneTarget);
 
-  const keyword = ARGS[0];
+  const [targetKeyword, ...args ] = ARGS;
   const targetables = command.targetables({game: game, user: player});
-  const searchResults = game.getFunctions().searchPlayerInChoices(targetables,keyword)
+  const searchResults = game.getFunctions().searchPlayerInChoices(targetables,targetKeyword)
 
   if(searchResults.length===0)
-    return player.alert(responses.playerWithKeywordNotFound(keyword));
+    return player.alert(responses.playerWithKeywordNotFound(targetKeyword));
 
   if(searchResults.length>1)
     return player.alert(responses.multiplePlayersFound({searchResults}));
 
   player.setFirstActionTarget(searchResults[0]);
-  processAction({ command, game, player, ARGS });
+  processAction({ command, game, player, ARGS: args });
 }
 
 const findTwoTargetsUsingArgs = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
   
-  if(ARGS.length !== 2) 
+  if(ARGS.length === 0 || (ARGS.length !== 2 && !command.hasArguments)) 
     return player.alert(responses.actionRequireTwoTargets);
 
-  const keywordOne = ARGS[0];
-  const keywordTwo = ARGS[0];
+  const [keywordOne, keywordTwo, ...args ] = ARGS;
 
   const targetables = command.targetables({game: game, user: player});
   const firstSearchResults = game.getFunctions().searchPlayerInChoices(targetables,keywordOne)
@@ -357,5 +357,5 @@ const findTwoTargetsUsingArgs = async ({ command, game, player, ARGS }:{
     
   player.setFirstActionTarget(firstSearchResults[0]);
   player.setSecondActionTarget(secondSearchResults[0]);
-  processAction({ command, game, player, ARGS });
+  processAction({ command, game, player, ARGS: args });
 }

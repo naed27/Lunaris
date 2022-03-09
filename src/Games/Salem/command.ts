@@ -16,6 +16,7 @@ export default class Command{
 
   readonly hasMenuStatus: boolean;
   readonly hasArgumentsStatus: boolean;
+  readonly inputSeparator: string;
 
   run: runFunc; 
   performer: performerFunc;
@@ -38,6 +39,7 @@ export default class Command{
     this.lethal = command.lethal;
     this.hasMenuStatus = command.hasMenu;
     this.hasArgumentsStatus = command.hasArguments;
+    this.inputSeparator = command.inputSeparator;
 
     this.run = command.run;
     this.performer = command.performer;
@@ -51,6 +53,7 @@ export default class Command{
 
   hasMenu = () => this.hasMenuStatus;
   hasArguments = () => this.hasArgumentsStatus;
+  getInputSeparator = () => this.inputSeparator;
 
   isLethal = () => this.lethal;
 
