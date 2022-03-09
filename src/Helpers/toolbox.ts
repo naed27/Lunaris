@@ -16,6 +16,10 @@ export const parseCommand = (PREFIX:string,input:string, argsSpliter = ' ') =>{
   return { COMMAND, ARGS };
 }
 
+export const stringContainsOnlyDigits = (str: string) => /^\d+$/.test(str);
+
+export const removeWhitespaces = (str: string) => str.replace(/\s/g, '')
+
 export const removeExtraLineBreaks = (str:string) => str.replace(/^\n+/,'');
 
 export const removeExtraWhitespaces = (str:string) => str.replace(/\s+/g,' ').trim();
