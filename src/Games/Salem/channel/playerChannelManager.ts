@@ -308,7 +308,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
 const noTargetUsingArgs = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
   
-  if(ARGS.length > 0)
+  if(ARGS.length > 0 && !command.hasArguments())
     await player.alert(`(The '${command.getName()}' command does not need any targets.)`);
   processAction({ command, game, player, ARGS });
 }
