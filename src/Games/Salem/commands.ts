@@ -270,7 +270,7 @@ const commands: SalemCommand[] =  [
         callResponse: () => null,
         run:({user,game,targetOne: target,args})=>{
             const parseArgs = args.join(' ');
-            const whisperMessage = jsonWrap(`**${user.getUsername()} (Whisper):** ${parseArgs}`);
+            const whisperMessage = `**${user.getUsername()} (Whisper):** ${parseArgs}`;
             user.getChannelManager().send(whisperMessage);
             target.getChannelManager().send(whisperMessage);
 
