@@ -12,7 +12,8 @@ export const parseCommand = (PREFIX:string,input:string, argsSpliter = ' ') =>{
   const ARGS = rawArgs
     .join(' ')
     .split(argsSpliter)
-    .map(args => removeExtraWhitespaces(args));
+    .map(arg => removeExtraWhitespaces(arg))
+    .filter(arg => arg !== '');
   return { COMMAND, ARGS };
 }
 
