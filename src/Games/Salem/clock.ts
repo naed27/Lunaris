@@ -44,8 +44,12 @@ class Clock{
     // ---------------------------- Functions
 
     remindPlayers(){
-        if( this.secondsRemaining < 5 && this.secondsRemaining > 1 )
+        if( this.secondsRemaining === 5  )
+            return this.game.getPlayers().map((player)=> player.getChannelManager().manageCountDown().create())
+        if( this.secondsRemaining < 5  && this.secondsRemaining > 0 )
             return this.game.getPlayers().map((player)=> player.getChannelManager().manageCountDown().update())
+        if( this.secondsRemaining === 0 )
+            return this.game.getPlayers().map((player)=> player.getChannelManager().manageCountDown().delete())
     }
 
     runTimer(){
