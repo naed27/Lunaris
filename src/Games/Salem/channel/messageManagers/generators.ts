@@ -112,6 +112,6 @@ export const countDown = ({ messageManager }:Params) => {
 export const playerList = ({messageManager}:Params) => {
   const players = messageManager.getGame().getPlayers();
   const title = `Players`;
-  const description = players.map((player)=>`${player.getUsername()} (${player.getStatus()})`).join(`\n`);
+  const description = players.map((player)=>`${player.getListNumber()} ${player.getUsername()} (${player.getStatus()})`).join(`\n`);
   return createEmbed({ title, description });
 }

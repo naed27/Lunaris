@@ -224,7 +224,7 @@ const commands: SalemCommand[] =  [
     },
 
     {
-        name:'short guide',
+        name:'shortguide',
         guide:'shortguide',
         description:'Shows a short guide.',
         priority:0,
@@ -281,7 +281,7 @@ const commands: SalemCommand[] =  [
     },
 
     {
-        name:'change name',
+        name:'changename',
         guide:'changename <name>',
         description:'Changes your in-game nickname.',
         priority:0,
