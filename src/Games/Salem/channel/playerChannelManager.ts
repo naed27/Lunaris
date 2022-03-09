@@ -198,7 +198,7 @@ const processAction = async ({ command, game, player, ARGS }:{
     targets: player.getActionTargets()
   }))
 
-  command.callResponse({
+  const response = command.callResponse({
     args: ARGS,
     game: game,
     command: command,
@@ -206,6 +206,9 @@ const processAction = async ({ command, game, player, ARGS }:{
     targetOne: player.getFirstActionTarget(),
     targetTwo: player.getSecondActionTarget(),
   })
+
+  if(typeof response === 'string') 
+    player.sendMarkDownToChannel(response)
 }
 
 const noTargetPopUp = async ({ command, game, player, ARGS }:{
