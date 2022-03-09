@@ -1,5 +1,5 @@
 import { Message, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User, GuildMember, MessageCollector } from 'discord.js';
-import { arrayContainsElement, createEmbed, findElementInArray, getStringSearchResults, parseCommand, removeDuplicates, removeExtraWhitespaces } from '../../Helpers/toolbox';
+import { arrayContainsElement, createEmbed, findElementInArray, getStringSearchResults, parseCommand, removeDuplicates, removeExtraWhitespaces, stringContainsOnlyDigits } from '../../Helpers/toolbox';
 import Game from './game';
 import { RolePoolElement } from './roles';
 import roles from './roles';
@@ -233,11 +233,15 @@ export default class Host{
     }
 
     removeRolesFromGame = (args: string[]) => {
+
         const indexes = args.map(arg => {
-            const index = parseInt(arg)-1 || 'invalid';
-            if(index < this.rolePool.length) return index;
+            if(!stringContainsOnlyDigits(arg)) return 'invalid'
+            const index = parseInt(arg) ? (parseInt(arg)-1) : 'invalid';
+            if(index < this.rolePool.length) 
+                return index;
             return 'invalid'
         });
+
         if(arrayContainsElement(indexes,'invalid')) return;
         const rolesToRemove = indexes.map((index:number) => this.rolePool[index].id);
         this.rolePool = this.rolePool.filter(({id}) => !rolesToRemove.includes(id));
@@ -255,8 +259,8 @@ export default class Host{
     }
 
     addRoleToGame = (roleInput:string, roleQuantity: number) => {
-        this.pushSpecificRole(roleInput, roleQuantity);
-        this.pushAlignmentRole(roleInput, roleQuantity);
+        const status = this.pushAlignmentRole(roleInput, roleQuantity);
+        !status&& this.pushSpecificRole(roleInput, roleQuantity);
     } 
 
     findSpecificRole = (input: string):RolePoolElement =>{
@@ -276,10 +280,12 @@ export default class Host{
 
     pushSpecificRole = (input: string, roleQuantity:number) =>{
         const role = this.findSpecificRole(input);
-        if(role){
-            for(let i=0;i<roleQuantity;i++)
-                this.rolePool.push(role)
-        }
+        if(!role) return false
+        
+        for(let i=0;i<roleQuantity;i++)
+        this.rolePool.push(role)
+
+        return true
     }
 
     findAlignmentRole = (input:string): RolePoolElement =>{
@@ -306,10 +312,12 @@ export default class Host{
 
     pushAlignmentRole = (input:string, roleQuantity:number) =>{
         const role = this.findAlignmentRole(input)
-        if(role){
-            for(let i=0;i<roleQuantity;i++)
-                this.rolePool.push(role)
-        }
+        if(!role) return false
+
+        for(let i=0;i<roleQuantity;i++)
+            this.rolePool.push(role)
+
+        return true
     }
 
 }
