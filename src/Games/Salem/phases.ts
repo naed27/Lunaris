@@ -29,7 +29,7 @@ const phases:readonly Phase[] = [
   {
     name: 'Reporting',
     duration: 20,
-    next: { normal: 'Discussion', special: null },
+    next: { normal: 'Reporting Calculation', special: null },
     canTalk: false,
     shouldLockChannel: true,
     remindTime: false,
@@ -125,7 +125,7 @@ const phases:readonly Phase[] = [
   {
     name: 'Night Calculation',
     duration: 0,
-    next: { normal: 'Discussion', special: null },
+    next: { normal: 'Reporting', special: null },
     canTalk: true,
     shouldLockChannel: false,
     remindTime: false,
