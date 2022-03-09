@@ -158,12 +158,20 @@ export default class Game{
         this.actions = this.arrangeActions();
         this.actions.map(a => {
 
-            const gameAndUserObject = { game: this, user: a.getPerformer() }
+            const GAME_USER_DATA = { game: this, user: a.getPerformer() }
 
             if(!a.getFirstTarget().isJailed() || a.getUser().roleNameIs('Jailor')){
                 if(a.getFirstTarget().getBuffs().find( b => b === 'Alert' )){
-                    
-                    if(!a.getPerformer().isRoleBlocked() /* witch flag ??? */ ){
+                    if(a.getCommand().visitsTarget(GAME_USER_DATA)){
+                        const visitedNotif = new Notif({ inbox: `You shot the person who visited you last night!` })
+                        const visitorNotif = new Notif({ inbox: `You were shot by the Veteran that you visited!` })
+                        a.getFirstTarget().pushNotif(visitedNotif);
+                        a.getPerformer().pushNotif(visitorNotif);
+                        a.getPerformer().kill();
+                        a.getPerformer().pushCauseOfDeath(`shot by a Veteran.`);
+                    }
+                }else{
+                    if(!a.getPerformer().isRoleBlocked()){
                         a.getCommand().run({
                             game: this,
                             user: a.getPerformer(),
@@ -172,20 +180,9 @@ export default class Game{
                             targetOne: a.getFirstTarget(),
                             targetTwo: a.getSecondTarget(),
                         });
-
-                        if(a.getCommand().visitsTarget(gameAndUserObject)){
+                        if(a.getCommand().visitsTarget(GAME_USER_DATA)){
                             a.getTargets().forEach( t => t.pushVisitor(a.getPerformer()) );
                         }
-                    }
-
-                }else{
-                    if(a.getCommand().visitsTarget(gameAndUserObject)){
-                        const visitedNotif = new Notif({ inbox: `You shot the person who visited you last night!` })
-                        const visitorNotif = new Notif({ inbox: `You were shot by the Veteran that you visited!` })
-                        a.getFirstTarget().pushNotif(visitedNotif);
-                        a.getPerformer().pushNotif(visitorNotif);
-                        a.getPerformer().kill();
-                        a.getPerformer().pushCauseOfDeath(`shot by a Veteran.`);
                     }
                 }
             }else{
