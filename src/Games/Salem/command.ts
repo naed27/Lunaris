@@ -14,6 +14,9 @@ export default class Command{
   targetCount: number;
   lethal: boolean;
 
+  readonly hasMenuStatus: boolean;
+  readonly hasArgumentsStatus: boolean;
+
   run: runFunc; 
   performer: performerFunc;
   visitsTarget: visitsTargetFunc;
@@ -33,6 +36,8 @@ export default class Command{
     this.phase = command.phase;
     this.requiredStatus = command.requiredStatus;
     this.lethal = command.lethal;
+    this.hasMenuStatus = command.hasMenu;
+    this.hasArgumentsStatus = command.hasArguments;
 
     this.run = command.run;
     this.performer = command.performer;
@@ -43,6 +48,9 @@ export default class Command{
   }
 
   // ------------------------------------- SETTERS AND GETTERS
+
+  hasMenu = () => this.hasMenuStatus;
+  hasArguments = () => this.hasArgumentsStatus;
 
   isLethal = () => this.lethal;
 
