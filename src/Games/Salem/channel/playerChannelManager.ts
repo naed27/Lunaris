@@ -110,18 +110,19 @@ export default class PlayerChannelManager extends ChannelManager{
           
           if(command.targetCount===2) await findTwoTargetsUsingArgs(menuParams);
         }else{
-          if(command.targetCount===0) await noTargetPopUp(menuParams)
-
-          if(command.hasMenu()){
-            if(command.targetCount===1) 
-              this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
-            if(command.targetCount===2) 
-              this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+          if(command.targetCount===0){
+            await noTargetPopUp(menuParams)
           }else{
-            this.player.alert(responses.commandRequiresTarget(command))
+            if(command.hasMenu()){
+              if(command.targetCount===1) 
+                this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+              if(command.targetCount===2) 
+                this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+            }else{
+              this.player.alert(responses.commandRequiresTarget(command))
+            }
           }
         }
-
       }else{
 
         if(this.player.isAlive() === false){
