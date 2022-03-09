@@ -2,7 +2,7 @@ import roles from './roles';
 import Role from './role';
 import { Collection, Message, MessageReaction, TextChannel, User } from 'discord.js';
 import Game from './game';
-import { jsonWrap, delay } from '../../Helpers/toolbox';
+import { jsonWrap, delay, stringStartsWithKeyword, stringContainsKeyword, stringContainsInitials } from '../../Helpers/toolbox';
 import Player from './player';
 import { judgement as judgementCollector } from './channel/messageManagers/collectors';
 
@@ -132,6 +132,32 @@ export default class Functions{
     await delay(1000);
     const notif = jsonWrap( `${promotee.getUsername()} has been promoted to Mafioso!` );
     this.messageMafias( notif );
+  }
+
+  searchPlayerInChoices = (players:Player[], keyword: string) =>{
+    if(keyword === '') return []
+
+    const keysFound: Player[] = [];
+    const startWiths: Player[] = [];
+    const initialsFound: Player[] = [];
+    const listNumberFound: Player[] = [];
+   
+    players.map((player)=>{
+      const username = player.getUsername();
+      const listNumber = player.getListNumber();
+
+      if(listNumber === keyword) return listNumberFound.push(player);
+      if(stringContainsKeyword(username,keyword))return keysFound.push(player)
+      if(stringStartsWithKeyword(username,keyword))return startWiths.push(player)
+      if(stringContainsInitials(username,keyword))return initialsFound.push(player)
+    })
+
+    if(listNumberFound.length>0) return listNumberFound;
+    if(startWiths.length>0)return startWiths
+    if(keysFound.length>0)return keysFound
+    if(initialsFound.length>0)return initialsFound
+
+    return [];
   }
 }
 

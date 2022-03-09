@@ -80,8 +80,8 @@ export default class PlayerChannelManager extends ChannelManager{
 
       if(MESSAGE.startsWith(PREFIX)){
 
-        const { COMMAND, ARGS } = parseCommand( PREFIX, MESSAGE );  
-
+        const { COMMAND, ARGS } = parseCommand( PREFIX, MESSAGE, ',' );  
+        console.log(ARGS)
         const playerCommands = this.player.getCommands();
         const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
 
@@ -95,19 +95,29 @@ export default class PlayerChannelManager extends ChannelManager{
           return
         }
 
+        // ---------------- If command call is successful
+
         const calledCommand = searchedCommands[0];
         const command = playerCommands.find(c => c.name === calledCommand);
         const menuParams = { ARGS, command, game: this.game, player: this.player }
         this.player.endAllActionInteractions();
 
-        if(command.targetCount===0) await noTargetMenu(menuParams)
+        if(ARGS.length>0){
+          if(command.targetCount===0) await noTargetUsingArgs(menuParams);
 
-        if(command.targetCount===1) 
-          this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
-        
-        if(command.targetCount===2) 
-          this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
-        
+          if(command.targetCount===1) await findOneTargetUsingArgs(menuParams);
+          
+          if(command.targetCount===2) await findTwoTargetsUsingArgs(menuParams);
+        }else{
+          if(command.targetCount===0) await noTargetPopUp(menuParams)
+
+          if(command.targetCount===1) 
+            this.player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+          
+          if(command.targetCount===2) 
+            this.player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+        }
+
       }else{
 
         if(this.player.isAlive() === false){
@@ -193,7 +203,7 @@ const processAction = async ({ command, game, player, ARGS }:{
   })
 }
 
-const noTargetMenu = async ({ command, game, player, ARGS }:{
+const noTargetPopUp = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>  
     await processAction({ command, game, player, ARGS });
 
@@ -288,4 +298,64 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
   }
 
   return [collectorOne, collectorTwo];
+}
+
+const noTargetUsingArgs = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+  
+  if(ARGS.length > 0)
+    await player.alert(`(The '${command.getName()}' command does not need any targets.)`);
+  processAction({ command, game, player, ARGS });
+}
+
+const findOneTargetUsingArgs = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+
+  if(ARGS.length !== 1) 
+    return player.alert(responses.actionRequireOneTarget);
+
+  const keyword = ARGS[0];
+  const targetables = command.targetables({game: game, user: player});
+  const searchResults = game.getFunctions().searchPlayerInChoices(targetables,keyword)
+
+  if(searchResults.length===0)
+    return player.alert(responses.playerWithKeywordNotFound(keyword));
+
+  if(searchResults.length>1)
+    return player.alert(responses.multiplePlayersFound({searchResults}));
+
+  player.setFirstActionTarget(searchResults[0]);
+  processAction({ command, game, player, ARGS });
+}
+
+const findTwoTargetsUsingArgs = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+  
+  if(ARGS.length !== 2) 
+    return player.alert(responses.actionRequireTwoTargets);
+
+  const keywordOne = ARGS[0];
+  const keywordTwo = ARGS[0];
+
+  const targetables = command.targetables({game: game, user: player});
+  const firstSearchResults = game.getFunctions().searchPlayerInChoices(targetables,keywordOne)
+  const secondSearchResults = game.getFunctions().searchPlayerInChoices(targetables,keywordTwo)
+  
+  if(firstSearchResults.length === 0 || secondSearchResults.length === 0){
+    if(firstSearchResults.length === 0)  player.alert(responses.playerWithKeywordNotFound(keywordOne));
+    if(secondSearchResults.length === 0)  player.alert(responses.playerWithKeywordNotFound(keywordTwo));
+    return
+  }
+
+  if(firstSearchResults.length > 1 || secondSearchResults.length > 1){
+    if(firstSearchResults.length > 1)
+      player.alert(responses.multiplePlayersFound({searchResults: firstSearchResults}));
+    if(secondSearchResults.length > 1)
+      player.alert(responses.multiplePlayersFound({searchResults: secondSearchResults}));
+    return
+  }
+    
+  player.setFirstActionTarget(firstSearchResults[0]);
+  player.setSecondActionTarget(secondSearchResults[0]);
+  processAction({ command, game, player, ARGS });
 }
