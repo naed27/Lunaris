@@ -1,3 +1,4 @@
+import Command from "../command";
 import Player from "../player";
 
 const responses = {
@@ -20,7 +21,12 @@ const responses = {
 
   playerWithKeywordNotFound: (keyword: string) => {
     return `Player with keyword '${keyword}' not found.\n(They might be dead or doesn't exist at all.)`;
-  }
+  },
+
+  commandRequiresTarget: (command: Command) => {
+    const grammar = command.targetCount === 1 ? 'target' : 'targets';
+    return `The '${command.getName()}' command  requires ${command.targetCount} ${grammar}.`;
+  },
 
 }
 
