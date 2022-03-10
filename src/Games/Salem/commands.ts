@@ -26,10 +26,7 @@ const commands: SalemCommand[] =  [
             return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
         },
         callResponse: () => null,
-        run: ({user,game,targetOne: target})=>{
-            game.pushVote({voter: user, voted: target});      
-            game.getFunctions().messagePlayers(`**${user.getUsername()}** has voted for **${target.getUsername()}**.`);
-        },
+        run: ({user,game,targetOne: target}) => game.pushVote({voter: user, voted: target}),
     },
     {
         name:'unvote',

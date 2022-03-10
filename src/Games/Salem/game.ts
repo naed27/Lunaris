@@ -270,9 +270,6 @@ export default class Game{
         const { voter, voted } = vote;
         const oldVote = this.votes.find(v => v.voter.getId() === voter.getId());
         if(oldVote){
-            const vote ={voter:voter, voted: voted}
-            this.votes.push(vote);
-        }else{
             if(oldVote.voted.getId() !== voted.getId()){
                 const i = this.votes.indexOf(oldVote);
                 const vote = { voter:voter, voted:voted }
@@ -280,6 +277,8 @@ export default class Game{
             }else{
                 return `**${voter.getUsername()}**, you can't vote the same person twice!`;
             }
+        }else{
+            this.votes.push(vote);
         }
 
         let voteCount=0;
@@ -288,7 +287,8 @@ export default class Game{
 
         const grammar = voteCount > 1 ? 'votes' : 'vote';
         const aliveCount = this.players.filter(p=>p.isAlive()).length;
-        const goal = (aliveCount % 2 === 0) ? ( aliveCount / 2 ) + 1 : ( aliveCount + 1 ) / 2;
+        // const goal = (aliveCount % 2 === 0) ? ( aliveCount / 2 ) + 1 : ( aliveCount + 1 ) / 2;
+        const goal = 1;
 
         const msg = jsonWrap(`${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})`)
         this.functions.messagePlayers(msg);
@@ -298,7 +298,6 @@ export default class Game{
             this.getClock().skipPhase();
             this.setVotedUp(voted);
         }
-        return `**You** have voted against **${voted.getUsername()}**`;
     }
 
     removeVoteOf = (voter: Player) => {
