@@ -243,35 +243,35 @@ export default class Player{
     await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],})
   
 
-  messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(msg))
+  messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(msg))
 
   messageAlivePlayers =  async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.isAlive() && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>p.isAlive() && p.getChannelManager().sendString(msg))
   }
 
   messageGhosts = async (msg: string) => {
-    this.game.getPlayers().map((p)=>!p.isAlive() && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>!p.isAlive() && p.getChannelManager().sendString(msg))
   }
 
   messageJailedPlayers = async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.isJailed() && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>p.isJailed() && p.getChannelManager().sendString(msg))
   } 
 
   messageJailor = async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.getRoleName() === 'Jailor' && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>p.getRoleName() === 'Jailor' && p.getChannelManager().sendString(msg))
   } 
 
   messageSpies  = async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.getRoleName() === 'Spy' && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>p.getRoleName() === 'Spy' && p.getChannelManager().sendString(msg))
   }
 
   messageMafias = async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.isMafia() && p.getChannelManager().send(msg))
+    this.game.getPlayers().map((p)=>p.isMafia() && p.getChannelManager().sendString(msg))
   }
 
   messagePlayersWrapped = async (msg: string) => {
     const content = jsonWrap(msg);
-    this.game.getPlayers().map((p)=>p.getChannelManager().send(content));
+    this.game.getPlayers().map((p)=>p.getChannelManager().sendString(content));
   }
 
   cleanChannel = async () => {

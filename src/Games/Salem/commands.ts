@@ -271,12 +271,12 @@ const commands: SalemCommand[] =  [
         run:({user,game,targetOne: target,args})=>{
             const parseArgs = args.join(' ');
             const whisperMessage = `**${user.getUsername()} (Whisper):** ${parseArgs}`;
-            user.getChannelManager().send(whisperMessage);
-            target.getChannelManager().send(whisperMessage);
+            user.getChannelManager().sendString(whisperMessage);
+            target.getChannelManager().sendString(whisperMessage);
 
             const others = game.getPlayers().filter(player=>player.getId()!=user.getId() && player.getId()!=target.getId());
             const observation = jsonWrap(`${user.getUsername()} is whispering to ${target.getUsername()}`);
-            others.forEach(p => p.getChannelManager().send(observation));
+            others.forEach(p => p.getChannelManager().sendString(observation));
         }
     },
 
@@ -305,10 +305,10 @@ const commands: SalemCommand[] =  [
             if(args.length>0){
                 user.setUsername(message);
                 const response = jsonWrap(`Your name has been changed to ${message}`)
-                user.getChannelManager().send(response);
+                user.getChannelManager().sendString(response);
             }else{
                 const response = jsonWrap(`Please enter a name.`)
-                user.getChannelManager().send(response);
+                user.getChannelManager().sendString(response);
             }   
         }
     },

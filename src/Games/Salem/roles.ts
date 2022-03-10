@@ -175,7 +175,7 @@ const roles: SalemRole[] = [
                     visitsTarget: () => false,
                     targetables: ({user,game}) => game.getPlayers().filter(p=>p.getId()!=user.getId() && p.isAlive()),
                     defaultTarget:() => [],
-                    callResponse: async ({ targetOne }) => `You have decided to jail **${targetOne.getUsername()}**.`,
+                    callResponse: async ({ targetOne }) => `You have decided to jail ${targetOne.getUsername()}.`,
                     run: ({ user, targetOne })=>{
                         const target = targetOne;
                         target.setJailStatus(true);
@@ -207,7 +207,7 @@ const roles: SalemRole[] = [
                     defaultTarget:({ game })=> game.getJailedPerson() ? [game.getJailedPerson()] : null,
                     callResponse: async ({ user, targetOne })=>{
                         targetOne.sendMarkDownToChannel(`The jailor has decided to execute you.`);
-                        user.sendMarkDownToChannel(`You have decided to execute **${targetOne.getUsername()}**.`)
+                        user.sendMarkDownToChannel(`You have decided to execute ${targetOne.getUsername()}.`)
                     },
                     run:({ command, targetOne })=>{
                         command.decrementStock();
@@ -267,7 +267,7 @@ const roles: SalemRole[] = [
                     targetables:({ game }) => game.getAlivePlayers(),
                     defaultTarget:()=> [],
                     callResponse:async ({targetOne, targetTwo})=>
-                        `You have decided to swap **${targetOne.getUsername()}** and **${targetTwo.getUsername()}**.`
+                        `You have decided to swap ${targetOne.getUsername()} and ${targetTwo.getUsername()}.`
                     ,
                     run:({ targetOne, targetTwo, game })=>{
                         targetOne;
@@ -385,7 +385,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to control **${targetOne.getUsername()}** into targeting **${{targetOne}[1].getUsername()}**.`
+                        return `You have decided to control ${targetOne.getUsername()} into targeting ${{targetOne}[1].getUsername()}.`
                     },
                     run:({ game, targetOne, targetTwo })=>{
                         const targetOne_action = game.getActionOf(targetOne);
@@ -453,7 +453,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({})=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to distract **${targetOne.getUsername()}** tonight.`
+                        return `You have decided to distract ${targetOne.getUsername()} tonight.`
                     },
                     run:({targetOne: target})=>{
                         const immunities = target.getRole().getImmunities();
@@ -522,7 +522,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to distract ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to distract **${targetOne.getUsername()}** tonight.`
+                        return `You have decided to distract ${targetOne.getUsername()} tonight.`
                     },
                     run:({targetOne: target})=>{
                         const immunities = target.getRole().getImmunities();
@@ -711,7 +711,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to resurrect **${targetOne.getUsername()}**.`
+                        return `You have decided to resurrect ${targetOne.getUsername()}.`
                     },
                     run:({ game, targetOne, command})=>{
                         command.decrementStock()
@@ -770,7 +770,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to frame ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to frame **${targetOne.getUsername()}**.`
+                        return `You have decided to frame ${targetOne.getUsername()}.`
                     },
                     run:({targetOne: target})=>{
                         const role = roles.find(r=>r.name==`Mafioso`);
@@ -828,7 +828,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to disguise themself as ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to disguise yourself as **${targetOne.getUsername()}**.`
+                        return `You have decided to disguise yourself as ${targetOne.getUsername()}.`
                     },
                     run:({ game, targetOne, user})=>{
 
@@ -894,7 +894,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to investigate ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to investigate **${targetOne.getUsername()}**.`
+                        return `You have decided to investigate ${targetOne.getUsername()}.`
                     },
                     run:({user, targetOne})=>{
                         user.pushNotif(new Notif({
@@ -951,7 +951,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to investigate **${targetOne.getUsername()}**.`
+                        return `You have decided to investigate ${targetOne.getUsername()}.`
                     },
                     run:({user, targetOne})=>{
                         user.pushNotif(new Notif({
@@ -1008,7 +1008,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to interrogate **${targetOne.getUsername()}**.`
+                        return `You have decided to interrogate ${targetOne.getUsername()}.`
                     },
                     run:({user, targetOne})=>{
                         user.pushNotif(new Notif({
@@ -1067,7 +1067,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to blackmail ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to blackmail **${targetOne.getUsername()}**.`
+                        return `You have decided to blackmail ${targetOne.getUsername()}.`
                     },
                     run:(targets)=>{
                         let target = targets[0];
@@ -1128,7 +1128,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to keep an eye on **${targetOne.getUsername()}**'s house tonight.`
+                        return `You have decided to keep an eye on ${targetOne.getUsername()}'s house tonight.`
                     },
                     run:({user, targetOne: target, game})=>{
                         const actions = game.getActions().filter(a=>a.getFirstTarget().getId()==target.getId());
@@ -1210,11 +1210,11 @@ const roles: SalemRole[] = [
                         if(game.roleExists(`Mafioso`)){
                             const msg = `${user.getUsername()} has ordered the mafioso to kill ${targetOne.getUsername()}.`
                             await game.getFunctions().messageOtherMafias(msg,user);
-                            return `You have ordered the Mafioso to kill **${targetOne.getUsername()}**.`
+                            return `You have ordered the Mafioso to kill ${targetOne.getUsername()}.`
                         }else{
                             const msg = `${user.getUsername()} has decided to kill ${targetOne.getUsername()}.`
                             await game.getFunctions().messageOtherMafias(msg,user);
-                            return `You have decided to kill **${targetOne.getUsername()}**.`
+                            return `You have decided to kill ${targetOne.getUsername()}.`
                         }
                     },
                     run:({user,targetOne: target})=>{
@@ -1286,7 +1286,7 @@ const roles: SalemRole[] = [
         //                 return targetables;
         //             },
         //             callResponse:async (user,command,{targetOne},game)=>{
-        //                 return `You have decided to bite **${targetOne.getUsername()}**.`
+        //                 return `You have decided to bite ${targetOne.getUsername()}.`
         //             },
         //             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
         //                 let n1 = {
@@ -1381,11 +1381,11 @@ const roles: SalemRole[] = [
                         if(game.roleExists(`Godfather`)){
                             msg = `${user.getUsername()} has voted to kill ${targetOne.getUsername()}.`
                             await game.getFunctions().messageOtherMafias(msg,user);
-                            return `You have voted to kill **${targetOne.getUsername()}**.`
+                            return `You have voted to kill ${targetOne.getUsername()}.`
                         }else{
                             msg = `${user.getUsername()} has decided to kill ${targetOne.getUsername()}.`
                             await game.getFunctions().messageOtherMafias(msg,user);
-                            return `You have decided to kill **${targetOne.getUsername()}**.`
+                            return `You have decided to kill ${targetOne.getUsername()}.`
                         }
                     },
                     run:({ game, targetOne: target, user })=>{
@@ -1458,7 +1458,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to shoot **${targetOne.getUsername()}**.`
+                        return `You have decided to shoot ${targetOne.getUsername()}.`
                     },
                     run:({user,command,targetOne: target})=>{
                         command.setStocks(command.getStocks()-1);
@@ -1527,7 +1527,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to kill **${targetOne.getUsername()}**.`
+                        return `You have decided to kill ${targetOne.getUsername()}.`
                     },
                     run:({user,targetOne: target})=>{
                         const targetNotif = new Notif({
@@ -1597,7 +1597,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to go on a rampage at **${targetOne.getUsername()}**'s house.`
+                        return `You have decided to go on a rampage at ${targetOne.getUsername()}'s house.`
                     },
                     run:({ game, targetOne: target, user })=>{
                         const targetNotif = new Notif({ 
@@ -1688,7 +1688,7 @@ const roles: SalemRole[] = [
         //                 return targetables;
         //             },
         //             callResponse:async (user,command,{targetOne},game)=>{
-        //                 return `You have decided to douse **${targetOne.getUsername()}**.`
+        //                 return `You have decided to douse ${targetOne.getUsername()}.`
         //             },
         //             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
         //                 let target = targets[0];
@@ -1781,7 +1781,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to heal **${targetOne.getUsername()}**.`
+                        return `You have decided to heal ${targetOne.getUsername()}.`
                     },
                     run:(targets)=>{
                         const  target = targets[0];
@@ -1865,7 +1865,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to protect **${targetOne.getUsername()}**.`
+                        return `You have decided to protect ${targetOne.getUsername()}.`
                     },
                     run:(targets)=>{
                         const target = targets[0];
@@ -1953,7 +1953,7 @@ const roles: SalemRole[] = [
         //                 user.setVoteCount(3);
         //                 let msg = `${user.getUsername()} has revealed to everyone that they are the Mayor!`;
         //                 game.getFunctions().messagePlayersWrapped(msg);
-        //                 return `You have revealed to everyone that you are the **Mayor**!`
+        //                 return `You have revealed to everyone that you are the Mayor!`
                        
         //             },
         //             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
@@ -2009,7 +2009,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to seance **${targetOne.getUsername()}**.`
+                        return `You have decided to seance ${targetOne.getUsername()}.`
                     },
                     run:({user, command, targetOne: target})=>{
                         command.decrementStock();
@@ -2069,7 +2069,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to bug **${targetOne.getUsername()}**'s house.`
+                        return `You have decided to bug ${targetOne.getUsername()}'s house.`
                     },
                     run:({user, targetOne: target})=>{
                         target.getNotifs().forEach(notif => {
@@ -2154,7 +2154,7 @@ const roles: SalemRole[] = [
                     },
                     defaultTarget:({} )=> [],
                     callResponse:async ({targetOne})=>{
-                        return `You have decided to haunt **${targetOne.getUsername()}**.`
+                        return `You have decided to haunt ${targetOne.getUsername()}.`
                     },
                     run:({ command, targetOne: target })=>{
                         command.decrementStock();
@@ -2215,7 +2215,7 @@ const roles: SalemRole[] = [
                     callResponse:async ({user, targetOne, game})=>{
                         const msg = `${user.getUsername()} has decided to clean ${targetOne.getUsername()}.`
                         await game.getFunctions().messageOtherMafias(msg,user);
-                        return `You have decided to clean **${targetOne.getUsername()}**.`
+                        return `You have decided to clean ${targetOne.getUsername()}.`
                     },
                     run:(targets)=>{
                         let target = targets[0];

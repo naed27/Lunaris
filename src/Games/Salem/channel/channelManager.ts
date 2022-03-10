@@ -67,6 +67,7 @@ export default class ChannelManager{
             READ_MESSAGE_HISTORY:true,
         });
     }
-
+    
+    sendString = async (a: string | MessagePayload | MessageOptions) => await this.channel.send(`‎${a}`);
     send = async (a: string | MessagePayload | MessageOptions) => await this.channel.send(a);
 }
