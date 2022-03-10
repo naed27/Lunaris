@@ -1,10 +1,10 @@
-import { CacheType, Collection, Guild, GuildMember, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from "discord.js";
-import roles, { SalemRoleName } from "./roles";
-import Role from "./role";
-import Game from "./game";
-import { arrayContainsElement, createEmbed, jsonWrap, delay } from "../../Helpers/toolbox";
-import PlayerChannelManager from "./channel/playerChannelManager";
-import Notif from "./notif";
+import { CacheType, Collection, Guild, GuildMember, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from 'discord.js';
+import roles, { SalemRoleName } from './roles';
+import Role from './role';
+import Game from './game';
+import { arrayContainsElement, createEmbed, jsonWrap, delay } from '../../Helpers/toolbox';
+import PlayerChannelManager from './channel/playerChannelManager';
+import Notif from './notif';
 
 interface ConstructorParams{
   game: Game,
@@ -13,6 +13,8 @@ interface ConstructorParams{
   discord: GuildMember,
   channel: TextChannel,
 }
+
+type PlayerBuff = 'Vest' | 'Heal' | 'Protect' | 'Alert'
 
 export default class Player{
 
@@ -30,7 +32,7 @@ export default class Player{
   channel: TextChannel;
   channelManager: PlayerChannelManager;
   interactionCollectors: InteractionCollector<SelectMenuInteraction<CacheType> 
-  | SelectMenuInteraction<"cached">>[] = [];
+  | SelectMenuInteraction<'cached'>>[] = [];
 
   role: Role;
   maskRole: Role;
@@ -52,7 +54,7 @@ export default class Player{
   blackmailStatus = false;
   roleBlockStatus = false;
   
-  buffs = [];
+  buffs: PlayerBuff[] = [];
   visitors = [];
   judgement = [];
   killerNotes = [];
@@ -128,12 +130,12 @@ export default class Player{
       collector.on('collect', async (reaction: MessageReaction, user: User) => {
         const react = reaction.emoji.name;
         switch(react){
-          case "📜": 
-            const message2 = jsonWrap(`"${this.getNotes()}"\n\n- ${this.getUsername()}`);
+          case '📜': 
+            const message2 = jsonWrap(`'${this.getNotes()}'\n\n- ${this.getUsername()}`);
             notepad.edit(message2);
             notepad.react('↩️');
           break;
-          case "↩️": 
+          case '↩️': 
             const message3 = jsonWrap(`We found a note beside ${this.getUsername()}'s body.`);
             notepad.edit(message3);
             notepad.react('📜');
@@ -148,7 +150,7 @@ export default class Player{
   playDeath = async () => {
     await delay(2000);
     if(this.causeOfDeath.length>0){
-      if(this.causeOfDeath[0]=="committed suicide"){
+      if(this.causeOfDeath[0]=='committed suicide'){
         return
       }else{
         const report = (this.causeOfDeath.length>1) 
@@ -165,10 +167,9 @@ export default class Player{
         }
       }
     }
-
+    this.causeOfDeath = [];
     const message3 = `${this.getUsername()}'s role was ${this.getRole().getName()}`;
     await this.game.getFunctions().sendMarkDownToPlayers(message3,1000);
-
     this.showNote();
   }
 
@@ -340,7 +341,7 @@ export default class Player{
   clearVisitors = () => this.visitors = []
 
   kill(){
-    this.status="Dead";
+    this.status='Dead';
     this.winStatus = false;
     this.channelManager.lock();
     this.game.pushFreshDeath(this);
@@ -349,7 +350,7 @@ export default class Player{
   calculateBuff(target: Player, killer: Player, targetNotif: Notif, killerNotif: Notif){
     this.getBuffs().forEach(buff => {
       switch(buff){
-        case "Heal":
+        case 'Heal':
           const selfHeal = this.game.getActions().filter(a=>a.isSelfTarget() && a.getPerformer().roleNameIs('Doctor'));
           const inbox = selfHeal ?
             `You were attacked last night, but you healed yourself!` : 
@@ -359,19 +360,19 @@ export default class Player{
           targetNotif.setNewsForSpy(newsForSpy);
         break;
 
-        case "Protect":{
+        case 'Protect':{
           killerNotif.setInbox(`Your target fought back!`)
           killer.kill();
           killer.pushCauseOfDeath(`killed by a Bodyguard.`);
           targetNotif.setInbox(`You were attacked last night, but someone protected you!`)
           const bodyguards = this.game.getActions()
-          .filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRoleName()=="Bodyguard")
+          .filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRoleName()=='Bodyguard')
           .map((bodyguardAction) => bodyguardAction.getPerformer());
           const bodyguardNotif = new Notif({ inbox: `You protected your target from an attack last night!` })
           bodyguards.forEach( bg => bg.pushNotif(bodyguardNotif))}
         break;
 
-        case "Vest":
+        case 'Vest':
           targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
           killerNotif.setInbox(`You attacked your target last night but they were immune!`);
         break;
@@ -384,7 +385,7 @@ export default class Player{
   resurrect = () => this.status = 'Alive'
 
   getBuffs = () => this.buffs
-  pushBuff = (a:string) => this.buffs.push(a);
+  pushBuff = (a:PlayerBuff) => this.buffs.push(a);
   clearBuffs = () => this.buffs = []
 
   getUsername = () => this.username
@@ -486,7 +487,7 @@ export default class Player{
   }
 
   setInteractionCollectors = ( collectors : InteractionCollector<SelectMenuInteraction<CacheType> 
-    | SelectMenuInteraction<"cached">>[]) =>{
+    | SelectMenuInteraction<'cached'>>[]) =>{
     this.interactionCollectors = collectors;
   }
 
