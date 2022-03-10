@@ -27,7 +27,7 @@ export default class Functions{
 
   gameOverMessage = async (message: string) => {
     this.game.getPlayers().map(async (player)=>{
-      const address = await player.getChannelManager().send(message);
+      const address = await player.getChannelManager().sendString(message);
       address.react('🚪');
       const filter = (reaction:MessageReaction, user:User) => !user.bot;
       const collector = address.createReactionCollector({filter});
@@ -41,15 +41,15 @@ export default class Functions{
     });
   }
 
-  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(a))
+  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(a))
 
   messageGhosts = async (message: string) => {
-    this.game.getPlayers().map((p)=>p.getStatus()=='Dead' && p.getChannelManager().send(message))
+    this.game.getPlayers().map((p)=>p.getStatus()=='Dead' && p.getChannelManager().sendString(message))
   }
 
   messagePlayersWrapped = async (message: string) => {
     const content = jsonWrap(message);
-    this.game.getPlayers().map((p)=>p.getChannelManager().send(content));
+    this.game.getPlayers().map((p)=>p.getChannelManager().sendString(content));
   }
 
   cleanChannel = async (channel: TextChannel) => {
@@ -75,13 +75,13 @@ export default class Functions{
 
   messageMafias = (message: string) => {
     const mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=='Mafia');
-    mafias.map((mafia) => mafia.getChannelManager().send(message));
+    mafias.map((mafia) => mafia.getChannelManager().sendString(message));
   }
 
   messageOtherMafias = (message: string, sender: Player) => {
     const content = jsonWrap(message);
     const mafias = this.game.getPlayers().filter(p=>p.getRole().getAlignment()=='Mafia' && p.getUsername()!=sender.getUsername());
-    mafias.map((mafia)=>mafia.getChannelManager().send(content))
+    mafias.map((mafia)=>mafia.getChannelManager().sendString(content))
   }
 
   playerWithRoleIsAlive = (role: string) => {
