@@ -183,7 +183,7 @@ class Clock{
     }
 
     playJudgement = async () => {
-        const message = `Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`;
+        const message = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
         await this.game.getFunctions().messagePlayers(message);
         this.game.getFunctions().setupJudgements();
         this.unfreezeTime();
