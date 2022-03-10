@@ -170,7 +170,7 @@ class Clock{
         await this.game.getFunctions().messagePlayers(message3);
         await delay(2000);
 
-        const message4 = `Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`;
+        const message4 = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
         await this.game.getFunctions().messagePlayers(message4);
         this.game.getVotedUp().getChannelManager().unlock();
 

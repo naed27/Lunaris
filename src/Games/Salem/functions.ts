@@ -14,9 +14,9 @@ export default class Functions{
     this.game = game;
   }
 
-  setupJudgements = () => this.game.getPlayers(). map((p)=>{
+  setupJudgements = () => this.game.getPlayers(). map( async (p)=>{
     const judgement = p.getChannelManager().manageJudgement();
-    judgement.create();
+    await judgement.create();
     judgement.applyReactionCollector(judgementCollector)
   });
 
