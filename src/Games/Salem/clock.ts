@@ -77,7 +77,7 @@ class Clock{
 
             case 'Judgement': await this.playJudgement(); break
             
-            case 'Judgement Calculation': await this.playJudgement(); break
+            case 'Judgement Calculation': await this.playJudgementCalculation(); break
 
             case 'Final Words': await this.playFinalWords(); break
 
