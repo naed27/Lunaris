@@ -211,9 +211,20 @@ const processAction = async ({ command, game, player, ARGS }:{
     player.sendMarkDownToChannel(response)
 }
 
+const setDefaultTarget = async ({ command, game, player, ARGS }:{
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+  const defaultTarget = command.defaultTarget({game: game, user: player});
+    if(defaultTarget!==null && defaultTarget !== undefined && defaultTarget.length>0){
+      defaultTarget[0] && player.setFirstActionTarget(defaultTarget[0])
+      defaultTarget[1] && player.setSecondActionTarget(defaultTarget[1])
+    } 
+}
+
 const noTargetPopUp = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) =>  
+  command: Command, game: Game, player: Player, ARGS: string[] }) => {
+    setDefaultTarget({command, game, player, ARGS});
     await processAction({ command, game, player, ARGS });
+  }
 
 const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>{
@@ -310,7 +321,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
 
 const noTargetUsingArgs = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
-  
+  setDefaultTarget({command, game, player, ARGS});
   if(ARGS.length > 0 && !command.hasArguments())
     await player.alert(`(The '${command.getName()}' command does not need any targets.)`);
   processAction({ command, game, player, ARGS });
