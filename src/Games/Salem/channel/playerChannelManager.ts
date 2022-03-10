@@ -177,7 +177,7 @@ const processAction = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
 
   const performer = command.performer({game: game, user: player});
-
+  
   if(command.priority === 0){
     await command.run({
       args:ARGS,
@@ -198,7 +198,7 @@ const processAction = async ({ command, game, player, ARGS }:{
     targets: player.getActionTargets()
   }))
 
-  const response = command.callResponse({
+  const response = await command.callResponse({
     args: ARGS,
     game: game,
     command: command,
@@ -207,10 +207,8 @@ const processAction = async ({ command, game, player, ARGS }:{
     targetTwo: player.getSecondActionTarget(),
   })
 
-  if(typeof response === 'string') {
-    console.log('sending alert')
+  if(typeof response === 'string') 
     player.sendMarkDownToChannel(response)
-  }
 }
 
 const setDefaultTarget = async ({ command, game, player }:{
