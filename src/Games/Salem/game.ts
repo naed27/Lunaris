@@ -11,7 +11,7 @@ import SalemServer from '../../Servers/SalemServer';
 import { Guild, Role as DiscordRole } from 'discord.js';
 import { createEmbed, delay, jsonWrap } from '../../Helpers/toolbox';
 
-type JudgementChoices = 'Abstain' | 'Guilty' | 'Innocent'
+export type JudgementChoices = 'Abstain' | 'Guilty' | 'Innocent'
 
 interface ConstructorParams {
     guild: Guild,
