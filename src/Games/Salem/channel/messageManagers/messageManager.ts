@@ -40,11 +40,12 @@ export default class MessageManager{
   setMessage = (a:Message) => this.message = a;
   editMessage = (a:MessagePayload) => this.message.edit(a);
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
+  generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
     this.delete();
     this.page = 1;
-    const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
+    const embed = this.generateEmbed(messageEmbed);
     this.message = await this.channel.send({embeds:[embed]})
   }
 
