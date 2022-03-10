@@ -28,7 +28,9 @@ export const  judge = ({messageManager}:Params) => {
   const judgements = game.getJudgements();
   const title = `⚖️ The Judgement`
   const options = (player.isAlive()) ? `\n\n🙆‍♂️ - Innocent\n🙅 - Guilty` : ``;
-  const voteString = judgements.join(`\n`);
+  const voteString = judgements
+    .map(({ string }) => string)
+    .join(`\n`);
   const description = `**Accused: ${game.getVotedUp().getUsername()}**\n\n${voteString}\n\n${options}`
   return createEmbed({ title, description });
 }
