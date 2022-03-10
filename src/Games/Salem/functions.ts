@@ -41,10 +41,7 @@ export default class Functions{
     });
   }
 
-  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>{
-    console.log(`messaging ${p.getUsername()}`)
-    p.getChannelManager().send(a)
-  })
+  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>p.getChannelManager().send(a))
 
   messageGhosts = async (message: string) => {
     this.game.getPlayers().map((p)=>p.getStatus()=='Dead' && p.getChannelManager().send(message))
@@ -127,7 +124,6 @@ export default class Functions{
     
     const promotee = subordinates[0];
     const mafiosoRole = roles.find( r => r.name === 'Mafioso' );
-    console.log(promotee)
     promotee.setRole( new Role( mafiosoRole ) );
     await delay(1000);
     const notif = jsonWrap( `${promotee.getUsername()} has been promoted to Mafioso!` );
