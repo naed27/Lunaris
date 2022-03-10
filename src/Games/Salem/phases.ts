@@ -28,7 +28,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Reporting',
-    duration: 20,
+    duration: 0,
     next: { normal: 'Reporting Calculation', special: null },
     canTalk: false,
     shouldLockChannel: true,
