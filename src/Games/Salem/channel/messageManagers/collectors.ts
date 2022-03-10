@@ -1,6 +1,8 @@
 import guidebook from '../../archive/guide';
-import { MessageReaction, User } from 'discord.js';
+import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
+import { createChoices } from '../../../../Helpers/toolbox';
+import { JudgementChoices } from '../../game';
 
 interface Params { messageManager: MessageManager }
 
@@ -55,26 +57,20 @@ export const judgement: ReactCollector = async ({messageManager}) => {
   const game = manager.getGame();
   const player = manager.getPlayer();
   const message = manager.getMessage();
+  const embed = manager.generateEmbed();
+  const choices = createChoices({choices:['Guilty', 'Innocent', 'Abstain']})
 
-  const filter = (reaction: MessageReaction, user: User) => !user.bot;
-  const collector = message.createReactionCollector({filter,dispose:true});
+  message.edit({ embeds:[embed], components:[choices] });
 
-  collector.on('collect', async (reaction, user) => {
-    const userReactions = message.reactions.cache.filter(r => r.emoji.name !== reaction.emoji.name);
-    userReactions.map(r => r.users.remove(user.id));
-    switch(reaction.emoji.name){
-      case "🙅": return game.pushJudgement({judge:player, choice:'Guilty'});
-      case "🙆‍♂️": return game.pushJudgement({judge:player, choice:'Innocent'});
-    }
+  const filter = (i:Interaction) => i.user.id === player.getId();
+  const collector = message.createMessageComponentCollector({ filter, componentType: 'BUTTON' });
+
+  collector.on('collect', async (i) => {
+    i.deferUpdate()
+    const choice = i.customId;
+    if(choice === 'Abstain' || choice === 'Innocent' || choice==='Guilty') 
+      game.pushJudgement({judge:player, choice});
+    return
   });
 
-  collector.on('remove', async (reaction) => {
-    switch(reaction.emoji.name){
-      case "🙆‍♂️": return game.pushJudgement({judge: player, choice: 'Abstain'});
-      case "🙅": return game.pushJudgement({judge: player, choice: 'Abstain'});
-    }
-  });
-
-  await message.react('🙆‍♂️').catch();
-  await message.react('🙅').catch();
 }
