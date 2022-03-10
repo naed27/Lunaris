@@ -68,6 +68,9 @@ export default class ChannelManager{
         });
     }
     
-    sendString = async (a: string | MessagePayload | MessageOptions) => await this.channel.send(`‎${a}`);
+    sendString = async (a: string | MessagePayload | MessageOptions) => {
+        const linebreak = `‎`;
+        return await this.channel.send(`${linebreak}${a}`);
+    }
     send = async (a: string | MessagePayload | MessageOptions) => await this.channel.send(a);
 }

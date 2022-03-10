@@ -45,7 +45,7 @@ const phases:readonly Phase[] = [
   {
     name: 'Discussion',
     duration: 35,
-    next: { normal: 'Night', special: 'Voting' },
+    next: { normal: 'Voting', special: 'Night' },
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
