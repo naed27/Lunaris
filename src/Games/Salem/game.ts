@@ -102,7 +102,7 @@ export default class Game{
         .map(jester => jester.getRole().getCommands().filter(c=>c.getName()=='haunt')[0].setStocks(0))
 
         this.players.map(player => player.resetYesterdayStatus());
-        this.getClock().resetVotingExcessTime();
+        this.getClock().resetExcessDuration();
     }
 
     deathListener = async () => {
@@ -294,7 +294,7 @@ export default class Game{
         this.functions.messagePlayers(msg);
         if(voteCount==goal){
             this.getClock().setNextPhase('Defense');
-            this.getClock().setVotingExcessTime(this.getClock().getSecondsRemaining());
+            this.getClock().setExcessDuration(this.getClock().getSecondsRemaining());
             this.getClock().skipPhase();
             this.setVotedUp(voted);
         }

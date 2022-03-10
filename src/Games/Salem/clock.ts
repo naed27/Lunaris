@@ -30,7 +30,7 @@ class Clock{
     //misc
     peaceCount = 0;
     maxPeaceCount = 5;
-    votingExcessTime = 0;
+    excessDuration = 0;
 
     //timer
     moveTime = false;
@@ -98,8 +98,13 @@ class Clock{
         this.previousPhase = this.phase;
         this.phase = this.nextPhase
 
-        this.remindTime = this.phase.remindTime;
-        this.secondsRemaining = this.phase.duration;
+        this.remindTime = this.phase.remindTime
+           
+        this.secondsRemaining = (this.excessDuration === 0) ? 
+            this.phase.duration :
+            this.excessDuration
+        
+        this.resetExcessDuration();
     
         if ( this.phase.shouldLockChannel )
           this.game.getFunctions()
@@ -351,9 +356,9 @@ class Clock{
     getPreviousPhase = () => this.previousPhase
     setPreviousPhase  = (a:Phase) => this.previousPhase = a
     
-    getVotingExcessTime = () => this.votingExcessTime
-    resetVotingExcessTime = () => this.votingExcessTime = 0
-    setVotingExcessTime = (a:number) => this.votingExcessTime = a
+    getExcessDuration = () => this.excessDuration
+    resetExcessDuration = () => this.excessDuration = 0
+    setExcessDuration = (a:number) => this.excessDuration = a
 
 }
 
