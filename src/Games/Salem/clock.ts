@@ -73,8 +73,6 @@ class Clock{
 
             case 'Voting': await this.playVoting(); break
 
-            case 'Voting Calculation': await this.playVoting(); break
-
             case 'Defense': await this.playDefense(); break
 
             case 'Judgement': await this.playJudgement(); break
@@ -132,7 +130,7 @@ class Clock{
     playDiscussion = async () =>{
         this.game.unlockPlayerChannels();
         if(this.round>1){
-            const message1 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
+            const message1 = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
             await this.game.getFunctions().messagePlayers(message1);
             if(this.maxPeaceCount-this.peaceCount==1){
                 await delay(1000);
@@ -172,7 +170,7 @@ class Clock{
         await this.game.getFunctions().messagePlayers(message3);
         await delay(2000);
 
-        const message4 = `Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase}.\nDuration: ${this.secondsRemaining}s`;
+        const message4 = `Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`;
         await this.game.getFunctions().messagePlayers(message4);
         this.game.getVotedUp().getChannelManager().unlock();
 
@@ -180,20 +178,20 @@ class Clock{
     }
 
     playJudgement = async () => {
-        const message = `Day ${this.round}: The ${this.phase}.\nDuration: ${this.secondsRemaining}s`;
+        const message = `Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`;
         await this.game.getFunctions().messagePlayers(message);
         this.game.getFunctions().setupJudgements();
         this.unfreezeTime();
     }
 
     playFinalWords = async () => {
-        const message = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase}.\nDuration: ${this.secondsRemaining}s`);
+        const message = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
         await this.game.getFunctions().messagePlayers(message);
         this.unfreezeTime(); 
     }
 
     playExecution = async () => {
-        const message1 = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase}.`);
+        const message1 = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.`);
         await this.game.getFunctions().messagePlayers(message1);
         await delay(3000);
 
@@ -228,7 +226,7 @@ class Clock{
         this.game.resetNight();
 
         this.game.updateWerewolf();
-        const message = jsonWrap(`Night ${this.round}.\nDuration: ${this.secondsRemaining}s`);
+        const message = jsonWrap(`${this.phase.name} ${this.round}.\nDuration: ${this.secondsRemaining}s`);
         await this.game.getFunctions().messagePlayers(message);
         await this.game.getFunctions().promoteAGodfather();
 

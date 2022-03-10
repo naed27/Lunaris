@@ -1,6 +1,6 @@
 export type PhasePossibilities = 
 'Lobby' | 'Reporting' | 'Reporting Calculation' |'Discussion' | 'Voting' | 
-'Voting Calculation' | 'Defense' | 'Judgement' |
+'Defense' | 'Judgement' |
 'Judgement Calculation' | 'Final Words' | 'Execution' | 
 'Execution Calculation' | 'Night' | 'Night Calculation' | 
 'Game Over'
@@ -53,18 +53,10 @@ const phases:readonly Phase[] = [
   {
     name: 'Voting',
     duration: 20,
-    next: { normal: 'Night', special: 'Voting Calculation' },
+    next: { normal: 'Night', special: 'Defense' },
     canTalk: false,
     shouldLockChannel: true,
     remindTime: true,
-  },
-  {
-    name: 'Voting Calculation',
-    duration: 0,
-    next: { normal: 'Defense', special: null },
-    canTalk: false,
-    shouldLockChannel: true,
-    remindTime: false,
   },
   {
     name: 'Defense',
