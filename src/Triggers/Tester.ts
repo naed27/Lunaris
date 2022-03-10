@@ -1,4 +1,4 @@
-import { Message, MessageActionRow, MessageSelectMenu, Interaction } from "discord.js";
+import { Message, MessageActionRow, MessageSelectMenu, Interaction, MessageButton } from "discord.js";
 
 export async function sendInteraction(message:Message) {
     const msg = message.content.toLowerCase();
@@ -15,20 +15,36 @@ export async function sendInteraction(message:Message) {
         { label: '2', value: 'Two' },
       ]),
     )
+
+    const Buttons = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomId('one')
+					.setLabel('one')
+					.setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('two')
+          .setLabel('two')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('three')
+          .setLabel('three')
+          .setStyle('PRIMARY'),
+			);
     
-    const meseji = await channel.send({content:'choose one',components: [menu]});
+    const meseji = await channel.send({content:'choose one',components: [Buttons]});
 
     const filter = (i:Interaction) => i.user.id === author.id;
-    const collector = meseji.createMessageComponentCollector({ filter, componentType: 'SELECT_MENU' });
+    const collector = meseji.createMessageComponentCollector({ filter, componentType: 'BUTTON' });
 
     collector.on('collect', async (i) => {
       i.deferUpdate()
-      await meseji.edit({content:`you chose ${i.values[0]}`});
+      await meseji.edit({content:`you chose ${i.customId}`});
       return
     });
 
     collector.on('end', collected => {
-      
+      console.log('end')
     });	
 
 }
