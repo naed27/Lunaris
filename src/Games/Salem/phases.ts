@@ -53,7 +53,7 @@ const phases:readonly Phase[] = [
   {
     name: 'Voting',
     duration: 20,
-    next: { normal: 'Voting Calculation', special: null },
+    next: { normal: 'Night', special: 'Voting Calculation' },
     canTalk: false,
     shouldLockChannel: true,
     remindTime: true,
@@ -85,7 +85,7 @@ const phases:readonly Phase[] = [
   {
     name: 'Judgement Calculation',
     duration: 0,
-    next: { normal: 'Final Words', special: null },
+    next: { normal: 'Night', special: 'Final Words' },
     canTalk: false,
     shouldLockChannel: false,
     remindTime: false,
