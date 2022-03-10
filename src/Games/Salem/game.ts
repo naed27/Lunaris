@@ -108,9 +108,9 @@ export default class Game{
     deathListener = async () => {
         const currentPeaceCount = this.getClock().getPeaceCount();
         this.getClock().setPeaceCount(currentPeaceCount+1);
-        if(this.freshDeaths.length<=0)return
+        if(this.freshDeaths.length === 0 )return 
         this.getClock().setPeaceCount(0);
-        for (const player of this.freshDeaths) {
+        for await (const player of this.freshDeaths) {
             await player.playDeath();
         }
         this.freshDeaths=[];
@@ -126,14 +126,14 @@ export default class Game{
 
     pushAction = (action: Action) => {
         const index = this.actions.findIndex(a => a.user.getId() == action.getUser().getId());
-        if(index>=0) 
-            return this.actions[index]=action  
-        return this.actions.push(action)
+        if(index === -1) 
+            return this.actions.push(action)
+        return this.actions[index]=action  
     }
 
     removeActionOf = (player: Player) => {
         const index = this.actions.findIndex(a => a.user.getId() == player.getId());
-        if(index==0)  return `There are no actions to be cancelled.`;
+        if(index === -1)  return `There are no actions to be cancelled.`;
         this.actions.splice(index,1);
         return `You cancelled your action.`;
     }
@@ -306,7 +306,7 @@ export default class Game{
         if(!vote) return `**You** can't remove a vote if you haven't voted yet.`;
 
         const index = this.votes.indexOf(vote);
-        if (index > -1) { this.votes.splice(index, 1) }
+        if (index !== -1) { this.votes.splice(index, 1) }
         const voteCount = this.votes.filter(v=>v.voted.getId()===vote.voted.getId()).length;
         const grammar = voteCount > 1 ? 'votes' : 'vote';
         const msg = jsonWrap(`${voter.getUsername()} has cancelled their vote against ${vote.voted.getUsername()}. (${voteCount} ${grammar})`)
@@ -356,9 +356,9 @@ export default class Game{
 
     getTitle = () => this.title;
 
-    pushFreshDeath = (user: Player) => {
-        const index = this.freshDeaths.findIndex(a => a.getId() === user.getId());
-        if(index==0) this.freshDeaths.push(user);
+    pushFreshDeath = (player: Player) => {
+        const index = this.freshDeaths.findIndex(dead => dead.getId() === player.getId());
+        if(index === -1) this.freshDeaths.push(player);
     }
 
     getVotedUp = () => this.votedUp
