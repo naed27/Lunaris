@@ -130,7 +130,6 @@ class Clock{
     }
 
     playDiscussion = async () =>{
-        console.log('1')
         this.game.unlockPlayerChannels();
         if(this.round>1){
             const message1 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
