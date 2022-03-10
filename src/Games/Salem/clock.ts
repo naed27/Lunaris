@@ -151,7 +151,7 @@ class Clock{
     }
 
     playVoting  = async () => {
-        const message = jsonWrap(`Day ${this.round}: The ${this.phase}.\nDuration: ${this.secondsRemaining}s\Type ".vote <player>" to vote someone!`);
+        const message = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s\nType ".vote" to vote someone!`);
         await this.game.getFunctions().messagePlayers(message);
         this.unfreezeTime();
     }
