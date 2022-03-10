@@ -1,4 +1,4 @@
-import { MessageEmbed,ColorResolvable, MessageActionRow, MessageSelectMenu } from 'discord.js';
+import { MessageEmbed,ColorResolvable, MessageActionRow, MessageSelectMenu, MessageButton } from 'discord.js';
 
 export const countSimilarElements = <Type>(array:Type[], element: Type):number => {
     const count = array.filter((e)=>e===element).length;
@@ -181,6 +181,18 @@ export const createMenu = ({
     .setCustomId(customId)
     .setPlaceholder(placeHolder)
     .addOptions(choices.map(({label,value})=> ({ label, value })))
+  )
+}
+
+export const createChoices = ({choices}:{choices:string[]}) => {
+  return new MessageActionRow()
+  .addComponents(
+    choices.map((choice)=>{
+      return new MessageButton()
+      .setCustomId(choice)
+      .setLabel(choice)
+      .setStyle('PRIMARY')
+    })
   )
 }
 
