@@ -150,6 +150,19 @@ export default class Game{
 
     listenForWinners = () => {
         this.getAlivePlayers().map(( player )=> player.listenForTheWin())
+        const endGameWinners = this.getAlivePlayers().filter(p => p.isAWinner() 
+        && p.role.name !== 'Jester'
+        && p.role.name !== 'Executioner');
+        if(endGameWinners.length>0){
+            const survivors = this.getAlivePlayers().filter(p => p.role.name === 'Survivor');
+            survivors.map(s => s.setWinStatus(true));
+
+            const anyWinner = endGameWinners[0];
+            if(anyWinner.role.alignment !== 'Town'){
+                const witches = this.getAlivePlayers().filter(p => p.role.name ==='Witch');
+                witches.map(w => w.setWinStatus(true));
+            }
+        }
     }
 
     processActions(){

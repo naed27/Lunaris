@@ -86,20 +86,8 @@ export default class Player{
 
   // ------------------------- Functions 
 
-  listenForTheWin(){
-    const winBuddies = this.getRole().getWinBuddies();
-    const allPlayers = this.game.getPlayers();
-    const alivePlayers = this.game.getAlivePlayers();
-    const aliveBuddies = alivePlayers.filter(p => winBuddies.includes(p.getRole().getAlignment()));
- 
-    if(aliveBuddies.length===alivePlayers.length){
-      allPlayers
-      .filter(p => winBuddies.includes(p.getRole().getAlignment()))
-      .map((p)=>p.setWinStatus(true))
-      this.game.getClock().endGame();
-    }
-  }
-
+  listenForTheWin = () => this.winStatus = this.role.winListener({ game:this.game, user:this })
+  
   resetMask = () => {
     if(!this.disguiseStatus){
       const face = roles.find(r=>r.name==this.getRole().getName()); 
