@@ -149,8 +149,7 @@ export default class Game{
     }
 
     listenForWinners = () => {
-        const alivePlayers = this.getAlivePlayers()
-        alivePlayers.map(( player )=> player.listenForTheWin(alivePlayers))
+        this.getAlivePlayers().map(( player )=> player.listenForTheWin())
     }
 
     processActions(){

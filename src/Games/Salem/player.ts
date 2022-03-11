@@ -86,15 +86,16 @@ export default class Player{
 
   // ------------------------- Functions 
 
-  listenForTheWin(alivePlayers:Player[]){
+  listenForTheWin(){
     const winBuddies = this.getRole().getWinBuddies();
-    const aliveBuddies = alivePlayers.filter(( p ) => {
-      const someonesAlignment = p.getRole().getAlignment();
-      winBuddies.includes(someonesAlignment)
-    });
-
-    if(aliveBuddies.length===winBuddies.length){
-      aliveBuddies.map((p)=>p.setWinStatus(true))
+    const allPlayers = this.game.getPlayers();
+    const alivePlayers = this.game.getAlivePlayers();
+    const aliveBuddies = alivePlayers.filter(p => winBuddies.includes(p.getRole().getAlignment()));
+ 
+    if(aliveBuddies.length===alivePlayers.length){
+      allPlayers
+      .filter(p => winBuddies.includes(p.getRole().getAlignment()))
+      .map((p)=>p.setWinStatus(true))
       this.game.getClock().endGame();
     }
   }
