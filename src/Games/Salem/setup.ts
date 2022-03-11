@@ -4,7 +4,7 @@ import Role from "./role";
 import Player from "./player";
 import { Guild, TextChannel, Collection, Message, Role as DiscordRole } from 'discord.js';
 import Game from "./game";
-import { shuffleArray } from "../../Helpers/toolbox";
+import { createEmbed, shuffleArray } from "../../Helpers/toolbox";
 
 export default class Setup{
 
@@ -112,7 +112,11 @@ export default class Setup{
     })
 
     const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
-    this.game.getPlayers().map(( p ) => p.getChannelManager().manageJudgement().update());
+    const embed = createEmbed({ description:finalString });
+    this.game.getPlayers().map(( p ) => {
+      p.getChannelManager().manageJudgement().update(embed)
+      p.getChannelManager().manageJudgement().removeInteractionCollector();
+    });
 
     if(guiltyCount>innoCount)
       return true;

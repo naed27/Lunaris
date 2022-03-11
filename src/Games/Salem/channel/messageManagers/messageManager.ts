@@ -40,6 +40,7 @@ export default class MessageManager{
   setMessage = (a:Message) => this.message = a;
   editMessage = (a:MessagePayload) => this.message.edit(a);
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
+  removeInteractionCollector = () => this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]});
   generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
