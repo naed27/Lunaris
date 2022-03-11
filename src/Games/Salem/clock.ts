@@ -83,7 +83,7 @@ class Clock{
 
             case 'Execution': await this.playExecution(); break
 
-            case 'Execution Calculation': await this.playExecution(); break
+            case 'Execution Calculation': await this.playExecutionCalculation(); break
 
             case 'Night': await this.playNight(); break
 
@@ -251,6 +251,11 @@ class Clock{
         if(this.peaceCount!==this.maxPeaceCount)return
         const nextPhase = this.phases.find((p)=>p.name==='Game Over');
         this.nextPhase = nextPhase;
+        this.skipPhase();
+    }
+
+    playExecutionCalculation = async () =>{
+        this.game.listenForWinners();
         this.skipPhase();
     }
 
