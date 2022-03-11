@@ -93,6 +93,8 @@ export type defaultTargetFunc = (a: gameAndPlayer) => Player[]
 export type runFunc =  (a: actionParams) => (any | Promise<any>)
 export type callResponseFunc = (a: actionParams) => Promise< string | void >
 
+export type WinListener = (a: gameAndPlayer) => boolean
+
 export interface gameAndPlayer{
     game: Game
     user: Player
@@ -128,6 +130,7 @@ export interface SalemRole{
     nightMessage: string;
     roleMessage: string;
     winBuddies: string[];
+    winListener: WinListener;
     commands: SalemCommand[];
 }
 
@@ -155,6 +158,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can talk to the detained person.`,
             roleMessage:``,
             winBuddies:[ `game`, `Survivor`, `Amnesiac`, `Jester`, `Executioner` ],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {   
                     name:`jail`,
@@ -246,6 +261,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick (2) people to swap.`,
             winBuddies:[`game`,`Survivor`,`Amnesiac`,`Jester`,`Executioner`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`transport`,
@@ -308,6 +335,18 @@ const roles: SalemRole[] = [
             nightMessage:`Choose whether to alert or not.`,
             roleMessage:`Click [o] to alert, [x] to cancel.`,
             winBuddies:[`game`,`Survivor`,`Amnesiac`,`Jester`,`Executioner`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`alert`,
@@ -361,6 +400,9 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now`,
             roleMessage:`Pick who to bewitch.`,
             winBuddies:[`Witch`],
+            winListener: () => {
+                return false
+            },
             commands:[
                 {
                     name:`witch`,
@@ -430,6 +472,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick someone to roleblock. (letter)`,
             winBuddies:[`game`,`Survivor`,`Amnesiac`,`Jester`,`Executioner`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`distract`,
@@ -496,6 +550,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to roleblock. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Jester`,`Executioner`,`Amnesiac`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`distract`,
@@ -565,6 +635,9 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Choose whether to use your shield. (letter)`,
             winBuddies:[`Survivor`],
+            winListener: () => {
+                return false;
+            },
             commands:[
                 {
                     name:`vest`,
@@ -687,6 +760,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can resurrect someone now.`,
             roleMessage:`Pick who to resurrect. (letter)`,
             winBuddies:[`game`,`Survivor`,`Jester`,`Executioner`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`resurrect`,
@@ -744,6 +829,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to frame. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`frame`,
@@ -802,6 +903,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick (2) people to swap identity. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`disguise`,
@@ -871,6 +988,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to investigate. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`tail`,
@@ -927,6 +1060,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can investigate someone now.`,
             roleMessage:`Pick who to investigate. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`tail`,
@@ -984,6 +1129,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can interrogate someone now.`,
             roleMessage:`Pick who to interrogate. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`visit`,
@@ -1041,6 +1198,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to blackmail. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`blackmail`,
@@ -1104,6 +1277,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can stakeout someone now.`,
             roleMessage:`Pick a house to set a stakeout. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`watch`,
@@ -1171,6 +1356,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to kill. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`kill`,
@@ -1353,6 +1554,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to kill. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`kill`,
@@ -1434,6 +1651,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can take a shot or pass.`,
             roleMessage:`Pick who to shoot. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`shoot`,
@@ -1503,6 +1732,21 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now`,
             roleMessage:`Pick who to kill.`,
             winBuddies:[`Serial Killer`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveFriends: Player[] = [];
+                const aliveEnemies: Player[] = [];
+                const aliveSerialKillers: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if(p.role.name === 'Serial Killer') return aliveSerialKillers.push(p);
+                    if( p.role.alignment === 'Neutral' && p.role.type === 'Evil' ||
+                        p.role.alignment === 'Neutral' && p.role.type === 'Benign')
+                        return aliveFriends.push(p);
+                    return aliveEnemies.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveSerialKillers.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`stab`,
@@ -1573,6 +1817,21 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now`,
             roleMessage:`Pick who to kill.`,
             winBuddies:[`Werewolf`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveFriends: Player[] = [];
+                const aliveEnemies: Player[] = [];
+                const aliveSerialKillers: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if(p.role.name === 'Werewolf') return aliveSerialKillers.push(p);
+                    if( p.role.alignment === 'Neutral' && p.role.type === 'Evil' ||
+                        p.role.alignment === 'Neutral' && p.role.type === 'Benign')
+                        return aliveFriends.push(p);
+                    return aliveEnemies.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveSerialKillers.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`maul`,
@@ -1757,6 +2016,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick someone to heal. (letter)`,
             winBuddies:[`game`,`Survivor`,`Amnesiac`,`Jester`,`Executioner`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`heal`,
@@ -1841,6 +2112,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick someone to protect. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`protect`,
@@ -1985,6 +2268,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can talk to ghosts.`,
             roleMessage:`You can talk to ghosts.`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`seance`,
@@ -2043,6 +2338,18 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to spy on. (letter)`,
             winBuddies:[`game`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEvil: Player[] = [];
+                const aliveTown: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    p.role.alignment === 'Town' && aliveTown.push(p)
+                    if(p.role.alignment === 'Mafia' || 
+                    p.role.alignment === 'Neutral' && p.role.type !== 'Benign') aliveEvil.push(p)
+                });
+                if(aliveEvil.length === 0 && aliveTown.length>0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`bug`,
@@ -2130,6 +2437,9 @@ const roles: SalemRole[] = [
             nightMessage:`Sleep tight...`,
             roleMessage:`Convince everyone to lynch you.`,
             winBuddies:[],
+            winListener: () => {
+                return false;
+            },
             commands:[
                 {
                     name:`haunt`,
@@ -2189,6 +2499,22 @@ const roles: SalemRole[] = [
             nightMessage:`You can use your ability now.`,
             roleMessage:`Pick who to clean. (letter)`,
             winBuddies:[`Mafia`,`Witch`,`Survivor`,`Executioner`,`Jester`],
+            winListener: ({game}) => {
+                const aliveEnemies: Player[] = [];
+                const aliveMafia: Player[] = [];
+                game.getAlivePlayers().map(p => {
+                    if( p.role.alignment === 'Neutral' && 
+                        p.role.type !== 'Benign' && 
+                        p.role.type !== 'Evil' || 
+                        p.role.alignment === 'Town') 
+                        aliveEnemies.push(p)
+                    if(p.role.alignment === 'Mafia')
+                        aliveMafia.push(p);
+                })
+                if(aliveEnemies.length === 0 && aliveMafia.length > 0)
+                    return true
+                return false;
+            },
             commands:[
                 {
                     name:`clean`,

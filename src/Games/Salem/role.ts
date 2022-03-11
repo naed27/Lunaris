@@ -1,7 +1,7 @@
 import globalCommands from "./commands";
 import Result from "./result";
 import Player from "./player";
-import { SalemRole, SalemRoleAlignment, SalemRoleName, SalemRoleType } from "./roles";
+import { gameAndPlayer, SalemRole, SalemRoleAlignment, SalemRoleName, SalemRoleType } from "./roles";
 import Command from "./command";
 
 export default class Role{
@@ -23,6 +23,7 @@ export default class Role{
     roleMessage: string;
     nightMessage: string;
     commands: Command[];
+    winListener: (a: gameAndPlayer) => boolean
 
     constructor(role: SalemRole){
         
@@ -36,6 +37,7 @@ export default class Role{
         this.alignment = role.alignment;
         this.winBuddies = role.winBuddies
         this.immunities = role.immunities;
+        this.winListener = role.winListener;
         this.roleMessage = role.roleMessage;
         this.nightMessage = role.nightMessage;
         this.results = new Result(role.results);
