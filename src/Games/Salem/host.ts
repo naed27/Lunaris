@@ -105,6 +105,7 @@ export default class Host{
 		});
 
 		reactCollector.on('end', async () => {
+			this.messageCollector.stop();
 			if(this.goFlag===`start`) { this.beginGame(); return }
 			if(this.goFlag!==`standby`) return
 			await gameInvite.reactions.removeAll();
