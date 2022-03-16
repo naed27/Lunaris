@@ -86,7 +86,7 @@ const phases:readonly Phase[] = [
     name: 'Final Words',
     duration: 15,
     next: { normal: 'Execution', special: null },
-    canTalk: false,
+    canTalk: true,
     shouldLockChannel: true,
     remindTime: false,
   },
