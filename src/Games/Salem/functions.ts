@@ -28,6 +28,7 @@ export default class Functions{
   gameOverMessage = async (message: string) => {
     this.game.getPlayers().map(async (player)=>{
       const address = await player.getChannelManager().sendString(message);
+      if(!address) return
       address.react('🚪');
       const filter = (reaction:MessageReaction, user:User) => !user.bot;
       const collector = address.createReactionCollector({filter});
