@@ -21,8 +21,7 @@ interface ConstructorParams {
 interface Judgement {
 	judge: Player, 
 	choice: JudgementChoices,
-	string: string,
-	final: boolean
+	string: string
 }
 
 interface Vote {
@@ -250,18 +249,16 @@ export default class Game{
 	}
 	
 	// ----------------------- Setters & Getters
-
 	getJudgements = () => this.judgements;
 	pushJudgement( rawJudgement : {judge: Player,choice: JudgementChoices} ){
 		const { judge, choice } = rawJudgement;
 		const previousJudgement = this.judgements.find(j => j.judge.getId() === judge.getId());
 		if(previousJudgement){
-			const i = this.judgements.indexOf(previousJudgement);
+			if(previousJudgement.choice === choice) return
 			const string = (choice === 'Abstain') ? 
 				`**${judge.getUsername()}** has cancelled their vote.` : 
 				`**${judge.getUsername()}** has changed their vote.`
-			this.judgements[i].final = false; 
-			const judgement = {...rawJudgement,string,final: true};
+			const judgement = {...rawJudgement,string};
 			this.judgements.push(judgement);
 		}else{
 			const string =`**${judge.getUsername()}** has voted.`

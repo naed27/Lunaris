@@ -1,7 +1,7 @@
 import { CacheType, Collection, Guild, GuildMember, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from 'discord.js';
 import roles, { SalemRoleName } from './roles';
 import Role from './role';
-import Game from './game';
+import Game, { JudgementChoices } from './game';
 import { arrayContainsElement, createEmbed, jsonWrap, delay } from '../../Helpers/toolbox';
 import PlayerChannelManager from './channel/playerChannelManager';
 import Notif from './notif';
@@ -44,6 +44,7 @@ export default class Player{
   status: 'Alive' | 'Dead' = 'Alive';
 
   voteCount = 1;
+  judgement: JudgementChoices = 'Abstain';
  
   causeOfDeath = [];
   winStatus = false;
@@ -56,7 +57,6 @@ export default class Player{
   
   buffs: PlayerBuff[] = [];
   visitors = [];
-  judgement = [];
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
@@ -101,7 +101,7 @@ export default class Player{
     this.resetMask();
     this.clearBuffs();
     this.clearVisitors();
-    this.clearJudgement();
+    this.resetJudgement();
     this.setSeanceStatus(false);
     this.setJailedStatus(false);
     this.setRoleBlockStatus(false);
@@ -290,8 +290,9 @@ export default class Player{
   getJailStatus = () => this.jailStatus
   setJailStatus = (a:boolean) => this.jailStatus = a
 
-  getJudgement = () => this.judgement
-  pushJudgement = (a:string) => this.judgement.push(a);
+  getJudgement = () => this.judgement;
+  setJudgement = (a: JudgementChoices) => this.judgement = a;
+  resetJudgement = () => this.judgement = 'Abstain';
 
   getCleanStatus = () => this.cleanStatus
   setCleanStatus = (a:boolean) => this.cleanStatus = a
@@ -310,13 +311,6 @@ export default class Player{
   
   getExecutionTarget = () => this.executionerTarget;
   setExecutionerTarget = (a: Player) => this.executionerTarget = a;
-
-  removeJudgement = (a:string) => {
-    const index = this.judgement.findIndex(j => j == a);
-    if(index>=0){this.judgement.splice(0,index);}
-  }
-
-  clearJudgement = () => this.judgement = []
 
   getVisitors = () => this.visitors
 

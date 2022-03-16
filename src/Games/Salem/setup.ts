@@ -103,11 +103,12 @@ export default class Setup{
     let guiltyCount=0;
     let innoCount=0;
 
-    this.game.getJudgements().filter(j => j.final).map(j => {
-      switch(j.choice){
-        case 'Guilty': guiltyCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
-        case 'Innocent': innoCount++; chosens.push(`${j.judge.getUsername()} has voted **${j.choice}**`); break;
-        case 'Abstain': chosens.push(`${j.judge.getUsername()} has abstained`); break;
+    this.game.getAlivePlayers().map((player)=>{
+      const playerJudgement = player.getJudgement()
+      switch(playerJudgement){
+        case 'Guilty': guiltyCount++; chosens.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
+        case 'Innocent': innoCount++; chosens.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
+        case 'Abstain': chosens.push(`${player.getUsername()} has **Abstained**`); break;
       }
     })
 

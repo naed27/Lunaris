@@ -70,8 +70,10 @@ export const judgement: ReactCollector = async ({messageManager}) => {
   collector.on('collect', async (i) => {
     i.deferUpdate()
     const choice = i.customId;
-    if(choice === 'Abstain' || choice === 'Innocent' || choice==='Guilty') 
+    if(choice === 'Abstain' || choice === 'Innocent' || choice==='Guilty'){
       game.pushJudgement({judge:player, choice});
+      player.setJudgement(choice);
+    }
     return
   });
 
