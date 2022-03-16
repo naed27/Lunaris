@@ -20,7 +20,7 @@ export default class MessageManager{
   readonly channelManager: PlayerChannelManager;
   readonly channel: TextChannel;
 
-  message: Message | null = null;
+  message: Message | null | void = null;
   page = 0;
   minPage = 1;
   maxPage = 1;
@@ -38,20 +38,20 @@ export default class MessageManager{
   getPlayer = () => this.player;
   getMessage = () => this.message;
   setMessage = (a:Message) => this.message = a;
-  editMessage = async (a:MessagePayload) => await this.message.edit(a);
+  editMessage = async (a:MessagePayload) => this.message && await this.message.edit(a)
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
-  removeInteractionCollector = async () => await this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]});
+  removeInteractionCollector = async () => this.message && await this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]});
   generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
     this.delete();
     this.page = 1;
     const embed = this.generateEmbed(messageEmbed);
-    this.message = await this.channel.send({embeds:[embed]})
+    this.message = await this.channel.send({embeds:[embed]}).catch(() => console.log( 'Error: Could not delete message' )); 
   }
 
   delete = async () => { 
-    this.message && await this.message.delete(); 
+    this.message && await this.message.delete().catch(() => console.log( 'Error: Could not delete message' )); 
     this.clearCache();
   };
 
@@ -79,6 +79,6 @@ export default class MessageManager{
   update = async (messageEmbed?: MessageEmbed) => {
     if(this.message === null || this.message === undefined) return await this.create()
     const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
-    await this.message.edit({embeds:[embed]});
+    this.message && await this.message.edit({embeds:[embed]}).catch(() => console.log( 'Error: Could not edit message' ));
   }
 }
