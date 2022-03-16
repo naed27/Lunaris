@@ -420,6 +420,7 @@ export default class Game{
 		this.gameKey.delete()
 		await this.getHost().notifyGameEnd();
 		this.server.removeGame(this);
+		this.server.disconnectGuild(this.guild)
 	}
 	
 }

@@ -86,7 +86,7 @@ export const initializeSalem = (message:Message,server:SalemServer, args: string
     game.getHost().addRolesToGame(args);
     game.getHost().sendGameInvite({ channel, summoner });
   }else{
-    channel.send({embeds:[createEmbed({title:"Error",description:"Could not connect to the server."})]});
+    channel.send({embeds:[createEmbed({description:"**Error: **Could not connect to the server."})]});
   }
 
 }
