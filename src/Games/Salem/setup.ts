@@ -113,9 +113,9 @@ export default class Setup{
 
     const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
     const embed = createEmbed({ description:finalString });
-    this.game.getPlayers().map(( p ) => {
-      p.getChannelManager().manageJudgement().update(embed)
-      p.getChannelManager().manageJudgement().removeInteractionCollector();
+    this.game.getPlayers().map( async ( p ) => {
+      await p.getChannelManager().manageJudgement().removeInteractionCollector();
+      await p.getChannelManager().manageJudgement().update(embed)
     });
 
     if(guiltyCount>innoCount)
