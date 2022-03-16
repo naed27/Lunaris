@@ -14,11 +14,15 @@ export default class Functions{
     this.game = game;
   }
 
-  setupJudgements = () => this.game.getPlayers(). map( async (p)=>{
-    const judgement = p.getChannelManager().manageJudgement();
-    await judgement.create();
-    judgement.applyReactionCollector(judgementCollector)
-  });
+  setupJudgements = () => {
+    const votedUp = this.game.getVotedUp();
+    this.game.getPlayers(). map( async (p)=>{
+      const judgement = p.getChannelManager().manageJudgement();
+      await judgement.create();
+      if(p.getId()!==votedUp.getId())
+        judgement.applyReactionCollector(judgementCollector)
+    });
+  }
 
   sendMarkDownToPlayers = async (message: string, secondsDelay: number = 0) =>{
     this.messagePlayers(jsonWrap(message));
