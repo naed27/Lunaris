@@ -99,20 +99,23 @@ export default class Setup{
   }
 
   calculateJudgements = async () => {
-    const chosens= [];
+    const votedUp = this.game.getVotedUp();
+    const finalJudgements= [];
     let guiltyCount=0;
     let innoCount=0;
 
-    this.game.getAlivePlayers().map((player)=>{
-      const playerJudgement = player.getJudgement()
-      switch(playerJudgement){
-        case 'Guilty': guiltyCount++; chosens.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
-        case 'Innocent': innoCount++; chosens.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
-        case 'Abstain': chosens.push(`${player.getUsername()} has **Abstained**`); break;
-      }
+    this.game.getAlivePlayers()
+      .filter(p => p.getId()!== votedUp.getId())
+      .map((player)=>{
+        const playerJudgement = player.getJudgement()
+        switch(playerJudgement){
+          case 'Guilty': guiltyCount++; finalJudgements.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
+          case 'Innocent': innoCount++; finalJudgements.push(`${player.getUsername()} has voted **${playerJudgement}**`); break;
+          case 'Abstain': finalJudgements.push(`${player.getUsername()} has **Abstained**`); break;
+        }
     })
 
-    const finalString = chosens.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
+    const finalString = finalJudgements.join('\n') + `\n\nGuilty: ${guiltyCount}\nInnocent: ${innoCount}`;
     const embed = createEmbed({ description:finalString });
     this.game.getPlayers().map( async ( p ) => {
       await p.getChannelManager().manageJudgement().removeInteractionCollector();
