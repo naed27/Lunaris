@@ -2,7 +2,6 @@ import guidebook from '../../archive/guide';
 import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
 import { createChoices } from '../../../../Helpers/toolbox';
-import { JudgementChoices } from '../../game';
 
 interface Params { messageManager: MessageManager }
 
@@ -14,7 +13,8 @@ export const playerRole: ReactCollector = async ({messageManager}) => {
 
   const manager = messageManager;
   const message = messageManager.getMessage();
-  
+  if(!message) return
+
   await message.react('🔱');
   const filter = (reaction: MessageReaction, user: User) => !user.bot;
   const collector = message.createReactionCollector({filter});
@@ -33,6 +33,7 @@ export const guide: ReactCollector = async ({messageManager}) => {
   
   const manager = messageManager;
   const message = manager.getMessage();
+  if(!message) return
 
   manager.setMaxPage(guidebook.pages.length);
 
@@ -56,7 +57,8 @@ export const judgement: ReactCollector = async ({messageManager}) => {
   const manager = messageManager;
   const game = manager.getGame();
   const player = manager.getPlayer();
-  const message = manager.getMessage();
+  const message = manager.getMessage(); 
+  if(!message) return
   const embed = manager.generateEmbed();
   const choices = createChoices({choices:['Guilty', 'Innocent', 'Abstain']})
 
