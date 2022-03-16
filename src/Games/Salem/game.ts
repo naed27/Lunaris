@@ -155,12 +155,12 @@ export default class Game{
 		if(endGameWinners.length>0){
 			const survivors = this.getAlivePlayers().filter(p => p.role.name === 'Survivor');
 			survivors.map(s => s.setWinStatus(true));
-
 			const anyWinner = endGameWinners[0];
 			if(anyWinner.role.alignment !== 'Town'){
 				const witches = this.getAlivePlayers().filter(p => p.role.name ==='Witch');
 				witches.map(w => w.setWinStatus(true));
 			}
+			this.clock.setNextPhase('Game Over');
 		}
 	}
 
