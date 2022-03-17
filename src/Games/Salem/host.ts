@@ -53,7 +53,6 @@ export default class Host{
 	async sendGameInvite({channel, summoner}: {channel: TextChannel, summoner: User}){
 		const embed = createEmbed({description: 'Loading...'});
 		const gameInvite = await channel.send({embeds:[embed]});
-		console.log(gameInvite.id)
 		this.gameInvite = gameInvite;
 		await this.updatePlayerList();
 
