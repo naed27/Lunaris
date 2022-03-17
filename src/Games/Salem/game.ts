@@ -413,11 +413,11 @@ export default class Game{
 
 	quit = async () => {
 		this.getClock().terminateTimer();
-		this.players.map( async player => {
-				player.getExRoles().map( role => player.getDiscord().roles.add(role));
-				player.getChannel().delete();
-		});
-		this.gameKey.delete()
+		await this.gameKey.delete()
+		for await (const player of this.players) {
+			player.getExRoles().map( role => player.getDiscord().roles.add(role));
+			player.getChannel().delete().catch(()=> console.log ("Couldn't delete channel"));
+		}
 		await this.getHost().notifyGameEnd();
 		this.server.removeGame(this);
 		this.server.disconnectGuild(this.guild)
