@@ -180,19 +180,19 @@ export const createMenu = ({
     new MessageSelectMenu()
     .setCustomId(customId)
     .setPlaceholder(placeHolder)
-    .addOptions(choices.map(({label,value})=> ({ label, value })))
+    .addOptions([{label:'None', value: 'None'},...choices.map(({label,value})=> ({ label, value }))])
   )
 }
 
 export const createChoices = ({choices}:{choices:string[]}) => {
   return new MessageActionRow()
   .addComponents(
-    choices.map((choice)=>{
-      return new MessageButton()
+    choices.map((choice)=>
+      new MessageButton()
       .setCustomId(choice)
       .setLabel(choice)
       .setStyle('PRIMARY')
-    })
+    )
   )
 }
 
