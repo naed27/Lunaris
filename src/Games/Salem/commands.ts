@@ -63,7 +63,7 @@ const commands: SalemCommand[] =  [
     permission:'Player',
     queue:'Instant',
     targetCount:0,
-    phase:['Night','Voting'],
+    phase:['Night','Voting', 'Discussion', 'Judgement'],
     requiredStatus:['Alive','Dead'],
     lethal: false,
     hasMenu: false,
@@ -77,7 +77,7 @@ const commands: SalemCommand[] =  [
     run: async ({user,game})=>{
       const phase = game.getClock().getPhase().name;
       if(phase !=='Night' && phase !=='Voting') return
-      phase === 'Night' && game.removeActionOf(user) ? user.alert('Your action has been cancelled.') : user.alert('You have not made any actions yet.')
+      phase !== 'Voting' && game.removeActionOf(user) ? user.alert('Your action has been cancelled.') : user.alert('You have not made any actions yet.')
       phase === 'Voting' && game.removeVoteOf(user) ? user.alert('Your vote has been cancelled.') : user.alert('You have not voted yet.')
     }
   },
