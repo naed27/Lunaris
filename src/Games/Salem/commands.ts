@@ -77,8 +77,8 @@ const commands: SalemCommand[] =  [
     run: async ({user,game})=>{
       const phase = game.getClock().getPhase().name;
       if(phase !=='Night' && phase !=='Voting') return
-      phase === 'Night' && game.removeActionOf(user)
-      phase === 'Voting' && game.removeVoteOf(user) ? user.alert('Your vote has been removed.') : user.alert('You have not voted yet.')
+      phase === 'Night' && game.removeActionOf(user) ? user.alert('Your action has been cancelled.') : user.alert('You have not made any actions yet.')
+      phase === 'Voting' && game.removeVoteOf(user) ? user.alert('Your vote has been cancelled.') : user.alert('You have not voted yet.')
     }
   },
 
