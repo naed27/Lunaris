@@ -38,9 +38,9 @@ export default class MessageManager{
   getPlayer = () => this.player;
   getMessage = () => this.message;
   setMessage = (a:Message) => this.message = a;
-  editMessage = async (a:MessagePayload) => this.message && await this.message.edit(a)
+  editMessage = async (a:MessagePayload) => this.message && await this.message.edit(a).catch(()=> console.log( 'Error: Could not edit message' ));
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
-  removeInteractionCollector = async () => this.message && await this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]});
+  removeInteractionCollector = async () => this.message && await this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]}).catch(()=> console.log( 'Error: Could not edit message' ));
   generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
