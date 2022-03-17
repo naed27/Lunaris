@@ -290,7 +290,7 @@ class Clock{
 	playGameOver = async () => {
 			
 		this.game.getHost().notifyGameEnd();
-		
+
 		const message = jsonWrap(`Game Over`);
 		await this.game.getFunctions().messagePlayers(message);
 
@@ -303,13 +303,14 @@ class Clock{
 			player.getChannelManager().manageCountDown().create(embed);
 		})
 		
-		for(let i = 10;i!=0;i--){
+		for(let i = 10;i!=1;i--){
 			await delay(1500);
 			this.game.getPlayers().map((player)=>{
 				const embed = createEmbed({description:`Game will shutdown in ${i}...`})
 				player.getChannelManager().manageCountDown().update(embed)
 			});
 		}
+		await delay(1500);
 		await this.game.quit();
 	}
 
