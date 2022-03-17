@@ -310,10 +310,7 @@ export default class Game{
 
 	removeVoteOf = async (voter: Player) => {
 		const vote = this.votes.find(v => v.voter.getId() === voter.getId());
-		if(!vote) {
-			await voter.alert(`You can't remove a vote if you haven't voted yet.`);
-			return false;
-		} 
+		if(!vote) return false;
 
 		const index = this.votes.indexOf(vote);
 		if (index !== -1) { this.votes.splice(index, 1) }
@@ -321,7 +318,6 @@ export default class Game{
 		const grammar = voteCount > 1 ? 'votes' : 'vote';
 		const msg = jsonWrap(`${voter.getUsername()} has cancelled their vote against ${vote.voted.getUsername()}. (${voteCount} ${grammar})`)
 		this.functions.messagePlayers(msg);
-		await voter.alert(`You have cancelled your vote.`);
 		return true
 	}
 

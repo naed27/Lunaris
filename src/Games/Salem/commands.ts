@@ -51,7 +51,7 @@ const commands: SalemCommand[] =  [
     defaultTarget:() => [],        
     targetables: () => [],
     callResponse: () => null,
-    run:({user,game}) => game.removeVoteOf(user)
+    run:({user,game}) => game.removeVoteOf(user) ? user.alert('Your vote has been removed.') : user.alert('You have not voted yet.'),
   },
 
   {
@@ -78,7 +78,7 @@ const commands: SalemCommand[] =  [
       const phase = game.getClock().getPhase().name;
       if(phase !=='Night' && phase !=='Voting') return
       phase === 'Night' && game.removeActionOf(user)
-      phase === 'Voting' && game.removeVoteOf(user)
+      phase === 'Voting' && game.removeVoteOf(user) ? user.alert('Your vote has been removed.') : user.alert('You have not voted yet.')
     }
   },
 
