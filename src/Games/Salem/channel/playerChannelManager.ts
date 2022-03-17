@@ -142,12 +142,6 @@ export default class PlayerChannelManager extends ChannelManager{
         }
 
         if(PHASE.name === 'Night'){
-          if(this.player.isMafia()){
-            const playerMessage = `**(${this.player.getRoleName()}) ${this.player.getUsername()}**: ${MESSAGE}`
-            this.player.messageMafias(playerMessage);
-            return
-          }
-
           if(this.player.isJailed()){
             const playerMessage = `**(Jailed) ${this.player.getUsername()}**: ${MESSAGE}`
             this.player.messageJailedPlayers(playerMessage);
@@ -162,6 +156,15 @@ export default class PlayerChannelManager extends ChannelManager{
             this.player.messageJailor(messageToSelf);
             return
           }
+          
+          if(this.player.isMafia()){
+            const playerMessage = `**(${this.player.getRoleName()}) ${this.player.getUsername()}**: ${MESSAGE}`
+            this.player.messageMafias(playerMessage);
+            return
+          }
+          
+          this.player.alert(responses.cantTalk);
+          return
         }
 
         const playerMessage = `**${this.player.getUsername()}**: ${MESSAGE}`
