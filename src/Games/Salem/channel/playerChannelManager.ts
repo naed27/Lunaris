@@ -241,6 +241,8 @@ const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
     menu
   });
 
+  if(!address) return
+
   const filter = (i:Interaction) => i.user.id === user.getId();
   const collector = address.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
   
@@ -253,7 +255,7 @@ const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   })
 
   collector.on('end',async (i)=>{
-    address.delete();
+    address && address.delete();
     return
   })
 
@@ -280,6 +282,8 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
     description: `Choose second target to ${command.name}.`,
     menu
   });
+
+  if(!addressOne || !addressTwo) return
 
   const filter = (i:Interaction) => i.user.id === user.getId();
   const collectorOne = addressOne.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
