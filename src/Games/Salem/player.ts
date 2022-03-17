@@ -60,8 +60,8 @@ export default class Player{
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
-  firstActionTarget: Player | null = null;
-  secondActionTarget: Player | null = null;
+  firstActionTarget: Player | null | 'None' = null;
+  secondActionTarget: Player | null | 'None' = null;
 
 
   constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
@@ -222,14 +222,14 @@ export default class Player{
     }
   }
 
-  sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: failed to send message to ${this.getUsername()}'s channel.`))
-  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: failed to send message to ${this.getUsername()}'s channel.`))
-  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]}).catch(() => console.log(`Error: failed to send embed to ${this.getUsername()}'s channel.`))
+  sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
+  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
+  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
 
   alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))
 
   sendEmbedWithMenu = async ({description, menu}:{description: string, menu: MessageActionRow}) =>
-    await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: failed to send embed to ${this.getUsername()}'s channel.`))
+    await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
   
 
   messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(msg))
@@ -255,7 +255,12 @@ export default class Player{
   }
 
   messageMafias = async (msg: string) => {
-    this.game.getPlayers().map((p)=>p.isMafia() && p.getChannelManager().sendString(msg))
+    this.game.getMafias().map( p => p.getChannelManager().sendString(msg))
+  }
+
+  messageOtherMafias = async (msg: string) => {
+    this.game.getMafias().filter( m => m.getId() !== this.getId())
+    .map((m)=>m.getChannelManager().sendString(msg))
   }
 
   messagePlayersWrapped = async (msg: string) => {
@@ -396,7 +401,8 @@ export default class Player{
 
   getExRoles = () => this.exRoles
 
-  isAlive = () => this.status==='Alive'
+  isAlive = () => this.status === 'Alive';
+  isDead = () => this.status === 'Dead';
   isVotedUp = () => this.game.getVotedUp().getId() === this.id;
 
   getNotes = () => this.notes
@@ -449,9 +455,9 @@ export default class Player{
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
   
-  setFirstActionTarget = (a: Player) => this.firstActionTarget = a
+  setFirstActionTarget = (a: Player | 'None') => this.firstActionTarget = a
 
-  setSecondActionTarget = (a: Player) => this.secondActionTarget = a
+  setSecondActionTarget = (a: Player | 'None') => this.secondActionTarget = a
 
   getFirstActionTarget = () => this.firstActionTarget
   

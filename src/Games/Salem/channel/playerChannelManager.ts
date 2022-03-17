@@ -251,8 +251,7 @@ const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   
   collector.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    if(!target) return
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
     user.setFirstActionTarget(target);
     processAction({ command, game, player: user, ARGS });
     return
@@ -295,8 +294,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
   
   collectorOne.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    if(!target) return
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
     user.setFirstActionTarget(target);
     preProcessAction();
     return
@@ -309,8 +307,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
 
   collectorTwo.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]);
-    if(!target) return
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
     user.setSecondActionTarget(target);
     preProcessAction();
     return

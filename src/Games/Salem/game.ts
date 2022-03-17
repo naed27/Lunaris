@@ -131,9 +131,10 @@ export default class Game{
 
 	removeActionOf = (player: Player) => {
 		const index = this.actions.findIndex(a => a.user.getId() == player.getId());
-		if(index === -1)  return `There are no actions to be cancelled.`;
+		if(index === -1) 
+			return false
 		this.actions.splice(index,1);
-		return `You cancelled your action.`;
+		return true
 	}
 
 	arrangeActions = () =>{
@@ -307,9 +308,12 @@ export default class Game{
 		}
 	}
 
-	removeVoteOf = (voter: Player) => {
+	removeVoteOf = async (voter: Player) => {
 		const vote = this.votes.find(v => v.voter.getId() === voter.getId());
-		if(!vote) return `**You** can't remove a vote if you haven't voted yet.`;
+		if(!vote) {
+			await voter.alert(`You can't remove a vote if you haven't voted yet.`);
+			return false;
+		} 
 
 		const index = this.votes.indexOf(vote);
 		if (index !== -1) { this.votes.splice(index, 1) }
@@ -317,7 +321,8 @@ export default class Game{
 		const grammar = voteCount > 1 ? 'votes' : 'vote';
 		const msg = jsonWrap(`${voter.getUsername()} has cancelled their vote against ${vote.voted.getUsername()}. (${voteCount} ${grammar})`)
 		this.functions.messagePlayers(msg);
-		return `**You** have cancelled your vote.`;
+		await voter.alert(`You have cancelled your vote.`);
+		return true
 	}
 
 	showPlayerChannels = async () => this.getPlayers().map( p => p.getChannelManager().show());
