@@ -290,7 +290,7 @@ class Clock{
 	playGameOver = async () => {
 			
 		this.game.getHost().notifyGameEnd();
-
+		
 		const message = jsonWrap(`Game Over`);
 		await this.game.getFunctions().messagePlayers(message);
 
@@ -310,7 +310,7 @@ class Clock{
 				player.getChannelManager().manageCountDown().update(embed)
 			});
 		}
-		this.game.quit();
+		await this.game.quit();
 	}
 
 	startGame = async () => {
