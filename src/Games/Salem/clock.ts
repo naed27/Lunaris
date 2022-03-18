@@ -245,11 +245,13 @@ class Clock{
 	}
 
 	playReportingCalculation = async () => {
-		this.game.listenForWinners();
-		this.game.resetDay();
-		if(this.peaceCount!==this.maxPeaceCount)return
 		const nextPhase = this.phases.find((p)=>p.name==='Game Over');
 		this.nextPhase = nextPhase;
+		const someoneWon = this.game.listenForWinners();
+		if(someoneWon === false){
+			if(this.peaceCount!==this.maxPeaceCount)return
+		}
+		this.game.resetDay();
 		this.skipPhase();
 	}
 
