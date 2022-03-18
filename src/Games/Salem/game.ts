@@ -161,7 +161,9 @@ export default class Game{
 				witches.map(w => w.setWinStatus(true));
 			}
 			this.clock.setNextPhase('Game Over');
+			return true
 		}
+		return false
 	}
 
 	processActions(){
