@@ -5,7 +5,8 @@ interface ConstructorParams{
   user: Player;
   args: string[];
   performer: Player;
-  targets: Player[];
+  firstTarget: Player | 'None';
+  secondTarget: Player | 'None';
   command: AnotherCommand,
 }
 
@@ -15,13 +16,15 @@ export default class Action{
   args: string[];
   status: string;
   performer: Player;
-  targets: Player[];
+  firstTarget: Player | 'None';
+  secondTarget: Player | 'None';
   command: AnotherCommand;
 
-  constructor({user,performer,command,targets,args}:ConstructorParams){
+  constructor({user,performer,command,firstTarget,secondTarget,args}:ConstructorParams){
     this.user = user;
     this.command = command;
-    this.targets = targets;
+    this.firstTarget = firstTarget;
+    this.secondTarget = secondTarget;
     this.status = 'Pending';
     this.performer = performer;
     this.args = args
@@ -38,8 +41,7 @@ export default class Action{
   getStatus = () => this.status;
   setStatus = (a:string) => this.status = a;
 
-  getTargets = () => this.targets;
-  setTargets = (a:Player[]) => this.targets = a;
+  getTargets = () => [ this.firstTarget, this.secondTarget];
 
   getPerformer = () => this.performer;
   setPerformer = (a:Player) => this.performer = a;
@@ -47,12 +49,15 @@ export default class Action{
   getCommand = () => this.command;
   setCommand = (a:AnotherCommand) => this.command = a;
 
-  getFirstTarget = () => this.targets[0];
-  setFirstTarget = (a:Player) => this.targets[0] = a;
+  getFirstTarget = () => this.firstTarget;
+  setFirstTarget = (a:Player | 'None') => this.firstTarget = a;
 
-  getSecondTarget = () => this.targets.length==2 && this.targets[1];
-  setSecondTarget = (a:Player) => this.targets.length==2 && (this.targets[1] = a);
+  getSecondTarget = () => this.secondTarget;
+  setSecondTarget = (a:Player | 'None') =>this.secondTarget= a
 
-  isSelfTarget = () => this.performer.getId() === this.getFirstTarget().getId();
+  isSelfTarget = () => {
+    if(this.firstTarget === 'None') return false
+    this.performer.getId() === this.firstTarget.getId()
+  }
 
 }
