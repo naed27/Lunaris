@@ -68,6 +68,8 @@ class Clock{
 		switch(phase){
 			case 'Reporting': await this.playReporting(); break
 
+			case 'Reporting Calculation': await this.playReportingCalculation(); break
+
 			case 'Discussion': await this.playDiscussion(); break
 
 			case 'Voting': await this.playVoting(); break
@@ -245,12 +247,8 @@ class Clock{
 	}
 
 	playReportingCalculation = async () => {
-		const nextPhase = this.phases.find((p)=>p.name==='Game Over');
-		this.nextPhase = nextPhase;
 		const someoneWon = this.game.listenForWinners();
-		if(someoneWon === false){
-			if(this.peaceCount!==this.maxPeaceCount)return
-		}
+		if(someoneWon === false && this.peaceCount!==this.maxPeaceCount) return
 		this.game.resetDay();
 		this.skipPhase();
 	}
