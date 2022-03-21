@@ -12,6 +12,8 @@ export default class ChannelManager{
     readonly channel:TextChannel;
     readonly defaultId:string;
     readonly game:Game;
+    readonly linebreak = `‎\n`;
+
     constructor({channel,defaultId,game}:ConstructorParams){
         this.game = game;
         this.channel = channel;
@@ -69,11 +71,17 @@ export default class ChannelManager{
     }
     
     sendString = async (a: string | MessagePayload | MessageOptions) => {
-        const linebreak = `‎`;
         return await this.channel
-        .send(`${linebreak}${a}`)
+        .send(`${this.linebreak}${a}`)
         .catch(()=> console.log( 'Error: Could not send string message to discord' ));
     }
+
+    sendEmbed = async (a: string | MessagePayload | MessageOptions) => {
+        return await this.channel
+        .send(`${this.linebreak}${a}`)
+        .catch(()=> console.log( 'Error: Could not send string message to discord' ));
+    }
+
     send = async (a: string | MessagePayload | MessageOptions) => await this.channel
     .send(a)
     .catch(()=> console.log( 'Error: Could not send message to discord' ));

@@ -19,6 +19,7 @@ export default class MessageManager{
   readonly player: Player;
   readonly channelManager: PlayerChannelManager;
   readonly channel: TextChannel;
+  readonly linebreak = `‎\n`;
 
   message: Message | null | void = null;
   page = 0;
@@ -40,14 +41,14 @@ export default class MessageManager{
   setMessage = (a:Message) => this.message = a;
   editMessage = async (a:MessagePayload) => this.message && await this.message.edit(a).catch(()=> console.log( 'Error: Could not edit message' ));
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
-  removeInteractionCollector = async () => this.message && await this.message.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]}).catch(()=> console.log( 'Error: Could not edit message' ));
+  removeInteractionCollector = async () => this.message && await this.message.edit({content: this.linebreak,embeds:[this.cardGenerator({messageManager:this})], components:[]}).catch(()=> console.log( 'Error: Could not edit message' ));
   generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
     this.delete();
     this.page = 1;
     const embed = this.generateEmbed(messageEmbed);
-    this.message = await this.channel.send({embeds:[embed]}).catch(() => console.log( 'Error: Could not delete message' )); 
+    this.message = await this.channel.send({content: this.linebreak,embeds:[embed]}).catch(() => console.log( 'Error: Could not delete message' )); 
   }
 
   delete = async () => { 
@@ -79,6 +80,6 @@ export default class MessageManager{
   update = async (messageEmbed?: MessageEmbed) => {
     if(this.message === null || this.message === undefined) return await this.create()
     const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
-    this.message && await this.message.edit({embeds:[embed]}).catch(() => console.log( 'Error: Could not edit message' ));
+    this.message && await this.message.edit({ content: this.linebreak, embeds:[embed] }).catch(() => console.log( 'Error: Could not edit message' ));
   }
 }

@@ -209,19 +209,6 @@ export default class Player{
     return availableCommands;
   }
 
-  sendResponse = async (description: string, footer: string, duration: number) => {
-    const secondsRemaining = this.game.getClock().getSecondsRemaining();
-    if(secondsRemaining<duration){
-      duration = secondsRemaining * 1000;
-    }
-    const embed = createEmbed({description,footer});
-    const message = await this.getChannel().send({embeds:[embed]}).catch()
-    if(duration!=0){
-      await delay(duration);
-      message.delete().catch();
-    }
-  }
-
   sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
@@ -229,9 +216,8 @@ export default class Player{
   alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))
 
   sendEmbedWithMenu = async ({description, menu}:{description: string, menu: MessageActionRow}) =>
-    await this.getChannel().send({embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
+    await this.getChannel().send({content:`‎\n`,embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
   
-
   messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(msg))
 
   messageAlivePlayers =  async (msg: string) => {
