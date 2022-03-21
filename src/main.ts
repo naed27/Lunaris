@@ -7,7 +7,7 @@ import AnotherServer from './Servers/AnotherServer';
 import { initializeAnother } from './Triggers/Another';
 import CloverClubserver from './Servers/CloverClubserver';
 import { initializeCloverClub } from './Triggers/CloverClub';
-import { sendInteraction } from './Triggers/Tester';
+import { test } from './Triggers/Tester';
 import { initializeSalem, salemGuide, getSalemRole, getSalemRoles } from './Triggers/Salem';
 
 const salemServer = new SalemServer();
@@ -35,7 +35,7 @@ client.on('messageCreate', async (message) =>{
     const {COMMAND,ARGS} = parseCommand(PREFIX,message.content,',');
 
     switch(COMMAND){
-        case 'test': sendInteraction(message);break;
+        case 'test': test(message);break;
         case 'sg':  salemGuide(message) ;break;
         case 'roles': getSalemRoles(message) ;break;
         case 'role': getSalemRole(message, ARGS) ;break;
