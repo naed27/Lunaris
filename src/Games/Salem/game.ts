@@ -149,7 +149,7 @@ export default class Game{
 
 	listenForWinners = () => {
 		this.getAlivePlayers().map(( player )=> player.listenForTheWin())
-		const endGameWinners = this.getAlivePlayers().filter(p => p.isAWinner() 
+		const endGameWinners = this.getAlivePlayers().filter(p => p.isWinner() 
 		&& p.role.name !== 'Jester'
 		&& p.role.name !== 'Executioner');
 		if(endGameWinners.length>0){
@@ -171,38 +171,42 @@ export default class Game{
 		this.actions = this.arrangeActions();
 		this.actions.map(a => {
 
-			const GAME_USER_DATA = { game: this, user: a.getPerformer() }
+			const actionProps = a.getProperties();
+			const { firstTarget, secondTarget, performer, command, game } = actionProps
+			const actionVisitsTarget = command.visitsTarget({ game, performer })
 
-			if(!a.getFirstTarget().isJailed() || a.getUser().roleNameIs('Jailor')){
-					if(a.getFirstTarget().getBuffs().find( b => b === 'Alert' )){
-						if(a.getCommand().visitsTarget(GAME_USER_DATA)){
+			if(	
+					command.getTargetCount() === 1  
+					&& firstTarget !== 'None'
+					&& firstTarget.isNotJailed() 
+					|| command.getTargetCount() === 2  
+					&& firstTarget !== 'None' 
+					&& firstTarget.isNotJailed() 
+					&& secondTarget !== 'None' 
+					&& secondTarget.isNotJailed() 
+				){
+					if(firstTarget.getBuffs().find( b => b === 'Alert' )){
+						if(actionVisitsTarget){
 							const visitedNotif = new Notif({ inbox: `You shot the person who visited you last night!` })
 							const visitorNotif = new Notif({ inbox: `You were shot by the Veteran that you visited!` })
-							a.getFirstTarget().pushNotif(visitedNotif);
-							a.getPerformer().pushNotif(visitorNotif);
-							a.getPerformer().kill();
-							a.getPerformer().pushCauseOfDeath(`shot by a Veteran.`);
+							performer.kill();
+							performer.pushNotif(visitorNotif);
+							firstTarget.pushNotif(visitedNotif);
+							performer.pushCauseOfDeath(`shot by a Veteran.`);
 						}
 					}else{
-						if(!a.getPerformer().isRoleBlocked()){
-							a.getCommand().run({
-								game: this,
-								user: a.getPerformer(),
-								args: a.getArgs(),
-								command: a.getCommand(),
-								targetOne: a.getFirstTarget(),
-								targetTwo: a.getSecondTarget(),
-							});
-							if(a.getCommand().visitsTarget(GAME_USER_DATA)){
-								a.getTargets().forEach( t => t.pushVisitor(a.getPerformer()) );
-							}
+						if(performer.isNotRoleBlocked()){
+							command.run(actionProps);
+
+							if(actionVisitsTarget)
+								a.getTargets().map( target => target !== 'None' && target.pushVisitor(performer))
 						}
 					}
 			}else{
-				const notice = a.getPerformer().roleNameIs('Transporter') ?
+				const notice = performer.roleNameIs('Transporter') ?
 					'One of your targets was in jail!\nThe transportation has failed!' :
 					'Your target was in jail!'
-				a.getPerformer().pushNotif(new Notif({inbox: notice}));
+					performer.pushNotif(new Notif({ inbox: notice }));
 			}
 			a.setStatus('Done');
 		});
@@ -272,6 +276,8 @@ export default class Game{
 	}
 	
 	updatePlayerJudgements = () => this.players.map(p => p.getChannelManager().manageJudgement().update());
+
+	endPlayerInteractions = async () => this.players.map( p => p.endAllActionInteractions());
 	
 	getVotes = () => this.votes;
 	clearVotes = () => this.votes = [];

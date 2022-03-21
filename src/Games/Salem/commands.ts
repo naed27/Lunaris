@@ -19,16 +19,16 @@ const commands: SalemCommand[] =  [
     hasMenu: true,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
-    targetables: ({game,user}) => {
+    targetables: ({game,user: user}) => {
       return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
     },
     callResponse: () => null,
-    run: ({user,game,targetOne: target}) => {
-      if(target==='None') return game.removeVoteOf(user);
-      game.pushVote({voter: user, voted: target})
+    run: ({performer,game,firstTarget: target}) => {
+      if(target==='None') return game.removeVoteOf(performer);
+      game.pushVote({voter: performer, voted: target})
     },
   },
   {
@@ -46,7 +46,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -69,7 +69,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -97,7 +97,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -120,7 +120,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -143,7 +143,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -166,7 +166,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -189,7 +189,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -212,7 +212,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -235,7 +235,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: false,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],
@@ -258,14 +258,14 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: true,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
-    targetables: ({ game, user }) => {
+    targetables: ({ game, user: user }) => {
       return  game.getPlayers().filter(p => p.getStatus() === 'Alive' && p.getId() !== user.getId())
     },
     callResponse: () => null,
-    run:({user,game,targetOne: target,args})=>{
+    run:({user,game,firstTarget: target,args})=>{
       if(target === 'None') return
       const parseArgs = args.join(' ');
       const whisperMessage = `**${user.getUsername()} (Whisper):** ${parseArgs}`;
@@ -293,7 +293,7 @@ const commands: SalemCommand[] =  [
     hasMenu: false,
     hasArguments: true,
     inputSeparator:' ',
-    performer:({ user }) => user,
+    performer:({ user: user }) => user,
     visitsTarget:() => false,
     defaultTarget:() => [],        
     targetables: () => [],

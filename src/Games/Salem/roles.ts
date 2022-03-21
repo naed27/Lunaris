@@ -85,28 +85,23 @@ export interface SalemCommand{
 	callResponse: callResponseFunc;
 }
 
-export type performerFunc = (a: gameAndPlayer) => Player
-export type visitsTargetFunc =  (a: gameAndPlayer) => boolean
-export type targetablesFunc =  (a: gameAndPlayer) => Player[]
-export type defaultTargetFunc = (a: gameAndPlayer) => Player[]
+export type performerFunc = (a:{ game: Game, user: Player }) => Player
+export type visitsTargetFunc =  (a: { game: Game, performer: Player }) => boolean
+export type targetablesFunc =  (a: { game: Game, user: Player }) => Player[]
+export type defaultTargetFunc = (a: { game: Game, user: Player }) => Player[]
+export type WinListener = (a: { game: Game, user: Player }) => boolean
 
 export type runFunc =  (a: actionParams) => (any | Promise<any>)
 export type callResponseFunc = (a: actionParams) => Promise< string | void >
-
-export type WinListener = (a: gameAndPlayer) => boolean
-
-export interface gameAndPlayer{
-	game: Game
-	user: Player
-}
 
 export interface actionParams {
 	game: Game
 	user: Player
 	args: string[]
 	command: Command
-	targetOne: Player | 'None'
-	targetTwo: Player | 'None'
+	performer: Player
+	firstTarget: Player | 'None'
+	secondTarget: Player | 'None'
 }
 
 export interface Results{
@@ -190,9 +185,9 @@ const roles: SalemRole[] = [
 				visitsTarget: () => false,
 				targetables: ({user,game}) => game.getPlayers().filter(p=>p.getId()!=user.getId() && p.isAlive()),
 				defaultTarget:() => [],
-				callResponse: async ({ targetOne }) => `You have decided to jail ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`,
-				run: ({ user, targetOne, game })=>{
-					const target = targetOne;
+				callResponse: async ({ firstTarget }) => `You have decided to jail ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`,
+				run: ({ user, firstTarget, game })=>{
+					const target = firstTarget;
 					if(target === 'None') return game.removeActionOf(user);
 					target.setJailStatus(true);
 					target.pushNotif(new Notif({ 
@@ -217,18 +212,18 @@ const roles: SalemRole[] = [
 				hasMenu: false,
 				hasArguments: false,
 				inputSeparator: ',',
-				performer:( { user } ) => user,
+				performer:({ user }) => user,
 				visitsTarget:() => false,
 				targetables:() => null,
 				defaultTarget:({ game })=> game.getJailedPerson() ? [game.getJailedPerson()] : null,
-				callResponse: async ({ user, targetOne })=>{
-					targetOne !== 'None' && targetOne.sendMarkDownToChannel(`The jailor has decided to execute you.`);
-					user.sendMarkDownToChannel(`You have decided to execute ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`)
+				callResponse: async ({ user, firstTarget })=>{
+					firstTarget !== 'None' && firstTarget.sendMarkDownToChannel(`The jailor has decided to execute you.`);
+					user.sendMarkDownToChannel(`You have decided to execute ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`)
 				},
-				run:({ command, targetOne, game, user })=>{
+				run:({ command, firstTarget, game, user })=>{
 					command.decrementStock();
 					
-					const target = targetOne;
+					const target = firstTarget;
 					if(target === 'None') return game.removeActionOf(user);
 					target.kill();
 					target.pushCauseOfDeath(`executed by the Jailor.`);
@@ -294,21 +289,29 @@ const roles: SalemRole[] = [
 				performer:({ user }) => user,
 				visitsTarget:() => true,
 				targetables:({ game }) => game.getAlivePlayers(),
-				defaultTarget:()=> [],
-				callResponse:async ({targetOne, targetTwo})=>
-					`You have decided to swap ${targetOne === 'None' ? 'no one' : targetOne.getUsername()} with ${targetTwo === 'None' ? 'no one' : targetTwo.getUsername()}.`
+				defaultTarget:() => [],
+				callResponse:async ({firstTarget, secondTarget}) =>
+					`You have decided to swap ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()} with ${secondTarget === 'None' ? 'no one' : secondTarget.getUsername()}.`
 				,
-				run:({ targetOne, targetTwo, game, user})=>{
-					if(targetOne === 'None' || targetTwo === 'None') return game.removeActionOf(user)
+				run:({ firstTarget, secondTarget, game, user})=>{
+					if(firstTarget === 'None' || secondTarget === 'None') return game.removeActionOf(user)
 					game.getActions()
 					.filter( a => a.getCommand().getName() !== `transport`)
-					.map( a => a.getFirstTarget().getId() === targetOne.getId() ? a.setFirstTarget(targetTwo) : a.setFirstTarget(targetOne));
+					.map( a => {
+						const firstActionTarget = a.getFirstTarget();
+            if(firstActionTarget === 'None') return false
+						firstActionTarget.getId() === firstTarget.getId() ? 
+						a.setFirstTarget(secondTarget) : 
+						a.setFirstTarget(firstTarget)
+					});
+
 					const notif = new Notif({
 						inbox: `You have been transported!`,
 						newsForSpy: `Your target was transported!`
 					})
-					targetOne.pushNotif(notif);
-					targetTwo.pushNotif(notif);
+
+					firstTarget.pushNotif(notif);
+					secondTarget.pushNotif(notif);
 				},
 			},
 		],
@@ -424,24 +427,25 @@ const roles: SalemRole[] = [
 				visitsTarget:() => true,
 				targetables:({ game, user }) => game.getPlayers().filter(p => p.isAlive() && p.getId() !== user.getId()),
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to control ${targetOne === 'None' ? 'no one' : targetOne.getUsername()} into targeting ${{targetOne}[1].getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to control ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()} into targeting ${{firstTarget}[1].getUsername()}.`
 				},
-				run:({ user, game, targetOne, targetTwo })=>{
-					if(targetOne === 'None' || targetTwo === 'None') return game.removeActionOf(user)
+				run:({ user, game, firstTarget, secondTarget })=>{
+					if(firstTarget === 'None' || secondTarget === 'None') return game.removeActionOf(user)
 
-					const targetOne_action = game.getActionOf(targetOne);
+					const firstTarget_action = game.getActionOf(firstTarget);
 
-					if(targetOne.isImmuneTo('Control'))
-						return targetOne.pushNotif(new Notif({
+					if(firstTarget.isImmuneTo('Control'))
+						return firstTarget.pushNotif(new Notif({
 							inbox: `Someone tried to control you, but you were immune.`,
 							newsForSpy: `Your target was witched!`
 						}));
 
-					if(targetOne_action.getCommand().getTargetCount()==1){
-						targetOne_action.setFirstTarget(targetTwo);
+					if(firstTarget_action.getCommand().getTargetCount()==1){
+						firstTarget_action.setFirstTarget(secondTarget);
+						firstTarget_action.setSecondTarget('None');
 					}
-					targetOne.pushNotif(new Notif({
+					firstTarget.pushNotif(new Notif({
 						inbox: `Someone is controlling you..\nYou have been witched!`,
 						newsForSpy: `Your target was witched!`
 					}));
@@ -506,10 +510,10 @@ const roles: SalemRole[] = [
 					return game.getAlivePlayers().filter(p=>p.getId()!=user.getId() && p.alignmentIsNot('Mafia'))
 				},
 				defaultTarget:({})=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to distract ${targetOne === 'None' ? 'no one' : targetOne.getUsername()} tonight.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to distract ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()} tonight.`
 				},
-				run:({targetOne: target, game, user})=>{
+				run:({firstTarget: target, game, user})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					const immunities = target.getRole().getImmunities();
 					if(!arrayContainsElement(immunities,`Roleblock`)){
@@ -593,12 +597,12 @@ const roles: SalemRole[] = [
 					)
 				,
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
-					const message = `${user.getUsername()} has decided to distract ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({user, firstTarget, game})=>{
+					const message = `${user.getUsername()} has decided to distract ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(message);
-					return `You have decided to distract ${targetOne === 'None' ? 'no one' : targetOne.getUsername()} tonight.`
+					return `You have decided to distract ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()} tonight.`
 				},
-				run:({targetOne: target, game, user})=>{
+				run:({firstTarget: target, game, user})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					const immunities = target.getRole().getImmunities();
 					if(!arrayContainsElement(immunities,`Roleblock`)){
@@ -661,13 +665,14 @@ const roles: SalemRole[] = [
 				inputSeparator: ',',
 				performer:({ user }) => user,
 				visitsTarget:() => false,
-				targetables:() => null,defaultTarget:({ user } ) => [user],
+				targetables:() => null,
+				defaultTarget:({ user } ) => [user],
 				callResponse: async () => `You have decided to wear a vest tonight.`,
-				run:({command, targetOne, game, user})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
+				run:({command, firstTarget, game, user})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
 					command.decrementStock();
-					if(targetOne.getRole().getName()==`Survivor`)
-						targetOne.pushBuff(`Vest`)
+					if(firstTarget.getRole().getName()==`Survivor`)
+						firstTarget.pushBuff(`Vest`)
 				},
 			},
 		],
@@ -720,10 +725,10 @@ const roles: SalemRole[] = [
 	//                 let targetables = game.getPlayers().filter(p=>p.getStatus()==`Dead` && p.getId()!=user.getId());
 	//                 return targetables;
 	//             },
-	//             callResponse:async (user,command,{targetOne},game)=>{
+	//             callResponse:async (user,command,{firstTarget},game)=>{
 	//                 return `You have decided to attempt remembering your past.`
 	//             },
-	//             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
+	//             run:(user,performer,command,{ game, firstTarget, secondTarget })=>{
 	//                 let n1 = {
 	//                     player:null,
 	//                     spy:null
@@ -801,14 +806,14 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to resurrect ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to resurrect ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({ game, targetOne, command, user})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
+				run:({ game, firstTarget, command, user})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
 					command.decrementStock()
-					targetOne.resurrect();
-					game.pushFreshReborn(targetOne);
+					firstTarget.resurrect();
+					game.pushFreshReborn(firstTarget);
 				},
 			},
 		],
@@ -872,12 +877,12 @@ const roles: SalemRole[] = [
 				visitsTarget:() => true,
 				targetables:({ game }) => game.getPlayers().filter(p => p.isAlive() && p.getRole().getAlignment() != `Mafia`),
 				defaultTarget:() => [],
-				callResponse:async ({user, targetOne, game})=>{
-					const msg = `${user.getUsername()} has decided to frame ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({user, firstTarget})=>{
+					const msg = `${user.getUsername()} has decided to frame ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(msg);
-					return `You have decided to frame ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+					return `You have decided to frame ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({targetOne: target, game, user})=>{
+				run:({firstTarget: target, game, user})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					const role = roles.find(r=>r.name==`Mafioso`);
 					target.setMaskRole(new Role(role));
@@ -947,24 +952,24 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
-					const msg = `${user.getUsername()} has decided to disguise themself as ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({user, firstTarget, game})=>{
+					const msg = `${user.getUsername()} has decided to disguise themself as ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(msg);
-					return `You have decided to disguise yourself as ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+					return `You have decided to disguise yourself as ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({ game, targetOne, user})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
+				run:({ game, firstTarget, user, performer})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
 					const oldDisguisedPlayer = game.getPlayers().find(p=>p.isDisguised());
 					if(oldDisguisedPlayer){
 						oldDisguisedPlayer.setDisguiseStatus(false);
 						oldDisguisedPlayer.resetMask();
 					}
 					
-					const mask = roles.find(r=>r.name==targetOne.getRole().getName());
+					const mask = roles.find(r=>r.name==firstTarget.getRole().getName());
 
-					user.setMaskRole(new Role(mask));
-					user.setDisguiseStatus(true);
-					user.setMaskName(targetOne.getUsername());
+					performer.setMaskRole(new Role(mask));
+					performer.setDisguiseStatus(true);
+					performer.setMaskName(firstTarget.getUsername());
 				},
 			},
 		],
@@ -1028,15 +1033,15 @@ const roles: SalemRole[] = [
 				visitsTarget:() => true,
 				targetables:({ game }) => game.getNonMafias().filter(p => p.isAlive()),
 				defaultTarget:() => [],
-				callResponse:async ({ user, targetOne })=>{
-					const message = `${user.getUsername()} has decided to investigate ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({ user, firstTarget })=>{
+					const message = `${user.getUsername()} has decided to investigate ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(message);
-					return `You have decided to investigate ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+					return `You have decided to investigate ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user, targetOne, game})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
-					user.pushNotif(new Notif({
-						inbox: targetOne.getRole().getResults().getConsigliere(),
+				run:({user, firstTarget, game, performer})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
+					performer.pushNotif(new Notif({
+						inbox: firstTarget.getRole().getResults().getConsigliere(),
 					}));
 				},
 			},
@@ -1100,13 +1105,13 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to investigate ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to investigate ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user, targetOne, game})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
-					user.pushNotif(new Notif({
-						inbox: targetOne.getMaskRole().getResults().getInvestigator(),
+				run:({user, firstTarget, game, performer})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
+					performer.pushNotif(new Notif({
+						inbox: firstTarget.getMaskRole().getResults().getInvestigator(),
 					}));
 				},
 			},
@@ -1170,13 +1175,13 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to interrogate ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to interrogate ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user, targetOne, game})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
-					user.pushNotif(new Notif({
-						inbox: targetOne.getMaskRole().getResults().getSheriff()
+				run:({user, firstTarget, game, performer})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
+					performer.pushNotif(new Notif({
+						inbox: firstTarget.getMaskRole().getResults().getSheriff()
 					}));
 				},
 			},
@@ -1244,14 +1249,14 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
-					const msg = `${user.getUsername()} has decided to blackmail ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({user, firstTarget, game})=>{
+					const msg = `${user.getUsername()} has decided to blackmail ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(msg);
-					return `You have decided to blackmail ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+					return `You have decided to blackmail ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({targetOne, game, user})=>{
-					if(targetOne === 'None') return game.removeActionOf(user)
-					let target = targetOne
+				run:({firstTarget, game, user})=>{
+					if(firstTarget === 'None') return game.removeActionOf(user)
+					let target = firstTarget
 					target.setMuteStatus(true);
 					target.pushNotif(new Notif({
 							inbox: `You have been blackmailed!`,
@@ -1319,23 +1324,27 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to keep an eye on ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}'s house tonight.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to keep an eye on ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}'s house tonight.`
 				},
-				run:({user, targetOne: target, game})=>{
+				run:({user, firstTarget: target, game, performer})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					
-					const actions = game.getActions().filter(a=>a.getFirstTarget().getId()==target.getId());
+					const actions = game.getActions().filter(a=>{
+						const firstActionTarget = a.getFirstTarget();
+						if(firstActionTarget === 'None') return false;
+						firstActionTarget.getId()==target.getId()
+					});
 					
 					const visitors = actions.map(a => {
-						if(a.getCommand().visitsTarget({ user:a.getUser(), game: game })){
+						if(a.getCommand().visitsTarget({ performer: a.getUser(), game: game })){
 							return a.getPerformer().getMaskName();
 						}
 					});
 
 					const stringOfVisitors = stringifyArrayOfNames(shuffleArray(visitors));
 
-					user.pushNotif(new Notif({ inbox: `${stringOfVisitors} visited your target.` }));
+					performer.pushNotif(new Notif({ inbox: `${stringOfVisitors} visited your target.` }));
 				},
 			},
 		],
@@ -1396,11 +1405,9 @@ const roles: SalemRole[] = [
 				hasArguments: false,
 				inputSeparator: ',',
 				performer:({user, game})=>{
-					if(game.roleExists(`Mafioso`)){
-						return game.getPlayers().filter(p=>p.getRole().getName()==`Mafioso`)[0];
-					}else{
-						return user;
-					}
+					if(game.roleExists(`Mafioso`))
+						return game.getPlayers().find(p=>p.getRole().getName()==`Mafioso`)
+					return user
 				},
 				visitsTarget:({ game })=>{
 					if(game.roleExists(`Mafioso`))
@@ -1412,32 +1419,39 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
+				callResponse:async ({user, firstTarget, game})=>{
 					if(game.roleExists(`Mafioso`)){
-						const msg = `${user.getUsername()} has ordered the mafioso to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						const msg = `${user.getUsername()} has ordered the mafioso to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 						await user.messageOtherMafias(msg);
-						return `You have ordered the Mafioso to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						return `You have ordered the Mafioso to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					}else{
-						const msg = `${user.getUsername()} has decided to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						const msg = `${user.getUsername()} has decided to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 						await user.messageOtherMafias(msg);
-						return `You have decided to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						return `You have decided to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					}
 				},
-				run:({user,targetOne: target, game})=>{
+				run:({user,firstTarget: target, game, performer})=>{
 					if(target=== 'None') return game.removeActionOf(user)
 					const targetNotif = new Notif({
 						inbox: `You were attacked by the mafia!`,
 						newsForSpy: `Your target was attacked by the mafia!`
 					})
-					const killerNotif = new Notif({}) 
-					if(target.getBuffs().length===1) return target.calculateBuff(target,user,targetNotif,killerNotif);
-					if(target.getRole().getDefense()<user.getRole().getAttack()){
+					const killerNotif = new Notif({});
+					
+					if(target.getBuffs().length===1) 
+						return target.calculateBuff({
+							killer: performer,
+							targetNotif: targetNotif,
+							killerNotif: killerNotif
+						})
+
+					if(target.getRole().getDefense() < performer.getRole().getAttack()){
 						target.kill();
 						target.pushCauseOfDeath(`attacked by a member of the Mafia.`);
 					}else{
 						targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
 						killerNotif.setInbox(`Your target's defense was too strong! You failed to kill your target.`);
-						user.pushNotif(killerNotif);
+						performer.pushNotif(killerNotif);
 					}
 					target.pushNotif(targetNotif);
 				},
@@ -1492,10 +1506,10 @@ const roles: SalemRole[] = [
 	//                 let targetables = game.getPlayers().filter(p => p.isAlive() && p.getRole().getName() != `Vampire`);
 	//                 return targetables;
 	//             },
-	//             callResponse:async (user,command,{targetOne},game)=>{
-	//                 return `You have decided to bite ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+	//             callResponse:async (user,command,{firstTarget},game)=>{
+	//                 return `You have decided to bite ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 	//             },
-	//             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
+	//             run:(user,performer,command,{ game, firstTarget, secondTarget })=>{
 	//                 let n1 = {
 	//                     player: null,
 	//                     spy: `Your target was bitten by a vampire!`
@@ -1599,19 +1613,19 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
+				callResponse:async ({user, firstTarget, game})=>{
 					let msg ='';
 					if(game.roleExists(`Godfather`)){
-						msg = `${user.getUsername()} has voted to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						msg = `${user.getUsername()} has voted to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 						await user.messageOtherMafias(msg);
-						return `You have voted to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						return `You have voted to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					}else{
-						msg = `${user.getUsername()} has decided to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						msg = `${user.getUsername()} has decided to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 						await user.messageOtherMafias(msg);
-						return `You have decided to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+						return `You have decided to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					}
 				},
-				run:({ game, targetOne: target, user })=>{
+				run:({ game, firstTarget: target, user, performer})=>{
 					if(target === 'None') return game.removeActionOf(user);
 
 					const godfatherAction = game.getActions()
@@ -1621,15 +1635,20 @@ const roles: SalemRole[] = [
 					
 					const targetNotif = new Notif({ newsForSpy: `Your target was attacked by the mafia!` })
 					const killerNotif = new Notif({})
-					if(target.getBuffs().length===1) return target.calculateBuff(target,user,targetNotif,killerNotif);
-					if(target.getRole().getDefense()<user.getRole().getAttack()){
+					if(target.getBuffs().length===1) 
+						return target.calculateBuff({
+							killer: performer,
+							targetNotif: targetNotif,
+							killerNotif: killerNotif
+						});
+					if(target.getRole().getDefense()<performer.getRole().getAttack()){
 						target.kill();
 						target.pushCauseOfDeath(`attacked by a member of the Mafia.`);
 						targetNotif.setInbox(`You were attacked by the mafia!`);
 					}else{
 						targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
 						killerNotif.setInbox(`Your target's defense was too strong! You failed to kill your target.`)
-						user.pushNotif(killerNotif);
+						performer.pushNotif(killerNotif);
 					}
 					target.pushNotif(targetNotif);
 				},
@@ -1694,23 +1713,29 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to shoot ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to shoot ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user,command,targetOne: target, game})=>{
+				run:({user,command,firstTarget: target, game, performer})=>{
 					if(target === 'None') return game.removeActionOf(user);
 					command.setStocks(command.getStocks()-1);
 					const targetNotif = new Notif({ newsForSpy: `Your target was attacked by a Vigilante!` })
 					const killerNotif = new Notif({});
-					if(target.getBuffs().length==0) return target.calculateBuff(target,user,targetNotif,killerNotif);
-					if(target.getRole().getDefense()<user.getRole().getAttack()){
+					if(target.getBuffs().length==0) 
+						return target.calculateBuff({
+							killer: performer,
+							targetNotif: targetNotif,
+							killerNotif: killerNotif
+						});
+
+					if(target.getRole().getDefense()<performer.getRole().getAttack()){
 						target.kill();
 						target.pushCauseOfDeath(`shot by a Vigilante.`);
 						targetNotif.setInbox(`You were shot by a Vigilante!`);  
 					}else{
 						targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
 						killerNotif.setInbox(`Your target's defense was too strong! You failed to kill your target.`),
-						user.pushNotif(killerNotif);
+						performer.pushNotif(killerNotif);
 					}
 					target.pushNotif(targetNotif);
 				},
@@ -1779,24 +1804,30 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({ targetOne })=>{
-					return `You have decided to kill ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({ firstTarget })=>{
+					return `You have decided to kill ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user,targetOne: target, game})=>{
+				run:({user,firstTarget: target, game, performer})=>{
 					if(target === 'None') return game.removeActionOf(user);
 					const targetNotif = new Notif({
 						newsForSpy: `Your target was attacked by a Serial Killer!`
 					})
 					const killerNotif = new Notif({})
-					if(target.getBuffs().length===1) return target.calculateBuff(target,user,targetNotif,killerNotif);
-					if(target.getRole().getDefense()<user.getRole().getAttack()){
+					if(target.getBuffs().length===1) 
+						return target.calculateBuff({
+							killer: performer,
+							targetNotif: targetNotif,
+							killerNotif: killerNotif
+						});
+
+					if(target.getRole().getDefense() < performer.getRole().getAttack()){
 						target.kill();
 						target.pushCauseOfDeath(`stabbed by a Serial Killer.`);
 						targetNotif.setInbox(`You were attacked by a Serial Killer!`);
 					}else{
 						targetNotif.setInbox(`Someone attacked you last night but you were immune!`);
 						killerNotif.setInbox(`Your target's defense was too strong! You failed to kill your target.`);
-						user.pushNotif(killerNotif);
+						performer.pushNotif(killerNotif);
 					}
 					target.pushNotif(targetNotif);
 				},
@@ -1865,10 +1896,10 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to go on a rampage at ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}'s house.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to go on a rampage at ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}'s house.`
 				},
-				run:({ game, targetOne: target, user })=>{
+				run:({ game, firstTarget: target, user, performer })=>{
 					if(target === 'None') return game.removeActionOf(user);
 
 					const targetNotif = new Notif({ 
@@ -1878,9 +1909,13 @@ const roles: SalemRole[] = [
 					const werewolfNotif = new Notif({ inbox: `Your target's defense was too strong! You failed to kill your target.` })
 
 					if(target.getBuffs().length>0)
-						return target.calculateBuff(target,user,targetNotif,werewolfNotif);
+						return target.calculateBuff({
+							killer: performer,
+							targetNotif: targetNotif,
+							killerNotif: werewolfNotif
+						});
 
-					if(target.getRole().getDefense()<user.getRole().getAttack()){
+					if(target.getRole().getDefense() < performer.getRole().getAttack()){
 						target.kill();
 						target.pushCauseOfDeath(`mauled by a Werewolf.`);
 						targetNotif.setInbox(`A werewolf went on a rampage at your house!`)
@@ -1893,7 +1928,7 @@ const roles: SalemRole[] = [
 						const visitors = game.getVisitorsOf(target);
 						
 						visitors.forEach(visitor => {
-							if(visitor.getId()!=user.getId()){
+							if(visitor.getId() != performer.getId()){
 								visitor.kill();
 								visitor.pushNotif(visitorsNotif);
 							}
@@ -1901,7 +1936,7 @@ const roles: SalemRole[] = [
 					}else{
 						targetNotif.inbox = `Someone attacked you last night but you were immune!`;
 						werewolfNotif.inbox = `Your target's defense was too strong! You failed to kill your target.`,
-						user.pushNotif(werewolfNotif);
+						performer.pushNotif(werewolfNotif);
 					}
 					target.pushNotif(targetNotif);
 				},
@@ -1957,10 +1992,10 @@ const roles: SalemRole[] = [
 	//                 let targetables = game.getPlayers().filter(p => p.isAlive() && p.getUsername() != user.getUsername());
 	//                 return targetables;
 	//             },
-	//             callResponse:async (user,command,{targetOne},game)=>{
-	//                 return `You have decided to douse ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+	//             callResponse:async (user,command,{firstTarget},game)=>{
+	//                 return `You have decided to douse ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 	//             },
-	//             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
+	//             run:(user,performer,command,{ game, firstTarget, secondTarget })=>{
 	//                 let target = targets[0];
 	//                 target.setDouseStatus(true);
 	//             },
@@ -1985,10 +2020,10 @@ const roles: SalemRole[] = [
 	//             visitsTarget:({user, game})=>{
 	//                 return false;
 	//             },
-	//             callResponse:async (user,command,{targetOne},game)=>{
+	//             callResponse:async (user,command,{firstTarget},game)=>{
 	//                 return `You have decided to light the doused houses.`
 	//             },
-	//             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
+	//             run:(user,performer,command,{ game, firstTarget, secondTarget })=>{
 	//                 let doused = game.getPlayers().filter(p=>p.getDouseStatus()==true && p.isAlive());
 	//                 doused.forEach(d => {
 	//                     d.kill();
@@ -2062,11 +2097,11 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to heal ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to heal ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:(targets)=>{
-					const  target = targets[0];
+				run:({firstTarget: target, user, game})=>{
+					if(target === 'None') return game.removeActionOf(user);
 					target.pushBuff(`Heal`);
 				},
 			},
@@ -2092,7 +2127,7 @@ const roles: SalemRole[] = [
 						return `You have decided to heal yourself.`
 				},
 				defaultTarget:({ user } ) => [user],
-				run:({command,targetOne: target, game, user})=>{
+				run:({command,firstTarget: target, game, user})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					command.decrementStock();
 					target.pushBuff(`Heal`);
@@ -2159,11 +2194,11 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to protect ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to protect ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:(targets)=>{
-					const target = targets[0];
+				run:({firstTarget: target, user, game})=>{
+					if(target === 'None') return game.removeActionOf(user);
 					target.pushBuff(`Protect`);
 				},
 			},
@@ -2189,7 +2224,7 @@ const roles: SalemRole[] = [
 				callResponse:async ()=>{
 					return `You have decided to wear a vest tonight.`
 				},
-				run:({command,targetOne: target, game, user})=>{
+				run:({command,firstTarget: target, game, user})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					game.removeActionOf(user)
 					command.decrementStock();
@@ -2245,7 +2280,7 @@ const roles: SalemRole[] = [
 	//             defaultTarget:({user, game})=>{
 	//                 return [user];
 	//             },
-	//             callResponse:async (user,command,{targetOne},game)=>{
+	//             callResponse:async (user,command,{firstTarget},game)=>{
 	//                 command.setStocks(command.getStocks()-1);
 	//                 user.setVoteCount(3);
 	//                 let msg = `${user.getUsername()} has revealed to everyone that they are the Mayor!`;
@@ -2253,7 +2288,7 @@ const roles: SalemRole[] = [
 	//                 return `You have revealed to everyone that you are the Mayor!`
 									
 	//             },
-	//             run:(user,performer,command,{ game, targetOne, targetTwo })=>{
+	//             run:(user,performer,command,{ game, firstTarget, secondTarget })=>{
 									
 	//             },
 	//         }
@@ -2317,14 +2352,14 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to seance ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to seance ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({user, command, targetOne: target, game})=>{
+				run:({user, command, firstTarget: target, game, performer})=>{
 					if(target === 'None') return game.removeActionOf(user);
 					command.decrementStock();
 					target.setSeanceStatus(true);
-					user.setSeanceStatus(true);
+					performer.setSeanceStatus(true);
 				},
 			}
 		],
@@ -2385,16 +2420,14 @@ const roles: SalemRole[] = [
 				visitsTarget:() => false,
 				targetables:({user, game}) => game.getPlayers().filter(p => p.isAlive() && p.getId()!=user.getId()),
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-						return `You have decided to bug ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}'s house.`
+				callResponse:async ({firstTarget})=>{
+						return `You have decided to bug ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}'s house.`
 				},
-				run:({user, targetOne: target, game})=>{
+				run:({user, firstTarget: target, game, performer})=>{
 					if(target === 'None') return game.removeActionOf(user)
 					target.getNotifs().forEach(notif => {
-						const userNotif = new Notif({
-							inbox: notif.newsForSpy
-						})
-						user.pushNotif(userNotif);
+						const performerNotif = new Notif({ inbox: notif.newsForSpy })
+						performer.pushNotif(performerNotif);
 					});
 				},
 			},
@@ -2474,10 +2507,10 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({targetOne})=>{
-					return `You have decided to haunt ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({firstTarget})=>{
+					return `You have decided to haunt ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:({ command, targetOne: target, game, user })=>{
+				run:({ command, firstTarget: target, game, user })=>{
 					if(target === 'None') return game.removeActionOf(user)
 					command.decrementStock();
 					target.kill();
@@ -2550,13 +2583,13 @@ const roles: SalemRole[] = [
 					return targetables;
 				},
 				defaultTarget:({} )=> [],
-				callResponse:async ({user, targetOne, game})=>{
-					const msg = `${user.getUsername()} has decided to clean ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+				callResponse:async ({user, firstTarget, game})=>{
+					const msg = `${user.getUsername()} has decided to clean ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 					await user.messageOtherMafias(msg);
-					return `You have decided to clean ${targetOne === 'None' ? 'no one' : targetOne.getUsername()}.`
+					return `You have decided to clean ${firstTarget === 'None' ? 'no one' : firstTarget.getUsername()}.`
 				},
-				run:(targets)=>{
-					let target = targets[0];
+				run:({firstTarget: target, game, user})=>{
+					if( target === 'None') return game.removeActionOf(user)
 					target.setCleandName(target.getMaskRole().getName());
 					target.setCleanedNotes(target.getNotes());
 					target.getMaskRole().setName(`Cleaned`);

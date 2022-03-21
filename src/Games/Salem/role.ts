@@ -1,8 +1,9 @@
 import globalCommands from "./commands";
 import Result from "./result";
 import Player from "./player";
-import { gameAndPlayer, SalemRole, SalemRoleAlignment, SalemRoleName, SalemRoleType } from "./roles";
+import { SalemRole, SalemRoleAlignment, SalemRoleName, SalemRoleType } from "./roles";
 import Command from "./command";
+import Game from "./game";
 
 export default class Role{
 
@@ -23,7 +24,7 @@ export default class Role{
     roleMessage: string;
     nightMessage: string;
     commands: Command[];
-    winListener: (a: gameAndPlayer) => boolean
+    winListener: (a: {game: Game, user: Player}) => boolean
 
     constructor(role: SalemRole){
         
@@ -53,7 +54,7 @@ export default class Role{
     setId = (a:string) => this.id = a
     
     getName = () =>  this.name
-    setName = (a:SalemRoleName) => this.name = a
+    setName = (a:SalemRoleName | 'Cleaned') => this.name = a
 
     getType = () => this.type
     setType = (a:SalemRoleType) => this.type = a;

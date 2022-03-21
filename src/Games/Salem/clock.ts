@@ -63,6 +63,7 @@ class Clock{
 	}
 
 	processPhase = async () => {
+		await this.game.endPlayerInteractions();
 		const phase = this.updatePhase();
 
 		switch(phase){
@@ -108,7 +109,7 @@ class Clock{
 		this.resetExcessDuration();
 
 		if ( this.phase.shouldLockChannel )
-			this.game.getFunctions()
+			this.game.lockPlayerChannels();
 		else 
 			this.game.unlockPlayerChannels();
 		

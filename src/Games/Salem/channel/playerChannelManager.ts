@@ -180,35 +180,25 @@ const processAction = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
 
   const performer = command.performer({game: game, user: player});
+
+  const params = {
+    game: game,
+    args: ARGS,
+    user: player,
+    command: command,
+    performer: performer,
+    firstTarget: player.getFirstActionTarget(),
+    secondTarget: player.getSecondActionTarget(),
+  }
   
   if(command.priority === 0){
-    await command.run({
-      args:ARGS,
-      game:game,
-      targetOne: player.getFirstActionTarget(),
-      targetTwo: player.getSecondActionTarget(),
-      command:command,
-      user:player,
-    })
+    await command.run(params)
     return
   }
 
-  game.pushAction(new Action({
-    user: player,
-    args: ARGS,
-    command: command,
-    performer: performer,
-    targets: player.getActionTargets()
-  }))
+  game.pushAction(new Action(params))
 
-  const response = await command.callResponse({
-    args: ARGS,
-    game: game,
-    command: command,
-    user: player,
-    targetOne: player.getFirstActionTarget(),
-    targetTwo: player.getSecondActionTarget(),
-  })
+  const response = await command.callResponse(params)
 
   if(typeof response === 'string') 
     player.sendMarkDownToChannel(response)
@@ -227,7 +217,7 @@ const noTargetPopUp = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
     setDefaultTarget({command, game, player, ARGS});
     await processAction({ command, game, player, ARGS });
-  }
+}
 
 const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) =>{
@@ -251,7 +241,7 @@ const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
   
   collector.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
     user.setFirstActionTarget(target);
     processAction({ command, game, player: user, ARGS });
     return
@@ -294,7 +284,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
   
   collectorOne.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
     user.setFirstActionTarget(target);
     preProcessAction();
     return
@@ -307,7 +297,7 @@ const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
 
   collectorTwo.on('collect',async (i)=>{
     i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || 'None';
+    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
     user.setSecondActionTarget(target);
     preProcessAction();
     return

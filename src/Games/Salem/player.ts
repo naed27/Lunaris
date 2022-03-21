@@ -60,8 +60,8 @@ export default class Player{
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
-  firstActionTarget: Player | null | 'None' = null;
-  secondActionTarget: Player | null | 'None' = null;
+  firstActionTarget: Player | undefined 
+  secondActionTarget: Player | undefined 
 
 
   constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
@@ -287,8 +287,6 @@ export default class Player{
 
   // ------------------------- Setters & Getters
 
-
-
   getMuteStatus = () => this.blackmailStatus
   setMuteStatus = (a:boolean) => this.blackmailStatus = a
 
@@ -309,6 +307,7 @@ export default class Player{
   setSeanceStatus = (a:boolean) => this.seanceStatus = a
 
   isRoleBlocked = () => this.roleBlockStatus === true
+  isNotRoleBlocked = () => this.roleBlockStatus === false
   setRoleBlockStatus = (a:boolean) => this.roleBlockStatus = a
 
   isBlackmailed = () => this.blackmailStatus === true;
@@ -335,7 +334,7 @@ export default class Player{
     this.game.pushFreshDeath(this);
   }
 
-  calculateBuff(target: Player, killer: Player, targetNotif: Notif, killerNotif: Notif){
+  calculateBuff({killer, targetNotif, killerNotif}:{killer: Player, targetNotif: Notif, killerNotif: Notif}){
     this.getBuffs().forEach(buff => {
       switch(buff){
         case 'Heal':
@@ -354,7 +353,12 @@ export default class Player{
           killer.pushCauseOfDeath(`killed by a Bodyguard.`);
           targetNotif.setInbox(`You were attacked last night, but someone protected you!`)
           const bodyguards = this.game.getActions()
-          .filter(a=>a.getFirstTarget().getId()==target.getId() && a.getPerformer().getRoleName()=='Bodyguard')
+          .filter(a => {
+            const firstTarget = a.getFirstTarget();
+            if(firstTarget === 'None') return false
+            firstTarget.getId() === this.getId() && 
+            a.getPerformer().getRoleName()=='Bodyguard'
+          })
           .map((bodyguardAction) => bodyguardAction.getPerformer());
           const bodyguardNotif = new Notif({ inbox: `You protected your target from an attack last night!` })
           bodyguards.forEach( bg => bg.pushNotif(bodyguardNotif))}
@@ -366,7 +370,7 @@ export default class Player{
         break;
       }
     });
-    target.pushNotif(targetNotif);
+    this.pushNotif(targetNotif);
     killer.pushNotif(killerNotif);
   }
 
@@ -386,6 +390,7 @@ export default class Player{
   setMaskName = (a:string) => this.maskName = a
 
   isDisguised = () => this.disguiseStatus === true;
+  isNotDisguised = () => this.disguiseStatus === false;
   getDisguiseStatus = () => this.disguiseStatus
   setDisguiseStatus = (a:boolean) => this.disguiseStatus = a
 
@@ -393,9 +398,11 @@ export default class Player{
   setChannelManager = (a: PlayerChannelManager) => this.channelManager = a;
 
   isJailed = () => this.jailStatus === true;
+  isNotJailed = () => this.jailStatus === false;
   setJailedStatus = (a: boolean) => this.jailStatus = a;
 
   isMafia = () => this.getRole().getAlignment() === 'Mafia';
+  isNotMafia = () => this.getRole().getAlignment() !== 'Mafia';
 
   getId = () => this.id
 
@@ -404,13 +411,15 @@ export default class Player{
   isAlive = () => this.status === 'Alive';
   isDead = () => this.status === 'Dead';
   isVotedUp = () => this.game.getVotedUp().getId() === this.id;
+  isNotVotedUp = () => this.game.getVotedUp().getId() !== this.id;
 
   getNotes = () => this.notes
   setNotes = (a:string) => this.notes = a
 
   getWinStatus = () => this.winStatus
   setWinStatus = (a:boolean) => this.winStatus = a
-  isAWinner = () => this.winStatus === true;
+  isWinner = () => this.winStatus === true;
+  isLoser = () => this.winStatus === false;
 
   getCauseOfDeath = () => this.causeOfDeath
 
@@ -449,15 +458,15 @@ export default class Player{
   getGuild = () => this.guild
 
   isImmuneTo = (a: string) => arrayContainsElement(this.role.getImmunities(),a);
+  isNotImmuneTo = (a: string) => !this.isImmuneTo(a);
 
   roleNameIs = (a: SalemRoleName) => this.getRoleName() === a;
   alignmentIs = (a: string) => this.getRole().getAlignment() === a;
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
-  
-  setFirstActionTarget = (a: Player | 'None') => this.firstActionTarget = a
+  setFirstActionTarget = (a: Player | undefined) => this.firstActionTarget = a
 
-  setSecondActionTarget = (a: Player | 'None') => this.secondActionTarget = a
+  setSecondActionTarget = (a: Player | undefined) => this.secondActionTarget = a
 
   getFirstActionTarget = () => this.firstActionTarget
   

@@ -1,7 +1,9 @@
 import AnotherCommand from './command';
+import Game from './game';
 import Player from './player';
 
 interface ConstructorParams{
+  game: Game;
   user: Player;
   args: string[];
   performer: Player;
@@ -12,6 +14,7 @@ interface ConstructorParams{
 
 export default class Action{
 
+  game: Game;
   user: Player;
   args: string[];
   status: string;
@@ -20,14 +23,15 @@ export default class Action{
   secondTarget: Player | 'None';
   command: AnotherCommand;
 
-  constructor({user,performer,command,firstTarget,secondTarget,args}:ConstructorParams){
+  constructor({game,user,performer,command,firstTarget,secondTarget,args}:ConstructorParams){
+    this.game = game;
     this.user = user;
+    this.args = args
     this.command = command;
-    this.firstTarget = firstTarget;
-    this.secondTarget = secondTarget;
     this.status = 'Pending';
     this.performer = performer;
-    this.args = args
+    this.firstTarget = firstTarget;
+    this.secondTarget = secondTarget;
   }
 
   // ------------------------------------- SETTERS AND GETTERS
@@ -41,7 +45,7 @@ export default class Action{
   getStatus = () => this.status;
   setStatus = (a:string) => this.status = a;
 
-  getTargets = () => [ this.firstTarget, this.secondTarget];
+  getTargets = () => [ this.firstTarget, this.secondTarget ];
 
   getPerformer = () => this.performer;
   setPerformer = (a:Player) => this.performer = a;
@@ -59,5 +63,15 @@ export default class Action{
     if(this.firstTarget === 'None') return false
     this.performer.getId() === this.firstTarget.getId()
   }
+
+  getProperties = () => ({
+    game: this.game,
+    args: this.args,
+    user: this.user,
+    command: this.command,
+    performer: this.performer,
+    firstTarget: this.firstTarget,
+    secondTarget: this.secondTarget,
+  })
 
 }
