@@ -15,6 +15,7 @@ interface ConstructorParams{
 }
 
 type PlayerBuff = 'Vest' | 'Heal' | 'Protect' | 'Alert'
+type PlayStatus = 'Ready' | 'Not Ready' | 'Playing' | 'Disconnected'
 
 export default class Player{
 
@@ -28,6 +29,8 @@ export default class Player{
   listnumber: string;
   username: string;
   maskName: string;
+  playStatus: PlayStatus = 'Not Ready';
+
 
   channel: TextChannel;
   channelManager: PlayerChannelManager;
@@ -170,7 +173,7 @@ export default class Player{
   }
 
   cleanHelpers = async () => {
-    this.getChannelManager().manageGuide().delete();
+    this.getChannelManager().manageWelcomeGuide().delete();
     this.getChannelManager().managePhaseCommands().delete();
   }
 
@@ -187,11 +190,12 @@ export default class Player{
       const stocks = command.getStocks();
       const playerStatus = this.getStatus();
       const commandStatus = command.getRequiredStatus();
-      const permission = command.getPermission().toLowerCase();
+      const permission = command.getPermission()
 
       const hasStocks = stocks > 0;
-      const isHostCommand = permission === 'host';
-      const isAdminCommand = permission === 'admin';
+      const isHostCommand = permission === 'Host';
+      const isAdminCommand = permission === 'Admin';
+      const isPlayerCommand = permission === 'Role Holder';
       const matchCurrentPhase = phases.includes(phase.name);
       const matchPlayerStatus = commandStatus
         .map((status) => status.toLowerCase())
@@ -201,7 +205,8 @@ export default class Player{
       if(!matchCurrentPhase) return false;
       if(!matchPlayerStatus) return false;
       if(isHostCommand && !playerIsHost) return false;
-      if(isAdminCommand && !playerIsAdmin) return false ;
+      if(isAdminCommand && !playerIsAdmin) return false;
+      if(isPlayerCommand && this.isJailed()) return false;
 
       return true;
     });
@@ -256,7 +261,7 @@ export default class Player{
 
   cleanChannel = async () => {
     let fetched: Collection<string, Message<boolean>>;
-    this.getChannelManager().manageGuide().clearCache();
+    this.getChannelManager().manageWelcomeGuide().clearCache();
     this.getChannelManager().manageClock().clearCache();
     this.getChannelManager().manageCountDown().clearCache();
     this.getChannelManager().manageJudgement().clearCache();
@@ -481,4 +486,11 @@ export default class Player{
     this.interactionCollectors.forEach(collector => collector.stop())
     this.interactionCollectors = [];
   }
+
+  setPlayStatus = (a: PlayStatus) => this.playStatus = a;
+  getPlayStatus = () => this.playStatus
+  isReady = () => this.playStatus === 'Ready';
+  isNotReady = () => this.playStatus === 'Not Ready';
+  isPlaying = () => this.playStatus === 'Playing';
+  isDisconnected = () => this.playStatus === 'Disconnected';
 }

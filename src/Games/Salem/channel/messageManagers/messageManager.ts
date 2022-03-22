@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessageOptions, MessagePayload, TextChannel }  from 'discord.js';
+import { Message, MessageActionRow, MessageEmbed, MessageOptions, MessagePayload, TextChannel }  from 'discord.js';
 import Game from '../../game';
 import Player from '../../player'
 import PlayerChannelManager from '../playerChannelManager';
@@ -61,7 +61,11 @@ export default class MessageManager{
   }
 
   getPage = () => this.page;
-  setPage = (a:number) => this.page = a;
+  setPage = (a:number) => {
+    if(a > this.maxPage || a < this.minPage) return;
+    this.page = a;
+    this.update();
+  }
 
   getMaxPage = () => this.maxPage;
   setMaxPage = (a:number) => this.maxPage = a;
@@ -90,4 +94,10 @@ export default class MessageManager{
       {...a, content:`${this.linebreak}`}
     return await this.message.edit(payload).catch(() => console.log( 'Error: Could not edit message' ));
   }
+
+  editChoices = async (choices:MessageActionRow) => {
+    if(!this.message) return
+    return await this.message.edit({components:[choices]}).catch(() => console.log( 'Error: Could not edit message' ));
+  }
+
 }

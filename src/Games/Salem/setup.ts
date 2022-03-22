@@ -136,16 +136,6 @@ export default class Setup{
     executioner.setExecutionerTarget(target);
   }
 
-  listenHouseChannel = async () => {
-    const phase = this.game.getClock().getPhase().name;
-    if(phase !== 'Discussion' && phase !== 'Night') return 
-    this.game.getPlayers().map(player => {
-      player.cleanHelpers();
-      if(player.isJailed())return
-      player.getChannelManager().managePhaseCommands().create();
-    });
-  }
-
   cleanChannel = async (channel: TextChannel) => {
     let fetched: Collection<string, Message<boolean>>;
     do {

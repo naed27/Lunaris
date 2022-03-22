@@ -61,6 +61,10 @@ export type SalemRoleType =
 	| 'Protective'
 	| 'Benign'
 
+export type RolePermission = 'Admin' | 'Host' | 'Role Holder' | 'Player';
+
+export type Queue = 'Normal' | 'Instant'
+
 
 export interface SalemCommand{
 	name: string;
@@ -68,8 +72,8 @@ export interface SalemCommand{
 	description: string;
 	priority: number;
 	stocks: number;
-	permission: string;
-	queue: string;
+	permission: RolePermission;
+	queue: Queue;
 	phase: PhasePossibilities[];
 	requiredStatus: string[];
 	targetCount: number;
@@ -415,7 +419,7 @@ const roles: SalemRole[] = [
 				priority:2,
 				stocks:99,
 				permission:`Role Holder`,
-				queue:`Witch`,
+				queue:`Normal`,
 				targetCount:2,
 				lethal: false,
 				phase:[`Night`],

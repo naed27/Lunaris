@@ -1,4 +1,4 @@
-import { runFunc, callResponseFunc, defaultTargetFunc, performerFunc, SalemCommand, targetablesFunc, visitsTargetFunc } from './roles';
+import { runFunc, callResponseFunc, defaultTargetFunc, performerFunc, SalemCommand, targetablesFunc, visitsTargetFunc, Queue, RolePermission } from './roles';
 
 export default class Command{
 
@@ -7,8 +7,8 @@ export default class Command{
   description: string;
   priority: number;
   stocks: number;
-  permission: string;
-  queue: string;
+  permission: RolePermission;
+  queue: Queue;
   phase: string[];
   requiredStatus: string[];
   targetCount: number;
@@ -61,7 +61,7 @@ export default class Command{
   getRequiredStatus = () => this.requiredStatus
 
   getQueue = () => this.queue;
-  setQueue = (a: string) => this.queue=a;  
+  setQueue = (a: Queue) => this.queue=a;  
 
   getName = () => this.name;
   setName = (a: string) => this.name = a;
@@ -78,7 +78,7 @@ export default class Command{
   setPriority = (a: number) => this.priority = a;
 
   getPermission = () => this.permission;
-  setPermission = (a: string) => this.permission = a;
+  setPermission = (a: RolePermission) => this.permission = a;
 
   getDescription = () => this.description;
   setDescription = (a: string) => this.description = a;

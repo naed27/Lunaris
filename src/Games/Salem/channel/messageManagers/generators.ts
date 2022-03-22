@@ -34,9 +34,10 @@ export const  judge = ({messageManager}:Params) => {
 
 export const welcomeGuide = ({messageManager}:Params) => {
   const manager = messageManager;
+  const game = manager.getGame();
   const page = manager.getPage();
-  const playerRole = manager.getPlayer().getRole();
-  const welcomeGuideBook = welcome(playerRole);
+  const player = manager.getPlayer();
+  const welcomeGuideBook = welcome({game, player});
   manager.setMaxPage(welcomeGuideBook.length);
 
   const description = welcomeGuideBook[page-1];

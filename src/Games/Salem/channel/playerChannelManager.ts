@@ -4,7 +4,7 @@ import responses from '../archive/responses';
 import ChannelManager from './channelManager';
 import MessageManager from './messageManagers/messageManager';
 import { GuildMember, Message, TextChannel, Interaction }  from 'discord.js';
-import { createEmbed, createMenu, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
+import { createMenu, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
 import { 
   welcomeGuide, 
   judge, 
@@ -30,7 +30,7 @@ export default class PlayerChannelManager extends ChannelManager{
   readonly discord: GuildMember;
 
   readonly clockMessageManager: MessageManager;
-  readonly guideMessageManager: MessageManager;
+  readonly welcomeMessageManager: MessageManager;
   readonly judgementMessageManager: MessageManager;
   readonly countDownMessageManager: MessageManager;
   readonly playersRoleMessageManager: MessageManager;
@@ -45,8 +45,8 @@ export default class PlayerChannelManager extends ChannelManager{
     this.discord = player.getDiscord();
 
     this.clockMessageManager = new MessageManager({ channelManager: this,  generator: clock });
-    this.guideMessageManager = new MessageManager({ channelManager: this,  generator: welcomeGuide });
     this.judgementMessageManager = new MessageManager({ channelManager: this,  generator: judge });
+    this.welcomeMessageManager = new MessageManager({ channelManager: this,  generator: welcomeGuide });
     this.countDownMessageManager = new MessageManager({ channelManager: this,  generator: countDown });
     this.playersRoleMessageManager = new MessageManager({ channelManager: this,  generator: playerRole });
     this.playersListMessageManager = new MessageManager({ channelManager: this,  generator: playerList });
@@ -59,7 +59,7 @@ export default class PlayerChannelManager extends ChannelManager{
   getDiscord = () => this.discord;
 
   manageClock = () => this.clockMessageManager;
-  manageGuide = () => this.guideMessageManager;
+  manageWelcomeGuide = () => this.welcomeMessageManager;
   manageJudgement = () => this.judgementMessageManager;
   manageCountDown = () => this.countDownMessageManager;
   managePlayerList = () => this.playersListMessageManager;

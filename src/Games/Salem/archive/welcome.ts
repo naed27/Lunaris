@@ -1,31 +1,33 @@
-import Role from "../role"
+import Game from "../game"
+import Player from "../player"
 
-export default (role: Role) => {
+export default ({game, player}:{game: Game, player: Player}) => {
   return [
     //----------------------------------------
-    `**A Short Guide (ToS)**`,
+    `**Town Of Salem**
+    \nStatus: ${player.getStatus()}
+    \nPlayers who are ready: (${game.getPlayers().filter(p=>p.isReady()).length}/${game.getPlayers().length})
+    `,
 
     //----------------------------------------
-    `**Town of Salem has 3 Phases:**
-    \n\n- Discussion
-    \n- Voting
-    \n- Night`,
+    `**Profile**
+    Name: ${player.getDiscord().user.username}
+    Username: ${player.getUsername()}
+    Status: ${player.getStatus()}
+    Role: ${player.getRole()}
+    Abilities: ${player.getRole().getAbilities().join("\n")}
+    Skill Commands: 
+    \n${player.getRole().getCommands().map((c)=> c.getGuide()).join("\n")}
+    How to Win: ${player.getRole().getGoals().join("\n")}
+    `,
 
     //----------------------------------------
-    `**During the Discussion**
-    \n- players can talk to each other.
-    \n\n**During the Voting**
-    \n- players can vote someone off the game.
-    \n\n**During the Night**
-    \n- players are left to themselves`,
+    `Type ".changename <new name>" to change your in-game name."`,
 
     //----------------------------------------
-    `**Special Roles**
-    \n- players are given a role to play.
-    \n- each role has its own special ability.
-    \n\n**How to win**
-    \n- each role has a special goal to achieve.
-    \n- a player wins by achieving that goal!`,
+    `**Town Of Salem**
+    \nStatus: ${player.getStatus()}
+    \nPlayers who are ready: (${game.getPlayers().filter(p=>p.isReady()).length}/${game.getPlayers().length})`,
 
     //----------------------------------------
   
