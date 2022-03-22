@@ -2,9 +2,10 @@ import { RolePoolElement } from "./roles";
 import roles, { SalemRole } from "./roles";
 import Role from "./role";
 import Player from "./player";
-import { Guild, TextChannel, Collection, Message, Role as DiscordRole } from 'discord.js';
+import { Guild, TextChannel, Collection, Message } from 'discord.js';
 import Game from "./game";
 import { createEmbed, shuffleArray } from "../../Helpers/toolbox";
+import { welcome } from "./channel/messageManagers/collectors";
 
 export default class Setup{
 
@@ -149,6 +150,12 @@ export default class Setup{
     this.game.getPlayers().map(p => p.getChannelManager().listen())
   };
 
+  sendWelcomeGuide = async () => {
+    this.game.getPlayers().map( async p => {
+      await p.getChannelManager().manageWelcomeGuide().create();
+      p.getChannelManager().manageWelcomeGuide().applyReactionCollector(welcome)
+    });
+  }
   
 
 }

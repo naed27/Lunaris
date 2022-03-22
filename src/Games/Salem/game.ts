@@ -73,15 +73,17 @@ export default class Game{
 	// ---------------------- Functions
 
 	setupGame = async () => {
-		await this.getSetup().setupPlayers();
-		await this.getSetup().createGameRole();
-		await this.getSetup().distributeGameRole();
-		await this.getSetup().activatePlayerListeners();
+		await this.setup.setupPlayers();
+		await this.setup.createGameRole();
+		await this.setup.distributeGameRole();
+		await this.setup.activatePlayerListeners();
+		await this.setup.sendWelcomeGuide();
+		await this.setup.setupExeTarget();
+		await delay(2000);
 		await this.showAndUnlockPlayerChannels();
-		await this.getSetup().setupExeTarget();
-		await this.getHost().notifyGameStart();
-		this.getClock().runTimer();
-		await this.getClock().playLobby();
+		await this.host.notifyGameStart();
+		this.clock.runTimer();
+		await this.clock.playLobby();
 	}
 
 	updateWerewolf = () => {
@@ -101,14 +103,14 @@ export default class Game{
 		.map(jester => jester.getRole().getCommands().filter(c=>c.getName()=='haunt')[0].setStocks(0))
 
 		this.players.map(player => player.resetYesterdayStatus());
-		this.getClock().resetExcessDuration();
+		this.clock.resetExcessDuration();
 	}
 
 	deathListener = async () => {
-		const currentPeaceCount = this.getClock().getPeaceCount();
-		this.getClock().setPeaceCount(currentPeaceCount+1);
+		const currentPeaceCount = this.clock.getPeaceCount();
+		this.clock.setPeaceCount(currentPeaceCount+1);
 		if(this.freshDeaths.length === 0 )return 
-		this.getClock().setPeaceCount(0);
+		this.clock.setPeaceCount(0);
 		for await (const player of this.freshDeaths) 
 			await player.playDeath();
 		this.freshDeaths=[];
@@ -231,8 +233,8 @@ export default class Game{
 
 	gameStart = async () => {
 		const time = 5;
-		this.getClock().freezeTime();
-		this.getClock().setSecondsRemaining(0);
+		this.clock.freezeTime();
+		this.clock.setSecondsRemaining(0);
 		await this.lockPlayerChannels();
 
 		this.players.map( async (player) => {
@@ -252,7 +254,7 @@ export default class Game{
 		}
 
 		this.players.map((p)=> p.getChannelManager().manageCountDown().delete());
-		this.getClock().startGame();
+		this.clock.startGame();
 	}
 	
 	// ----------------------- Setters & Getters
@@ -309,9 +311,9 @@ export default class Game{
 		const msg = jsonWrap(`${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})`)
 		this.functions.messagePlayers(msg);
 		if(voteCount==goal){
-			this.getClock().setNextPhase('Defense');
-			this.getClock().setExcessDuration(this.getClock().getSecondsRemaining());
-			this.getClock().skipPhase();
+			this.clock.setNextPhase('Defense');
+			this.clock.setExcessDuration(this.clock.getSecondsRemaining());
+			this.clock.skipPhase();
 			this.setVotedUp(voted);
 		}
 	}
@@ -421,13 +423,13 @@ export default class Game{
 	// ------------------------- Game Ender
 
 	quit = async () => {
-		this.getClock().terminateTimer();
+		this.clock.terminateTimer();
 		await this.gameKey.delete()
 		for await (const player of this.players) {
 			player.getExRoles().map( role => player.getDiscord().roles.add(role));
 			player.getChannel().delete().catch(()=> console.log ("Couldn't delete channel"));
 		}
-		await this.getHost().notifyGameEnd();
+		await this.host.notifyGameEnd();
 		this.server.removeGame(this);
 		this.server.disconnectGuild(this.guild)
 	}
