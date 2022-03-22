@@ -6,7 +6,7 @@ import MessageManager from './messageManagers/messageManager';
 import { GuildMember, Message, TextChannel, Interaction }  from 'discord.js';
 import { createEmbed, createMenu, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
 import { 
-  guide, 
+  welcomeGuide, 
   judge, 
   clock, 
   countDown,
@@ -45,7 +45,7 @@ export default class PlayerChannelManager extends ChannelManager{
     this.discord = player.getDiscord();
 
     this.clockMessageManager = new MessageManager({ channelManager: this,  generator: clock });
-    this.guideMessageManager = new MessageManager({ channelManager: this,  generator: guide });
+    this.guideMessageManager = new MessageManager({ channelManager: this,  generator: welcomeGuide });
     this.judgementMessageManager = new MessageManager({ channelManager: this,  generator: judge });
     this.countDownMessageManager = new MessageManager({ channelManager: this,  generator: countDown });
     this.playersRoleMessageManager = new MessageManager({ channelManager: this,  generator: playerRole });

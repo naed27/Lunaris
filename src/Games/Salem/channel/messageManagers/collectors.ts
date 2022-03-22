@@ -1,4 +1,3 @@
-import guidebook from '../../archive/guide';
 import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
 import { createChoices } from '../../../../Helpers/toolbox';
@@ -29,13 +28,12 @@ export const playerRole: ReactCollector = async ({messageManager}) => {
   collector.on('collect', async (reaction) => updatePageNumber(reaction));
 }
 
-export const guide: ReactCollector = async ({messageManager}) => {
+export const welcome: ReactCollector = async ({messageManager}) => {
   
   const manager = messageManager;
   const message = manager.getMessage();
-  if(!message) return
 
-  manager.setMaxPage(guidebook.pages.length);
+  if(!message) return
 
   const filter = (reaction: MessageReaction, user: User) => !user.bot;
   const collector = message.createReactionCollector({filter,dispose:true});

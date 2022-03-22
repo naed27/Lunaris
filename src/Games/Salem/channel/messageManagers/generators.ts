@@ -1,4 +1,4 @@
-import guidebook from '../../archive/guide';
+import welcome from '../../archive/welcome';
 import { arrayContainsElement, createEmbed } from '../../../../Helpers/toolbox';
 import MessageManager from './messageManager';
 
@@ -32,10 +32,15 @@ export const  judge = ({messageManager}:Params) => {
   return createEmbed({ title, description });
 }
 
-export const guide = ({messageManager}:Params) => {
-  const page = messageManager.getPage();
-  const description = guidebook.pages[page-1];
-  const footer = `Page ${page} of ${guidebook.pages.length}`;
+export const welcomeGuide = ({messageManager}:Params) => {
+  const manager = messageManager;
+  const page = manager.getPage();
+  const playerRole = manager.getPlayer().getRole();
+  const welcomeGuideBook = welcome(playerRole);
+  manager.setMaxPage(welcomeGuideBook.length);
+
+  const description = welcomeGuideBook[page-1];
+  const footer = `Page ${page} of ${welcomeGuideBook.length}`;
   return createEmbed({ description, footer });
 }
 
