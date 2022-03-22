@@ -14,18 +14,6 @@ class Clock{
 	nextPhase: Phase = this.phases.find(phase => phase.name === this.phases[0].next.normal);
 	round: number = 0;
 	
-	//durations
-	lobbyDuration = 90;
-	reportingDuration = 0;
-	discussionDuration = 35;
-	votingDuration = 15;
-	defenseDuration = 15;
-	judgmentDuration = 10;
-	finalWordsDuration = 10;
-	executionDuration = 0;
-	nightDuration = 20;
-	calcDuration = 0;
-
 	//misc
 	peaceCount = 0;
 	maxPeaceCount = 5;
@@ -67,6 +55,8 @@ class Clock{
 		const phase = this.updatePhase();
 
 		switch(phase){
+			case 'Begin Game': await this.playBeginGame(); break
+
 			case 'Reporting': await this.playReporting(); break
 
 			case 'Reporting Calculation': await this.playReportingCalculation(); break
@@ -119,9 +109,12 @@ class Clock{
 	}
 
 	playLobby = async () => {
-		this.increaseTime(this.lobbyDuration);
+		this.increaseTime(this.phase.duration);
+		this.remindTime = this.phase.remindTime;
 		this.unfreezeTime();  
 	}
+
+	playBeginGame = async () => await this.game.gameStart()
 
 	playReporting = async () => {
 		this.round++;
@@ -130,7 +123,6 @@ class Clock{
 		await this.game.getFunctions().messagePlayers(message);
 		await this.game.deathListener();
 		await this.game.rebornListener();
-		this.increaseTime(this.reportingDuration);
 		this.unfreezeTime();  
 	}
 
@@ -162,7 +154,6 @@ class Clock{
 	}
 
 	playDefense = async () => {
-		this.increaseTime(this.defenseDuration);
 		this.game.lockPlayerChannels();
 
 		const message1 = jsonWrap(`The town seems to want to execute ${this.game.getVotedUp().getUsername()}.`);
