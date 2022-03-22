@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessagePayload, TextChannel }  from 'discord.js';
+import { Message, MessageEmbed, MessageOptions, MessagePayload, TextChannel }  from 'discord.js';
 import Game from '../../game';
 import Player from '../../player'
 import PlayerChannelManager from '../playerChannelManager';
@@ -39,9 +39,8 @@ export default class MessageManager{
   getPlayer = () => this.player;
   getMessage = () => this.message;
   setMessage = (a:Message) => this.message = a;
-  editMessage = async (a:MessagePayload) => this.message && await this.message.edit(a).catch(()=> console.log( 'Error: Could not edit message' ));
   applyReactionCollector = (collector: ReactCollector) => collector({messageManager:this});
-  removeInteractionCollector = async () => this.message && await this.message.edit({content: this.linebreak,embeds:[this.cardGenerator({messageManager:this})], components:[]}).catch(()=> console.log( 'Error: Could not edit message' ));
+  removeInteractionCollector = async () => this.message && await this.edit({embeds:[this.cardGenerator({messageManager:this})], components:[]}).catch(()=> console.log( 'Error: Could not edit message' ));
   generateEmbed = (embed?: MessageEmbed) => embed ? embed : this.cardGenerator({messageManager:this})
 
   create = async (messageEmbed?: MessageEmbed ) => {
@@ -80,6 +79,15 @@ export default class MessageManager{
   update = async (messageEmbed?: MessageEmbed) => {
     if(this.message === null || this.message === undefined) return await this.create()
     const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
-    this.message && await this.message.edit({ content: this.linebreak, embeds:[embed] }).catch(() => console.log( 'Error: Could not edit message' ));
+    this.message && await this.edit({ embeds:[embed] }).catch(() => console.log( 'Error: Could not edit message' ));
+  }
+
+  edit = async (a:MessageOptions | string) => {
+    if(!this.message) return
+    const payload: MessageOptions = 
+      typeof a === 'string' ? 
+      {content:`${this.linebreak}${a}`} :
+      {...a, content:`${this.linebreak}`}
+    return await this.message.edit(payload).catch(() => console.log( 'Error: Could not edit message' ));
   }
 }
