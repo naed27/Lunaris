@@ -84,9 +84,6 @@ export const welcome: ReactCollector = async ({messageManager}) => {
     return
   });
 
-  await message.react('⬅️');
-  await message.react('➡️');
-
 }
 
 export const judgement: ReactCollector = async ({messageManager}) => {

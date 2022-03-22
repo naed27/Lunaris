@@ -41,8 +41,7 @@ export const welcomeGuide = ({messageManager}:Params) => {
   manager.setMaxPage(welcomeGuideBook.length);
 
   const description = welcomeGuideBook[page-1];
-  const footer = `Page ${page} of ${welcomeGuideBook.length}`;
-  return createEmbed({ description, footer });
+  return createEmbed({ description });
 }
 
 export const playerRole = ({messageManager}:Params) => {

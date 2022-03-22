@@ -11,14 +11,14 @@ export default ({game, player}:{game: Game, player: Player}) => {
 
     //----------------------------------------
     `**Profile**
-    Name: ${player.getDiscord().user.username}
-    Username: ${player.getUsername()}
-    Status: ${player.getStatus()}
-    Role: ${player.getRole()}
-    Abilities: ${player.getRole().getAbilities().join("\n")}
-    Skill Commands: 
+    \nName: ${player.getDiscord().user.username}
+    \nUsername: ${player.getUsername()}
+    \nStatus: ${player.getStatus()}
+    \nRole: ${player.getRole().getName()}
+    \nAbilities: ${player.getRole().getAbilities().join("\n")}
+    \nSkill Commands: 
     \n${player.getRole().getCommands().map((c)=> c.getGuide()).join("\n")}
-    How to Win: ${player.getRole().getGoals().join("\n")}
+    \nHow to Win: ${player.getRole().getGoals().join("\n")}
     `,
 
     //----------------------------------------
