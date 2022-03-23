@@ -15,6 +15,7 @@ export interface Phase{
   readonly canTalk: boolean,
   readonly shouldLockChannel: boolean,
   readonly remindTime: boolean,
+  readonly showPhaseMenu: boolean,
 }
 
 const phases:readonly Phase[] = [
@@ -25,6 +26,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
+    showPhaseMenu: false,
   },
   {
     name: 'Begin Game',
@@ -33,6 +35,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: true,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Reporting',
@@ -41,6 +44,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: true,
     remindTime: false,
+    showPhaseMenu: false,
   },
   { 
     name: 'Reporting Calculation',
@@ -49,6 +53,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: false,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Discussion',
@@ -57,6 +62,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
+    showPhaseMenu: true,
   },
   {
     name: 'Voting',
@@ -65,6 +71,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: true,
     remindTime: true,
+    showPhaseMenu: true,
   },
   {
     name: 'Defense',
@@ -73,6 +80,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
+    showPhaseMenu: false,
   },
   {
     name: 'Judgement',
@@ -81,6 +89,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: true,
     remindTime: true,
+    showPhaseMenu: false,
   },
   {
     name: 'Judgement Calculation',
@@ -89,6 +98,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: false,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Final Words',
@@ -97,6 +107,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: true,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Execution',
@@ -105,6 +116,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: true,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Execution Calculation',
@@ -113,6 +125,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: false,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Night',
@@ -121,6 +134,7 @@ const phases:readonly Phase[] = [
     canTalk: false,
     shouldLockChannel: false,
     remindTime: true,
+    showPhaseMenu: true,
   },
   {
     name: 'Night Calculation',
@@ -129,6 +143,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: false,
     remindTime: false,
+    showPhaseMenu: false,
   },
   {
     name: 'Game Over',
@@ -137,6 +152,7 @@ const phases:readonly Phase[] = [
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
+    showPhaseMenu: false,
   }
 ]
 
