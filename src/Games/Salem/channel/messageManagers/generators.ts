@@ -35,9 +35,7 @@ export const  judge = ({messageManager}:Params) => {
 export const phaseCommandsMenu = ({messageManager}:Params) => {
   const manager = messageManager;
   const player = manager.getPlayer();
-  const string = `Name: ${player.getUsername()}
-    \nRole: ${player.getRoleName()}
-    \nStatus: ${player.getStatus()}`
+  const string = `Name: ${player.getUsername()}\nRole: ${player.getRoleName()}\nStatus: ${player.getStatus()}`
 
   return createEmbed({ description: string });
 }
