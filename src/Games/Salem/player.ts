@@ -214,6 +214,8 @@ export default class Player{
     return availableCommands;
   }
 
+  getRoleCommands = () => this.getCommands().filter( c => c.getPermission() === 'Role Holder');
+
   sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
