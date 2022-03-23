@@ -116,8 +116,6 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
         }
       }
     }
-
-    game.getPlayers().map(p => p.getChannelManager().manageWelcomeGuide().update());
     return
   });
 
