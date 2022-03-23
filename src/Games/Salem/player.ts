@@ -222,6 +222,7 @@ export default class Player{
   }
 
   getAvailableSkillCommands = () => this.getAvailableCommands().filter( c => c.getType() === 'Skill Command');
+  getAvailableActionCommands = () => this.getAvailableCommands().filter( c => c.getType() === 'Action Command');
 
   sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
