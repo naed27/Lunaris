@@ -255,7 +255,6 @@ export default class Game{
 			await delay(1500);
 		}
 
-		
 		this.players.map((p)=> p.cleanChannel());
 		this.clock.startGame();
 	}
