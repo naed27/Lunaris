@@ -22,19 +22,10 @@ const phases:readonly Phase[] = [
   {
     name: 'Lobby',
     duration: 60,
-    next: { normal: 'Begin Game', special: null },
+    next: { normal: 'Discussion', special: null },
     canTalk: true,
     shouldLockChannel: false,
     remindTime: true,
-    showPhaseMenu: false,
-  },
-  {
-    name: 'Begin Game',
-    duration: 0,
-    next: { normal: 'Discussion', special: null },
-    canTalk: false,
-    shouldLockChannel: true,
-    remindTime: false,
     showPhaseMenu: false,
   },
   {

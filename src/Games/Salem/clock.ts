@@ -56,7 +56,6 @@ class Clock{
 		const phase = this.updatePhase();
 
 		switch(phase){
-			case 'Begin Game': await this.playBeginGame(); break
 
 			case 'Reporting': await this.playReporting(); break
 
@@ -122,8 +121,6 @@ class Clock{
 		this.remindTime = this.phase.remindTime;
 		this.unfreezeTime();  
 	}
-
-	playBeginGame = async () => await this.game.gameStart()
 
 	playReporting = async () => {
 		this.round++;
