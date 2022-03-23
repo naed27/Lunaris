@@ -241,7 +241,6 @@ export default class Game{
 		await this.lockPlayerChannels();
 
 		this.players.map( async (player) => {
-			await player.cleanChannel();
 			const embed = createEmbed({description: `Game will start in ${time}...`})
 			await player.getChannelManager().manageCountDown().create(embed);
 		})
@@ -256,7 +255,8 @@ export default class Game{
 			await delay(1500);
 		}
 
-		this.players.map((p)=> p.getChannelManager().manageCountDown().delete());
+		
+		this.players.map((p)=> p.cleanChannel());
 		this.clock.startGame();
 	}
 	
