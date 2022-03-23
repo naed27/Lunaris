@@ -17,6 +17,11 @@ export const parseCommand = (PREFIX:string,input:string, argsSpliter = ' ') =>{
   return { COMMAND, ARGS };
 }
 
+export const capitalizeFirstLetters = (string:string) => {
+  const words = string.split(' ');
+  return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
 export const stringContainsOnlyDigits = (str: string) => /^\d+$/.test(str);
 
 export const removeWhitespaces = (str: string) => str.replace(/\s/g, '')
