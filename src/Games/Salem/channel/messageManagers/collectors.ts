@@ -59,11 +59,11 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
 
   const menu = []
   
-  if(phaseAdminCommands.length > 0) menu.push('Admin');
-  if(phaseHostCommands.length > 0) menu.push('Host');
-  if(phaseSkillCommands.length > 0) menu.push('Skill');
-  if(phaseActionCommands.length > 0) menu.push('Actions');
-  if(phaseUniversalCommands.length > 0) menu.push('Others');
+  if(phaseAdminCommands.length > 0) menu.push('Admin Commands');
+  if(phaseHostCommands.length > 0) menu.push('Host Commands');
+  if(phaseSkillCommands.length > 0) menu.push('Skill Commands');
+  if(phaseActionCommands.length > 0) menu.push('Actions Commands');
+  if(phaseUniversalCommands.length > 0) menu.push('Universal Commands');
 
   const choices = createChoices({choices:menu})
 
@@ -74,26 +74,26 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
 
   collector.on('collect', async (i) => {
     i.deferUpdate()
-    const chosen = i.customId as 'Back' | 'Host' | 'Admin' | 'Skill' | 'Actions' | 'Others'
+    const chosen = i.customId as 'Back' | 'Host Commands' | 'Admin Commands' | 'Skill Commands' | 'Actions Commands' | 'Universal Commands'
 
     switch(chosen){
-      case 'Host': {
+      case 'Host Commands': {
         manager.editChoices(createChoices({choices:['Back',...phaseHostCommands]}));
         break;
       }
-      case 'Admin': {
+      case 'Admin Commands': {
         manager.editChoices(createChoices({choices:['Back',...phaseAdminCommands]}));
         break;
       }
-      case 'Skill': {
-        manager.editChoices(createChoices({choices:['Back',...phaseSkillCommands]}));
+      case 'Skill Commands': {
+        manager.editChoices(createChoices({choices:['Back',...phaseSkillCommands, 'Cancel']}));
         break;
       }
-      case 'Actions': {
-        manager.editChoices(createChoices({choices:['Back',...phaseActionCommands]}));
+      case 'Actions Commands': {
+        manager.editChoices(createChoices({choices:['Back',...phaseActionCommands, 'Cancel']}));
         break;
       }
-      case 'Others': {
+      case 'Universal Commands': {
         manager.editChoices(createChoices({choices:['Back',...phaseUniversalCommands]}));
         break;
       }
