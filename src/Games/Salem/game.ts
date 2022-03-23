@@ -235,6 +235,7 @@ export default class Game{
 	// ----------------------- Game Starter
 
 	gameStart = async () => {
+		this.players.map(p => p.cleanChannel());
 		const time = 5;
 		this.clock.setSecondsRemaining(time);
 		await this.lockPlayerChannels();

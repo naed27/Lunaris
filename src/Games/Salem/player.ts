@@ -282,7 +282,7 @@ export default class Player{
     this.getChannelManager().manageAvailableCommands().clearCache();
     do {
       fetched = await this.channel.messages.fetch({limit: 100});
-      await this.channel.bulkDelete(fetched);
+      await this.channel.bulkDelete(fetched).catch();
     }
     while(fetched.size >= 2);
   }

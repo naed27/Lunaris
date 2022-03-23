@@ -126,7 +126,6 @@ class Clock{
 
 	playStart = async () => {
 		this.freezeTime();
-		this.game.getPlayers().map(p => p.cleanChannel());
 		this.round = 1;
 		await this.game.unlockPlayerChannels();
 	}

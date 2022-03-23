@@ -94,6 +94,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
         break;
       }
       case 'Universal Commands': {
+        console.log(phaseUniversalCommands)
         manager.editChoices(createChoices({choices:['Back',...phaseUniversalCommands]}));
         break;
       }
