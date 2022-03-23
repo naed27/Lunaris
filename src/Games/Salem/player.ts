@@ -272,6 +272,7 @@ export default class Player{
   cleanChannel = async () => {
     let fetched: Collection<string, Message<boolean>>;
     this.getChannelManager().manageWelcomeGuide().clearCache();
+    this.getChannelManager().managePhaseMenu().clearCache();
     this.getChannelManager().manageClock().clearCache();
     this.getChannelManager().manageCountDown().clearCache();
     this.getChannelManager().manageJudgement().clearCache();
