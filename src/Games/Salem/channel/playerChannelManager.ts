@@ -207,10 +207,10 @@ const processAction = async ({ command, game, player, ARGS }:{
 const setDefaultTarget = async ({ command, game, player }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
   const defaultTarget = command.defaultTarget({game: game, user: player});
-    if(defaultTarget!==null && defaultTarget !== undefined && defaultTarget.length>0){
-      defaultTarget[0] && player.setFirstActionTarget(defaultTarget[0])
-      defaultTarget[1] && player.setSecondActionTarget(defaultTarget[1])
-    } 
+  if(defaultTarget!==null && defaultTarget !== undefined && defaultTarget.length>0){
+    defaultTarget[0] && player.setFirstActionTarget(defaultTarget[0])
+    defaultTarget[1] && player.setSecondActionTarget(defaultTarget[1])
+  } 
 }
 
 const noTargetPopUp = async ({ command, game, player, ARGS }:{

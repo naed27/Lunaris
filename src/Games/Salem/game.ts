@@ -178,7 +178,10 @@ export default class Game{
 			const actionVisitsTarget = command.visitsTarget({ game, performer })
 
 			if(	
-					command.getTargetCount() === 1  
+					command.getTargetCount() === 0  
+					&& firstTarget !== 'None'
+					&& firstTarget.isNotJailed() 
+					|| command.getTargetCount() === 1  
 					&& firstTarget !== 'None'
 					&& firstTarget.isNotJailed() 
 					|| command.getTargetCount() === 2  
