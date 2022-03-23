@@ -190,12 +190,12 @@ export default class Player{
       const stocks = command.getStocks();
       const playerStatus = this.getStatus();
       const commandStatus = command.getRequiredStatus();
-      const permission = command.getPermission()
+      const commandType = command.getType()
 
       const hasStocks = stocks > 0;
-      const isHostCommand = permission === 'Host';
-      const isAdminCommand = permission === 'Admin';
-      const isPlayerCommand = permission === 'Role Holder';
+      const isHostCommand = commandType === 'Host Command';
+      const isAdminCommand = commandType === 'Admin Command';
+      const isPlayerCommand = commandType === 'Skill Command';
       const matchCurrentPhase = phases.includes(phase.name);
       const matchPlayerStatus = commandStatus
         .map((status) => status.toLowerCase())
@@ -214,7 +214,7 @@ export default class Player{
     return availableCommands;
   }
 
-  getRoleCommands = () => this.getCommands().filter( c => c.getPermission() === 'Role Holder');
+  getRoleCommands = () => this.getCommands().filter( c => c.getType() === 'Skill Command');
 
   sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))

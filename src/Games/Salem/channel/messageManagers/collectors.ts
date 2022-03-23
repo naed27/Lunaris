@@ -1,6 +1,6 @@
 import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
-import { createChoices } from '../../../../Helpers/toolbox';
+import { capitalizeFirstLetters, createChoices } from '../../../../Helpers/toolbox';
 
 interface Params { messageManager: MessageManager }
 
@@ -26,6 +26,30 @@ export const playerRole: ReactCollector = async ({messageManager}) => {
 
   collector.on('remove', async (reaction) => updatePageNumber(reaction));
   collector.on('collect', async (reaction) => updatePageNumber(reaction));
+}
+
+export const phaseActions: ReactCollector = async ({messageManager}) => {
+  const manager = messageManager;
+  const game = manager.getGame();
+  const player = manager.getPlayer();
+  const message = manager.getMessage();
+  const embed = manager.generateEmbed();
+
+  if(!message) return
+
+  const roleCommands = player.getRoleCommands();
+  const roleCommandNames = roleCommands.map(c => capitalizeFirstLetters(c.name));
+
+  const menu = [
+    'See Profile',
+    'Players List',
+    'Phase Time',
+  ]
+  
+  if(roleCommands.length > 0) menu.push('See Skills');
+
+  const choices = createChoices({choices:['See Profile', 'Players List', ...roleCommandNames]})
+
 }
 
 export const welcome: ReactCollector = async ({messageManager}) => {

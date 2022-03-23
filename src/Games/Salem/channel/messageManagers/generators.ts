@@ -64,7 +64,7 @@ export const phaseCommands = ({messageManager}:Params) => {
   const title =  `Your ${phaseGrammar} Commands`;
   const description = player.getRole().getCommands().map((command)=>{
     const commandHasAStock = command.getStocks() > 0;
-    const commandIsRoleCommand = command.getPermission() === 'Role Holder';
+    const commandIsRoleCommand = command.getType() === 'Skill Command';
     const commandAvailableDuringPhase = arrayContainsElement(command.getPhases(),phase);
     const commandMatchesPlayerStatus = arrayContainsElement(command.getRequiredStatus(), playerStatus);
     if( commandHasAStock && commandIsRoleCommand && 
@@ -90,12 +90,12 @@ export const availableCommands = ({messageManager}:Params)=>{
   const availableCommands = allCommands.filter((c)=>{
     const availableDuringPhase = arrayContainsElement(c.getPhases(),phase.name);
     if(!availableDuringPhase) return false
-    const permission = c.getPermission();
+    const permission = c.getType();
     switch(permission){
-      case 'Player': return true
-      case 'Host': return game.isHost(player)
-      case 'Admin': return game.isAdmin(player)
-      case 'Role Holder': return (c.getStocks()>0 && arrayContainsElement(c.getRequiredStatus(),playerStatus))
+      case 'Universal Command': return true
+      case 'Host Command': return game.isHost(player)
+      case 'Admin Command': return game.isAdmin(player)
+      case 'Skill Command': return (c.getStocks()>0 && arrayContainsElement(c.getRequiredStatus(),playerStatus))
     }
   })
  
