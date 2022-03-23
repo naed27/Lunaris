@@ -122,6 +122,11 @@ class Clock{
 		this.unfreezeTime();  
 	}
 
+	playStart = async () => {
+		this.round = 1;
+		this.game.unlockPlayerChannels();
+	}
+
 	playReporting = async () => {
 		this.round++;
 		this.game.lockPlayerChannels();
@@ -312,11 +317,6 @@ class Clock{
 		await this.game.quit();
 	}
 
-	startGame = async () => {
-		this.round = 1;
-		this.game.unlockPlayerChannels();
-		this.processPhase();
-	}
 
 	increaseTime(seconds:number){
 		this.hourChange = true;
