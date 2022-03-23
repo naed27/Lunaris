@@ -81,7 +81,7 @@ export default class PlayerChannelManager extends ChannelManager{
       if(MESSAGE.startsWith(PREFIX)){
 
         const { COMMAND } = parseCommand( PREFIX, MESSAGE );  
-        const playerCommands = this.player.getCommands();
+        const playerCommands = this.player.getAvailableCommands();
         const searchedCommands = getStringSearchResults(playerCommands.map(({name}) => name ), COMMAND);
 
         if(searchedCommands.length > 1) {

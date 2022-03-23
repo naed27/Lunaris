@@ -177,7 +177,14 @@ export default class Player{
     this.getChannelManager().managePhaseCommands().delete();
   }
 
-  getCommands = () => { 
+  getCommands = () => this.getRole().getCommands();
+  getHostCommands = () => this.getCommands().map(c => c.getType() === 'Host Command');
+  getAdminCommands = () => this.getCommands().map(c => c.getType() === 'Admin Command');
+  getSkillCommands = () => this.getCommands().map(c => c.getType() === 'Skill Command');
+  getActionCommands = () => this.getCommands().map(c => c.getType() === 'Action Command');
+  getUniversalCommands = () => this.getCommands().map(c => c.getType() === 'Universal Command');
+
+  getAvailableCommands = () => { 
     
     const phase = this.game.getClock().getPhase();
     
@@ -214,7 +221,7 @@ export default class Player{
     return availableCommands;
   }
 
-  getRoleCommands = () => this.getCommands().filter( c => c.getType() === 'Skill Command');
+  getAvailableSkillCommands = () => this.getAvailableCommands().filter( c => c.getType() === 'Skill Command');
 
   sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
   sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))

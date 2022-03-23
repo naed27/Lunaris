@@ -37,7 +37,7 @@ export const phaseActions: ReactCollector = async ({messageManager}) => {
 
   if(!message) return
 
-  const roleCommands = player.getRoleCommands();
+  const roleCommands = player.getAvailableSkillCommands();
   const roleCommandNames = roleCommands.map(c => capitalizeFirstLetters(c.name));
 
   const menu = [
