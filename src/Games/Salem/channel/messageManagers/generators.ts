@@ -117,7 +117,11 @@ export const countDown = ({ messageManager }:Params) => {
   const clock = messageManager.getGame().getClock();
   const phase = clock.getPhase();
   const secondsRemaining = clock.getSecondsRemaining();
-  const description = `${phase.name} will end in ${secondsRemaining}...`;
+  const description = 
+    phase.name === 'Lobby' ? 
+    `Game will start in ${secondsRemaining}...` : 
+    `${phase.name} will end in ${secondsRemaining}...`;
+
   return createEmbed({ description });
 }
 

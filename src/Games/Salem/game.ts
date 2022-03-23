@@ -236,27 +236,8 @@ export default class Game{
 
 	gameStart = async () => {
 		const time = 5;
-		this.clock.freezeTime();
-		this.clock.setSecondsRemaining(0);
+		this.clock.setSecondsRemaining(time);
 		await this.lockPlayerChannels();
-
-		this.players.map( async (player) => {
-			const embed = createEmbed({description: `Game will start in ${time}...`})
-			await player.getChannelManager().manageCountDown().create(embed);
-		})
-		
-		await delay(1500);
-
-		for (let i = time-1;i>0;i--){
-			this.players.map(player =>{
-				const embed = createEmbed({description: `Game will start in ${i}...`});
-				player.getChannelManager().manageCountDown().update(embed);
-			});
-			await delay(1500);
-		}
-
-		this.players.map((p)=> p.cleanChannel());
-		this.clock.startGame();
 	}
 	
 	// ----------------------- Setters & Getters
