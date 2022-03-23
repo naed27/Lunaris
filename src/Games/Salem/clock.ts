@@ -1,4 +1,5 @@
 import { createEmbed, jsonWrap, delay } from '../../Helpers/toolbox';
+import { phaseCommandsButtons } from './channel/messageManagers/collectors';
 import Game from './game'
 import Phases, { Phase, PhasePossibilities } from './phases'
 
@@ -105,8 +106,10 @@ class Clock{
 
 		this.game.getPlayers().map( async (player)=> {
 			await player.getChannelManager().managePhaseMenu().delete()
-			if ( this.phase.showPhaseMenu )
-				player.getChannelManager().managePhaseMenu().create()
+			if ( this.phase.showPhaseMenu ){
+				await player.getChannelManager().managePhaseMenu().create()
+				player.getChannelManager().managePhaseMenu().applyReactionCollector(phaseCommandsButtons);
+			}
 		})
 		
 		this.nextPhase = this.findPhase(this.phase.next.normal);
