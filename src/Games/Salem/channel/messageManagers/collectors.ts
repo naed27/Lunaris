@@ -39,7 +39,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
 
   if(!message) return
 
-  const availableCommands = player.getAvailableSkillCommands();
+  const availableCommands = player.getAvailableCommands();
   const phaseSkillCommands = []
   const phaseHostCommands  = []
   const phaseAdminCommands  = []
@@ -74,30 +74,33 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
 
   collector.on('collect', async (i) => {
     i.deferUpdate()
-    const chosen = i.customId as 'Host' | 'Admin' | 'Skill' | 'Actions' | 'Others'
+    const chosen = i.customId as 'Back' | 'Host' | 'Admin' | 'Skill' | 'Actions' | 'Others'
 
     switch(chosen){
       case 'Host': {
-        manager.editChoices(createChoices({choices:phaseHostCommands}));
+        manager.editChoices(createChoices({choices:['Back',...phaseHostCommands]}));
         break;
       }
       case 'Admin': {
-        manager.editChoices(createChoices({choices:phaseAdminCommands}));
+        manager.editChoices(createChoices({choices:['Back',...phaseAdminCommands]}));
         break;
       }
       case 'Skill': {
-        manager.editChoices(createChoices({choices:phaseSkillCommands}));
+        manager.editChoices(createChoices({choices:['Back',...phaseSkillCommands]}));
         break;
       }
       case 'Actions': {
-        manager.editChoices(createChoices({choices:phaseActionCommands}));
+        manager.editChoices(createChoices({choices:['Back',...phaseActionCommands]}));
         break;
       }
       case 'Others': {
-        manager.editChoices(createChoices({choices:phaseUniversalCommands}));
+        manager.editChoices(createChoices({choices:['Back',...phaseUniversalCommands]}));
         break;
       }
-
+      case 'Back': {
+        manager.editChoices(choices);
+        break;
+      }
       default: {
         const command = availableCommands.find(c => c.name === i.customId.toLowerCase());
         const menuParams = { ARGS: [], command, game, player }
