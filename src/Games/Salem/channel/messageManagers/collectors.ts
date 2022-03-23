@@ -1,6 +1,8 @@
 import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
 import { capitalizeFirstLetters, createChoices } from '../../../../Helpers/toolbox';
+import responses from '../../archive/responses';
+import { doubleTargetMenu, noTargetPopUp, singleTargetMenu } from '../commandCallHandlers';
 
 interface Params { messageManager: MessageManager }
 
@@ -28,7 +30,7 @@ export const playerRole: ReactCollector = async ({messageManager}) => {
   collector.on('collect', async (reaction) => updatePageNumber(reaction));
 }
 
-export const phaseActions: ReactCollector = async ({messageManager}) => {
+export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => {
   const manager = messageManager;
   const game = manager.getGame();
   const player = manager.getPlayer();
@@ -37,18 +39,87 @@ export const phaseActions: ReactCollector = async ({messageManager}) => {
 
   if(!message) return
 
-  const roleCommands = player.getAvailableSkillCommands();
-  const roleCommandNames = roleCommands.map(c => capitalizeFirstLetters(c.name));
+  const availableCommands = player.getAvailableSkillCommands();
+  const phaseSkillCommands = []
+  const phaseHostCommands  = []
+  const phaseAdminCommands  = []
+  const phaseActionCommands  = []
+  const phaseUniversalCommands  = []
 
-  const menu = [
-    'See Profile',
-    'Players List',
-    'Phase Time',
-  ]
+  availableCommands.map((command) => {
+    const commandType = command.getType();
+    switch(commandType){
+      case 'Host Command': phaseHostCommands.push(capitalizeFirstLetters(command.name)); break;
+      case 'Admin Command': phaseAdminCommands.push(capitalizeFirstLetters(command.name)); break;
+      case 'Skill Command': phaseSkillCommands.push(capitalizeFirstLetters(command.name)); break;
+      case 'Action Command': phaseActionCommands.push(capitalizeFirstLetters(command.name)); break;
+      case 'Universal Command': phaseUniversalCommands.push(capitalizeFirstLetters(command.name)); break;
+    }
+  })
+
+  const menu = []
   
-  if(roleCommands.length > 0) menu.push('See Skills');
+  if(phaseAdminCommands.length > 0) menu.push('Admin');
+  if(phaseHostCommands.length > 0) menu.push('Host');
+  if(phaseSkillCommands.length > 0) menu.push('Skill');
+  if(phaseActionCommands.length > 0) menu.push('Actions');
+  if(phaseUniversalCommands.length > 0) menu.push('Others');
 
-  const choices = createChoices({choices:['See Profile', 'Players List', ...roleCommandNames]})
+  const choices = createChoices({choices:menu})
+
+  manager.editChoices(choices);
+
+  const filter = (i:Interaction) => i.user.id === player.getId();
+  const collector = message.createMessageComponentCollector({ filter, componentType: 'BUTTON' });
+
+  collector.on('collect', async (i) => {
+    i.deferUpdate()
+    const chosen = i.customId as 'Host' | 'Admin' | 'Skill' | 'Actions' | 'Others'
+
+    switch(chosen){
+      case 'Host': {
+        manager.editChoices(createChoices({choices:phaseHostCommands}));
+        break;
+      }
+      case 'Admin': {
+        manager.editChoices(createChoices({choices:phaseAdminCommands}));
+        break;
+      }
+      case 'Skill': {
+        manager.editChoices(createChoices({choices:phaseSkillCommands}));
+        break;
+      }
+      case 'Actions': {
+        manager.editChoices(createChoices({choices:phaseActionCommands}));
+        break;
+      }
+      case 'Others': {
+        manager.editChoices(createChoices({choices:phaseUniversalCommands}));
+        break;
+      }
+
+      default: {
+        const command = availableCommands.find(c => c.name === i.customId.toLowerCase());
+        const menuParams = { ARGS: [], command, game, player }
+        player.endAllActionInteractions();
+        if(command.targetCount===0){
+          await noTargetPopUp(menuParams)
+        }else{
+          if(command.hasMenu()){
+            if(command.targetCount===1) 
+              player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+            if(command.targetCount===2) 
+              player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+          }else{
+            player.alert(responses.commandRequiresTarget(command))
+          }
+        }
+      }
+    }
+
+    game.getPlayers().map(p => p.getChannelManager().manageWelcomeGuide().update());
+    return
+  });
 
 }
 
@@ -64,7 +135,7 @@ export const welcome: ReactCollector = async ({messageManager}) => {
 
   const choices = createChoices({choices:['See Profile', 'Change Name', "I'm Ready!"]})
 
-  message.edit({ embeds:[embed], components:[choices] });
+  manager.edit({ embeds:[embed], components:[choices] });
 
   const filter = (i:Interaction) => i.user.id === player.getId();
   const collector = message.createMessageComponentCollector({ filter, componentType: 'BUTTON' });

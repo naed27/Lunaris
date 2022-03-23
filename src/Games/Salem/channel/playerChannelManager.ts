@@ -4,7 +4,7 @@ import responses from '../archive/responses';
 import ChannelManager from './channelManager';
 import MessageManager from './messageManagers/messageManager';
 import { GuildMember, Message, TextChannel, Interaction }  from 'discord.js';
-import { createMenu, getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
+import { getStringSearchResults, parseCommand } from '../../../Helpers/toolbox';
 import { 
   welcomeGuide, 
   judge, 
@@ -12,10 +12,11 @@ import {
   countDown,
   playerRole, 
   playerList, 
-  phaseCommands, 
-  availableCommands } from './messageManagers/generators';
-import Action from '../action';
-import Command from '../command';
+  phaseCommandsList, 
+  availableCommandsList, 
+  phaseCommandsMenu
+} from './messageManagers/generators';
+import { doubleTargetMenu, findOneTargetUsingArgs, findTwoTargetsUsingArgs, noTargetPopUp, noTargetUsingArgs, singleTargetMenu } from './commandCallHandlers';
 
 interface ConstructorParams{
   game: Game, 
@@ -30,6 +31,7 @@ export default class PlayerChannelManager extends ChannelManager{
   readonly discord: GuildMember;
 
   readonly clockMessageManager: MessageManager;
+  readonly phaseMessageManager: MessageManager;
   readonly welcomeMessageManager: MessageManager;
   readonly judgementMessageManager: MessageManager;
   readonly countDownMessageManager: MessageManager;
@@ -45,13 +47,14 @@ export default class PlayerChannelManager extends ChannelManager{
     this.discord = player.getDiscord();
 
     this.clockMessageManager = new MessageManager({ channelManager: this,  generator: clock });
+    this.phaseMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommandsMenu });
     this.judgementMessageManager = new MessageManager({ channelManager: this,  generator: judge });
     this.welcomeMessageManager = new MessageManager({ channelManager: this,  generator: welcomeGuide });
     this.countDownMessageManager = new MessageManager({ channelManager: this,  generator: countDown });
     this.playersRoleMessageManager = new MessageManager({ channelManager: this,  generator: playerRole });
     this.playersListMessageManager = new MessageManager({ channelManager: this,  generator: playerList });
-    this.phaseCommandsMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommands });
-    this.availableCommandsMessageManager = new MessageManager({ channelManager: this,  generator: availableCommands });
+    this.phaseCommandsMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommandsList });
+    this.availableCommandsMessageManager = new MessageManager({ channelManager: this,  generator: availableCommandsList });
  
   }
 
@@ -174,203 +177,4 @@ export default class PlayerChannelManager extends ChannelManager{
       }
     })
   }
-}
-
-const processAction = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-
-  const performer = command.performer({game: game, user: player});
-
-  const params = {
-    game: game,
-    args: ARGS,
-    user: player,
-    command: command,
-    performer: performer,
-    firstTarget: player.getFirstActionTarget(),
-    secondTarget: player.getSecondActionTarget(),
-  }
-  
-  if(command.priority === 0){
-    await command.run(params)
-    return
-  }
-
-  game.pushAction(new Action(params))
-
-  const response = await command.callResponse(params)
-
-  if(typeof response === 'string') 
-    player.sendMarkDownToChannel(response)
-}
-
-const setDefaultTarget = async ({ command, game, player }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-  const defaultTarget = command.defaultTarget({game: game, user: player});
-  if(defaultTarget!==null && defaultTarget !== undefined && defaultTarget.length>0){
-    defaultTarget[0] && player.setFirstActionTarget(defaultTarget[0])
-    defaultTarget[1] && player.setSecondActionTarget(defaultTarget[1])
-  } 
-}
-
-const noTargetPopUp = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-    setDefaultTarget({command, game, player, ARGS});
-    await processAction({ command, game, player, ARGS });
-}
-
-const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) =>{
-
-  const targetables = command.targetables({game: game, user: user});
-
-  const menu = createMenu({
-    customId: `${user.getId()}_${command.name}_menu`,
-    placeHolder: `Player Picker`,
-    choices: targetables.map((player) => ({ label:player.getUsername(), value: player.getId() }))
-  })
-  const address = await user.sendEmbedWithMenu({
-    description: `Choose who to ${command.name}.`,
-    menu
-  });
-
-  if(!address) return
-
-  const filter = (i:Interaction) => i.user.id === user.getId();
-  const collector = address.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
-  
-  collector.on('collect',async (i)=>{
-    i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
-    user.setFirstActionTarget(target);
-    processAction({ command, game, player: user, ARGS });
-    return
-  })
-
-  collector.on('end',async (i)=>{
-    address && address.delete();
-    return
-  })
-
-  return [collector];
-}
-
-const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) =>{
-
-  const targetables = command.targetables({game: game, user: user});
-
-  const menu = createMenu({
-    customId: `${user.getId()}_${command.name}_menu_one`,
-    placeHolder: `Player Picker`,
-    choices: targetables.map((player) => ({ label:player.getUsername(), value: player.getId() }))
-  })
-
-  const addressOne = await user.sendEmbedWithMenu({
-    description: `Choose first target to ${command.name}.`,
-    menu
-  });
-
-  const addressTwo = await user.sendEmbedWithMenu({
-    description: `Choose second target to ${command.name}.`,
-    menu
-  });
-
-  if(!addressOne || !addressTwo) return
-
-  const filter = (i:Interaction) => i.user.id === user.getId();
-  const collectorOne = addressOne.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
-  const collectorTwo = addressTwo.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
-  
-  collectorOne.on('collect',async (i)=>{
-    i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
-    user.setFirstActionTarget(target);
-    preProcessAction();
-    return
-  })
-
-  collectorOne.on('end',async (i)=>{
-    addressOne.delete();
-    return
-  })
-
-  collectorTwo.on('collect',async (i)=>{
-    i.deferUpdate();
-    const target = game.getPlayers().find((p) =>p. getId() === i.values[0]) || undefined;
-    user.setSecondActionTarget(target);
-    preProcessAction();
-    return
-  })
-
-  collectorTwo.on('end',async (i)=>{
-    addressTwo.delete();
-    return
-  })
-
-  function preProcessAction (){
-    if(user.getActionTargets().length!==2) return;
-    processAction({ command, game, player: user, ARGS });
-  }
-
-  return [collectorOne, collectorTwo];
-}
-
-const noTargetUsingArgs = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-  setDefaultTarget({command, game, player, ARGS});
-  if(ARGS.length > 0 && !command.hasArguments())
-    await player.alert(`(The '${command.getName()}' command does not need any targets.)`);
-  processAction({ command, game, player, ARGS });
-}
-
-const findOneTargetUsingArgs = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-
-  if(ARGS.length === 0 || (ARGS.length !== 1 && !command.hasArguments)) 
-    return player.alert(responses.actionRequireOneTarget);
-
-  const [targetKeyword, ...args ] = ARGS;
-  const targetables = command.targetables({game: game, user: player});
-  const searchResults = game.getFunctions().searchPlayerInChoices(targetables,targetKeyword)
-
-  if(searchResults.length===0)
-    return player.alert(responses.playerWithKeywordNotFound(targetKeyword));
-
-  if(searchResults.length>1)
-    return player.alert(responses.multiplePlayersFound({searchResults}));
-
-  player.setFirstActionTarget(searchResults[0]);
-  processAction({ command, game, player, ARGS: args });
-}
-
-const findTwoTargetsUsingArgs = async ({ command, game, player, ARGS }:{
-  command: Command, game: Game, player: Player, ARGS: string[] }) => {
-  
-  if(ARGS.length === 0 || (ARGS.length !== 2 && !command.hasArguments)) 
-    return player.alert(responses.actionRequireTwoTargets);
-
-  const [keywordOne, keywordTwo, ...args ] = ARGS;
-
-  const targetables = command.targetables({game: game, user: player});
-  const firstSearchResults = game.getFunctions().searchPlayerInChoices(targetables,keywordOne)
-  const secondSearchResults = game.getFunctions().searchPlayerInChoices(targetables,keywordTwo)
-  
-  if(firstSearchResults.length === 0 || secondSearchResults.length === 0){
-    if(firstSearchResults.length === 0)  player.alert(responses.playerWithKeywordNotFound(keywordOne));
-    if(secondSearchResults.length === 0)  player.alert(responses.playerWithKeywordNotFound(keywordTwo));
-    return
-  }
-
-  if(firstSearchResults.length > 1 || secondSearchResults.length > 1){
-    if(firstSearchResults.length > 1)
-      player.alert(responses.multiplePlayersFound({searchResults: firstSearchResults}));
-    if(secondSearchResults.length > 1)
-      player.alert(responses.multiplePlayersFound({searchResults: secondSearchResults}));
-    return
-  }
-    
-  player.setFirstActionTarget(firstSearchResults[0]);
-  player.setSecondActionTarget(secondSearchResults[0]);
-  processAction({ command, game, player, ARGS: args });
 }

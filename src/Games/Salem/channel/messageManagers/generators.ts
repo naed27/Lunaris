@@ -32,6 +32,16 @@ export const  judge = ({messageManager}:Params) => {
   return createEmbed({ title, description });
 }
 
+export const phaseCommandsMenu = ({messageManager}:Params) => {
+  const manager = messageManager;
+  const player = manager.getPlayer();
+  const string = `Name: ${player.getUsername()}
+    \nRole: ${player.getRoleName()}
+    \nStatus: ${player.getStatus()}`
+
+  return createEmbed({ description: string });
+}
+
 export const welcomeGuide = ({messageManager}:Params) => {
   const manager = messageManager;
   const game = manager.getGame();
@@ -54,7 +64,7 @@ export const playerRole = ({messageManager}:Params) => {
   return createEmbed({ title,description,footer });
 }
 
-export const phaseCommands = ({messageManager}:Params) => {
+export const phaseCommandsList = ({messageManager}:Params) => {
   const game = messageManager.getGame();
   const prefix = game.getPrefix();
   const phase = game.getClock().getPhase().name;
@@ -79,7 +89,7 @@ export const phaseCommands = ({messageManager}:Params) => {
   return createEmbed({ title,description });
 }
 
-export const availableCommands = ({messageManager}:Params)=>{
+export const availableCommandsList = ({messageManager}:Params)=>{
 
   const game = messageManager.getGame();
   const phase = game.getClock().getPhase();
