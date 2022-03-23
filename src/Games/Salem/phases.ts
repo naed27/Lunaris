@@ -30,7 +30,7 @@ const phases:readonly Phase[] = [
   },
   {
     name: 'Start',
-    duration: 60,
+    duration: 0,
     next: { normal: 'Discussion', special: null },
     canTalk: false,
     shouldLockChannel: false,
