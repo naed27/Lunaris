@@ -57,6 +57,8 @@ class Clock{
 
 		switch(phase){
 
+			case 'Start': await this.playStart(); break;
+
 			case 'Reporting': await this.playReporting(); break
 
 			case 'Reporting Calculation': await this.playReportingCalculation(); break
@@ -123,8 +125,10 @@ class Clock{
 	}
 
 	playStart = async () => {
+		this.freezeTime();
+		this.game.getPlayers().map(p => p.cleanChannel());
 		this.round = 1;
-		this.game.unlockPlayerChannels();
+		await this.game.unlockPlayerChannels();
 	}
 
 	playReporting = async () => {
@@ -134,7 +138,6 @@ class Clock{
 		await this.game.getFunctions().messagePlayers(message);
 		await this.game.deathListener();
 		await this.game.rebornListener();
-		this.unfreezeTime();  
 	}
 
 	playDiscussion = async () =>{
@@ -155,13 +158,11 @@ class Clock{
 			const message2 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
 			await this.game.getFunctions().messagePlayers(message2);
 		}
-		this.unfreezeTime();  
 	}
 
 	playVoting  = async () => {
 		const message = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s\nType ".vote" to vote someone!`);
 		await this.game.getFunctions().messagePlayers(message);
-		this.unfreezeTime();
 	}
 
 	playDefense = async () => {
@@ -183,20 +184,17 @@ class Clock{
 		await this.game.getFunctions().messagePlayers(message4);
 		this.game.getVotedUp().getChannelManager().unlock();
 
-		this.unfreezeTime(); 
 	}
 
 	playJudgement = async () => {
 		const message = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
 		await this.game.getFunctions().messagePlayers(message);
 		this.game.getFunctions().setupJudgements();
-		this.unfreezeTime();
 	}
 
 	playFinalWords = async () => {
 		const message = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.\nDuration: ${this.secondsRemaining}s`);
 		await this.game.getFunctions().messagePlayers(message);
-		this.unfreezeTime(); 
 	}
 
 	playExecution = async () => {
@@ -225,7 +223,6 @@ class Clock{
 		await this.game.getVotedUp().playDeath();
 		await this.game.updatePlayerLists();
 		this.game.listenForWinners();
-		this.unfreezeTime();
 	}
 
 	playNight = async () =>{
@@ -241,8 +238,6 @@ class Clock{
 
 		this.game.processActions();
 		await this.game.unlockPlayerChannels();
-
-		this.unfreezeTime(); 
 	}
 
 	playNightCalculation = async () => {
