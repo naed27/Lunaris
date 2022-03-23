@@ -31,7 +31,7 @@ export default class PlayerChannelManager extends ChannelManager{
   readonly discord: GuildMember;
 
   readonly clockMessageManager: MessageManager;
-  readonly phaseMessageManager: MessageManager;
+  readonly phaseMenuManager: MessageManager;
   readonly welcomeMessageManager: MessageManager;
   readonly judgementMessageManager: MessageManager;
   readonly countDownMessageManager: MessageManager;
@@ -47,7 +47,7 @@ export default class PlayerChannelManager extends ChannelManager{
     this.discord = player.getDiscord();
 
     this.clockMessageManager = new MessageManager({ channelManager: this,  generator: clock });
-    this.phaseMessageManager = new MessageManager({ channelManager: this,  generator: phaseCommandsMenu });
+    this.phaseMenuManager = new MessageManager({ channelManager: this,  generator: phaseCommandsMenu });
     this.judgementMessageManager = new MessageManager({ channelManager: this,  generator: judge });
     this.welcomeMessageManager = new MessageManager({ channelManager: this,  generator: welcomeGuide });
     this.countDownMessageManager = new MessageManager({ channelManager: this,  generator: countDown });
@@ -62,6 +62,7 @@ export default class PlayerChannelManager extends ChannelManager{
   getDiscord = () => this.discord;
 
   manageClock = () => this.clockMessageManager;
+  managePhaseMenu = () => this.phaseMenuManager;
   manageWelcomeGuide = () => this.welcomeMessageManager;
   manageJudgement = () => this.judgementMessageManager;
   manageCountDown = () => this.countDownMessageManager;
