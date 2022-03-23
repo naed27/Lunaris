@@ -102,6 +102,12 @@ class Clock{
 			this.game.lockPlayerChannels();
 		else 
 			this.game.unlockPlayerChannels();
+
+		this.game.getPlayers().map( async (player)=> {
+			await player.getChannelManager().managePhaseMenu().delete()
+			if ( this.phase.showPhaseMenu )
+				player.getChannelManager().managePhaseMenu().create()
+		})
 		
 		this.nextPhase = this.findPhase(this.phase.next.normal);
 		
