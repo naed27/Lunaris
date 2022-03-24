@@ -55,11 +55,9 @@ export const welcomeGuide = ({messageManager}:Params) => {
 export const playerRole = ({messageManager}:Params) => {
   const page = messageManager.getPage();
   const player = messageManager.getPlayer()
-  const isFirstPage = page === 1;
-  const title       = isFirstPage ? `` : `${player.getRole().getName()}`;
-  const description = isFirstPage ? `Tap the 🔱 to see your role!` : `${player.getRole().getGoals()}`;
-  const footer      = isFirstPage ? `` : `Don't share this info with anyone unless you trust them!`;
-  return createEmbed({ title,description,footer });
+  
+  const string = `Your role is **${player.getRoleName()}**.\n\nGoal: ${player.getRole().getGoals().join(``)}`
+  return createEmbed({ description: string });
 }
 
 export const phaseCommandsList = ({messageManager}:Params) => {
@@ -108,8 +106,8 @@ export const availableCommandsList = ({messageManager}:Params)=>{
   })
  
   const title = `Your Commands`;
-  const footer = `You can shorten the commands if you hate typing.`
-  const description = availableCommands.map((command)=>command.getName()).join(`\n`);
+  const footer = `(Note: Commands can be shortened.)`
+  const description = availableCommands.map((command)=>`.${command.getName()}`).join(`\n`);
   return createEmbed({title,description,footer});
 }
 
