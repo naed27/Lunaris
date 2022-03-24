@@ -95,9 +95,9 @@ export default class MessageManager{
     return await this.message.edit(payload).catch(() => console.log( 'Error: Could not edit message' ));
   }
 
-  editChoices = async (choices:MessageActionRow) => {
+  editChoices = async (components:MessageActionRow[] ) => {
     if(!this.message) return
-    return await this.message.edit({components:[choices]}).catch(() => console.log( 'Error: Could not edit message' ));
+    return await this.message.edit({components:[...components]}).catch(() => console.log( 'Error: Could not edit message' ));
   }
 
 }

@@ -1,6 +1,6 @@
 import { Interaction, MessageReaction, User } from 'discord.js';
 import MessageManager from './messageManager';
-import { capitalizeFirstLetters, createChoices } from '../../../../Helpers/toolbox';
+import { capitalizeFirstLetters, createChoices, createMenu } from '../../../../Helpers/toolbox';
 import responses from '../../archive/responses';
 import { doubleTargetMenu, noTargetPopUp, singleTargetMenu } from '../commandCallHandlers';
 
@@ -67,61 +67,87 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
 
   const choices = createChoices({choices:menu})
 
-  manager.editChoices(choices);
+  manager.editChoices([choices]);
 
-  const filter = (i:Interaction) => i.user.id === player.getId();
-  const collector = message.createMessageComponentCollector({ filter, componentType: 'BUTTON' });
+  const buttonFilter = (i:Interaction) => i.user.id === player.getId();
+  const buttonCollector = message.createMessageComponentCollector({ filter: buttonFilter, componentType: 'BUTTON' });
 
-  collector.on('collect', async (i) => {
+  buttonCollector.on('collect', async (i) => {
     i.deferUpdate()
-    const chosen = i.customId as 'Back' | 'Host Commands' | 'Admin Commands' | 'Skill Commands' | 'Actions Commands' | 'Universal Commands'
+    const chosen = i.customId as 'Host Commands' | 'Admin Commands' | 'Skill Commands' | 'Actions Commands' | 'Universal Commands'
 
     switch(chosen){
       case 'Host Commands': {
-        manager.editChoices(createChoices({choices:['Back',...phaseHostCommands]}));
+        const menu = createMenu({
+          customId: `${player.getId()}_host_menu`,
+          placeHolder: `Host Commands`,
+          choices: phaseHostCommands.map((command) => ({ label:command, value: command }))
+        })
+        manager.editChoices([choices,menu]);
         break;
       }
       case 'Admin Commands': {
-        manager.editChoices(createChoices({choices:['Back',...phaseAdminCommands]}));
+        const menu = createMenu({
+          customId: `${player.getId()}_admin_menu`,
+          placeHolder: `Admin Commands`,
+          choices: phaseAdminCommands.map((command) => ({ label:command, value: command }))
+        })
+        manager.editChoices([choices,menu]);
         break;
       }
       case 'Skill Commands': {
-        manager.editChoices(createChoices({choices:['Back',...phaseSkillCommands, 'Cancel']}));
+        const menu = createMenu({
+          customId: `${player.getId()}_skill_menu`,
+          placeHolder: `Skill Commands`,
+          choices: phaseSkillCommands.map((command) => ({ label:command, value: command }))
+        })
+        manager.editChoices([choices,menu]);
         break;
       }
       case 'Actions Commands': {
-        manager.editChoices(createChoices({choices:['Back',...phaseActionCommands, 'Cancel']}));
+        const menu = createMenu({
+          customId: `${player.getId()}_action_menu`,
+          placeHolder: `Action Commands`,
+          choices: phaseActionCommands.map((command) => ({ label:command, value: command }))
+        })
+        manager.editChoices([choices,menu]);
         break;
       }
       case 'Universal Commands': {
-        console.log(phaseUniversalCommands)
-        manager.editChoices(createChoices({choices:['Back',...phaseUniversalCommands]}));
+        const menu = createMenu({
+          customId: `${player.getId()}_universal_menu`,
+          placeHolder: `Universal Commands`,
+          choices: phaseUniversalCommands.map((command) => ({ label:command, value: command }))
+        })
+        manager.editChoices([choices,menu]);
         break;
-      }
-      case 'Back': {
-        manager.editChoices(choices);
-        break;
-      }
-      default: {
-        const command = availableCommands.find(c => c.name === i.customId.toLowerCase());
-        const menuParams = { ARGS: [], command, game, player }
-        player.endAllActionInteractions();
-        if(command.targetCount===0){
-          await noTargetPopUp(menuParams)
-        }else{
-          if(command.hasMenu()){
-            if(command.targetCount===1) 
-              player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
-            if(command.targetCount===2) 
-              player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
-          }else{
-            player.alert(responses.commandRequiresTarget(command))
-          }
-        }
       }
     }
     return
   });
+
+  const menuFilter = (i:Interaction) => i.user.id === player.getId();
+  const menuCollector = message.createMessageComponentCollector({ filter: menuFilter,componentType:'SELECT_MENU' });
+  
+  menuCollector.on('collect',async (i)=>{
+    i.deferUpdate();
+    const command = availableCommands.find(c => c.name === i.values[0].toLowerCase());
+    const menuParams = { ARGS: [], command, game, player }
+    player.endAllActionInteractions();
+    if(command.targetCount===0){
+      await noTargetPopUp(menuParams)
+    }else{
+      if(command.hasMenu()){
+        if(command.targetCount===1) 
+          player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+        if(command.targetCount===2) 
+          player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+      }else{
+        player.alert(responses.commandRequiresTarget(command))
+      }
+    }
+    return
+  })
 
 }
 
@@ -166,13 +192,13 @@ export const welcome: ReactCollector = async ({messageManager}) => {
         const newchoices = createChoices({choices:['Back']});
         player.setPlayStatus('Ready');
         manager.setPage(4); 
-        manager.editChoices(newchoices);
+        manager.editChoices([newchoices]);
         break;
       }
       case 'Back': {
         player.setPlayStatus('Not Ready');
         manager.setPage(1); 
-        manager.editChoices(choices);
+        manager.editChoices([choices]);
         break;
       }
     }
