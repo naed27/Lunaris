@@ -1,5 +1,5 @@
 import { Message, MessageActionRow, MessageSelectMenu, Interaction, MessageButton } from "discord.js";
-import { createChoices } from "../Helpers/toolbox";
+import { createChoices, createMenu } from "../Helpers/toolbox";
 
 export async function test(message:Message) {
     const msg = message.content.toLowerCase();
@@ -9,10 +9,15 @@ export async function test(message:Message) {
     const linebreak = `‎\n`
 
     const result = `${linebreak}${'ayayay'}`;
+    const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven' , 'eight', 'nine', 'ten'];
+
+    const menu = createMenu({
+        customId: `test_menu`,
+        placeHolder: `Number Picker`,
+        choices: numbers.map((number) => ({ label:number, value: number }))
+      })
     
-    const choices = createChoices({choices:['one', 'two']});
-    
-    const address = await channel.send({components:[choices]});
+    const address = await channel.send({components:[menu]});
 
 
 }
