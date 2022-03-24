@@ -11,13 +11,15 @@ export async function test(message:Message) {
     const result = `${linebreak}${'ayayay'}`;
     const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven' , 'eight', 'nine', 'ten'];
 
-    const menu = createMenu({
+    const numbersMenu = createMenu({
         customId: `test_menu`,
         placeHolder: `Number Picker`,
         choices: numbers.map((number) => ({ label:number, value: number }))
       })
+
+    const buttonsMenu = createChoices({choices:['button one','button two']})
     
-    const address = await channel.send({components:[menu]});
+    const address = await channel.send({components:[numbersMenu,buttonsMenu]});
 
 
 }
