@@ -47,6 +47,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
   const phaseUniversalCommands  = []
 
   availableCommands.map((command) => {
+    if(command.getName() === 'whisper') return
     const commandType = command.getType();
     switch(commandType){
       case 'Host Command': phaseHostCommands.push(capitalizeFirstLetters(command.name)); break;
