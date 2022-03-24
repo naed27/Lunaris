@@ -171,9 +171,9 @@ export default class Game{
 	processActions(){
 			
 		this.actions = this.arrangeActions();
-		this.actions.map(a => {
+		this.actions.map(action => {
 
-			const actionProps = a.getProperties();
+			const actionProps = action.getProperties();
 			const { firstTarget, secondTarget, performer, command, game } = actionProps
 			const actionVisitsTarget = command.visitsTarget({ game, performer })
 
@@ -190,7 +190,7 @@ export default class Game{
 					&& secondTarget !== 'None' 
 					&& secondTarget.isNotJailed() 
 				){
-					if(firstTarget.getBuffs().find( b => b === 'Alert' )){
+					if(firstTarget.getBuffs().find( buff => buff === 'Alert' )){
 						if(actionVisitsTarget){
 							const visitedNotif = new Notif({ inbox: `You shot the person who visited you last night!` })
 							const visitorNotif = new Notif({ inbox: `You were shot by the Veteran that you visited!` })
@@ -204,7 +204,10 @@ export default class Game{
 							command.run(actionProps);
 
 							if(actionVisitsTarget)
-								a.getTargets().map( target => target !== 'None' && target.pushVisitor(performer))
+								action.getTargets().map( target => {
+									if(target !== 'None' && target !==undefined)
+										target.pushVisitor(performer)
+								})
 						}
 					}
 			}else{
@@ -213,7 +216,7 @@ export default class Game{
 					'Your target was in jail!'
 					performer.pushNotif(new Notif({ inbox: notice }));
 			}
-			a.setStatus('Done');
+			action.setStatus('Done');
 		});
 
 		this.clearActions();
