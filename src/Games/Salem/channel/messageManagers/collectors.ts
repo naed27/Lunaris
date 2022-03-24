@@ -83,7 +83,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
           placeHolder: `Host Commands`,
           choices: phaseHostCommands.map((command) => ({ label:command, value: command }))
         })
-        manager.editChoices([menu,choices]);
+        manager.editChoices([choices, menu]);
         break;
       }
       case 'Admin Commands': {
@@ -92,7 +92,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
           placeHolder: `Admin Commands`,
           choices: phaseAdminCommands.map((command) => ({ label:command, value: command }))
         })
-        manager.editChoices([menu,choices]);
+        manager.editChoices([choices, menu]);
         break;
       }
       case 'Skill Commands': {
@@ -101,7 +101,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
           placeHolder: `Skill Commands`,
           choices: phaseSkillCommands.map((command) => ({ label:command, value: command }))
         })
-        manager.editChoices([menu,choices]);
+        manager.editChoices([choices, menu]);
         break;
       }
       case 'Actions Commands': {
@@ -110,7 +110,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
           placeHolder: `Action Commands`,
           choices: phaseActionCommands.map((command) => ({ label:command, value: command }))
         })
-        manager.editChoices([menu,choices]);
+        manager.editChoices([choices, menu]);
         break;
       }
       case 'Universal Commands': {
@@ -119,7 +119,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
           placeHolder: `Universal Commands`,
           choices: phaseUniversalCommands.map((command) => ({ label:command, value: command }))
         })
-        manager.editChoices([menu,choices]);
+        manager.editChoices([choices, menu]);
         break;
       }
     }
