@@ -19,7 +19,7 @@ export async function test(message:Message) {
 
     const buttonsMenu = createChoices({choices:['button one','button two']})
     
-    const address = await channel.send({components:[numbersMenu,buttonsMenu]});
+    const address = await channel.send({components:[buttonsMenu,numbersMenu]});
 
 
 }
