@@ -294,8 +294,8 @@ export default class Game{
 
 		const grammar = voteCount > 1 ? 'votes' : 'vote';
 		const aliveCount = this.players.filter(p=>p.isAlive()).length;
-		// const goal = (aliveCount % 2 === 0) ? ( aliveCount / 2 ) + 1 : ( aliveCount + 1 ) / 2;
-		const goal = 1;
+		const goal = (aliveCount % 2 === 0) ? ( aliveCount / 2 ) + 1 : ( aliveCount + 1 ) / 2;
+		// const goal = 1;
 
 		const msg = jsonWrap(`${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})`)
 		this.functions.messagePlayers(msg);
