@@ -260,14 +260,8 @@ export default class Player{
         i.deferUpdate()
         const choice = i.customId;
         switch(choice){
-          case 'Cancel':
-            this.game.removeActionOf(this)
-            this.alert('Your action has been cancelled.')
-            break;
-          case 'Unvote': 
-            this.game.removeVoteOf(this)
-            this.alert('Your vote has been removed.')
-            break;
+          case 'Cancel': this.game.removeActionOf(this) && this.alert('Your action has been cancelled.');break;
+          case 'Unvote': this.game.removeVoteOf(this) && this.alert('Your vote has been removed.');break;
           default: return
         }
       });
@@ -287,6 +281,13 @@ export default class Player{
     if(this.voteMessage)
       this.voteMessage.edit({components:[]})
     this.voteMessage = message
+  }
+
+  cleanMessageComponents = () => {
+    if(this.skillMessage)
+      this.skillMessage.edit({components:[]})
+    if(this.voteMessage)
+      this.voteMessage.edit({components:[]})
   }
 
   alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))

@@ -52,7 +52,8 @@ class Clock{
 	}
 
 	processPhase = async () => {
-		await this.game.endPlayerInteractions();
+		this.game.endPlayerInteractions();
+		this.game.cleanMessageComponents();
 		const phase = this.updatePhase();
 
 		switch(phase){

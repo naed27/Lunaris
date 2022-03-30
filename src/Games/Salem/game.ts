@@ -266,7 +266,9 @@ export default class Game{
 	
 	updatePlayerJudgements = () => this.players.map(p => p.getChannelManager().manageJudgement().update());
 
-	endPlayerInteractions = async () => this.players.map( p => p.endAllActionInteractions());
+	endPlayerInteractions = () => this.players.map( p => p.endAllActionInteractions());
+
+	cleanMessageComponents = () => this.players.map(p => p.cleanMessageComponents());
 	
 	getVotes = () => this.votes;
 	clearVotes = () => this.votes = [];
