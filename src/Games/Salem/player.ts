@@ -552,8 +552,11 @@ export default class Player{
     this.interactionCollectors = collectors;
   }
 
-  pushInteractionCollector = ( collector : InteractionCollectorType) => {
-    this.interactionCollectors.push(collector)
+  pushInteractionCollector = ( collector : InteractionCollectorType | InteractionCollectorType[]) => {
+    if(collector.constructor === Array) 
+      this.interactionCollectors.push(...collector)
+    if(typeof collector === 'string')
+      this.interactionCollectors.push(collector)
   }
 
   getInteractionCollectors = () => this.interactionCollectors;

@@ -140,9 +140,9 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
     }else{
       if(command.hasMenu()){
         if(command.targetCount===1) 
-          player.setInteractionCollectors([...await singleTargetMenu(menuParams)])
+          player.pushInteractionCollector(await singleTargetMenu(menuParams))
         if(command.targetCount===2) 
-          player.setInteractionCollectors([...await doubleTargetMenu(menuParams)])
+          player.pushInteractionCollector(await doubleTargetMenu(menuParams))
       }else{
         player.alert(responses.commandRequiresTarget(command))
       }
