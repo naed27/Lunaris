@@ -36,10 +36,7 @@ export const processAction = async ({ command, game, player, ARGS }:{
     
   game.pushAction(new Action(commandParams))
 
-  const response = await command.callResponse(commandParams)
-
-  if(typeof response === 'string') 
-    player.sendMarkDownToChannel(response)
+  player.sendCallResponse({command, commandParams})
 }
 
 export const setDefaultTarget = async ({ command, game, player }:{
