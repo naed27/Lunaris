@@ -1,25 +1,39 @@
 import { Message, MessageActionRow, MessageSelectMenu, Interaction, MessageButton } from "discord.js";
 import { createChoices, createMenu } from "../Helpers/toolbox";
 
-export async function test(message:Message) {
+export async function test1(message:Message) {
     const msg = message.content.toLowerCase();
     const channel = message.channel;
     const author = message.author;
 
     const linebreak = `‎\n`
 
-    const result = `${linebreak}${'ayayay'}`;
-    const numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven' , 'eight', 'nine', 'ten'];
+    const numbers = ['Walk', 'Run', 'Dodge', 'Jump', 'Kill', 'Sneak', 'Teleport' , 'See Stats', 'Inventory', 'Exit'];
 
     const numbersMenu = createMenu({
         customId: `test_menu`,
-        placeHolder: `Number Picker`,
+        placeHolder: `Skill Picker`,
         choices: numbers.map((number) => ({ label:number, value: number }))
       })
-
-    const buttonsMenu = createChoices({choices:['button one','button two']})
     
-    const address = await channel.send({components:[buttonsMenu,numbersMenu]});
+    const address = await channel.send({content:'---',components:[numbersMenu]});
+}
+
+export async function test2(message:Message) {
+  const msg = message.content.toLowerCase();
+  const channel = message.channel;
+  const author = message.author;
+
+  const linebreak = `‎\n`
+
+  const menuOne = ['Walk', 'Run', 'Dodge', 'Jump', 'Kill'];
+  const menuTwo = ['Sneak', 'Teleport' , 'See Stats', 'Inventory', 'Exit']
+
+
+  const buttonSetOne = createChoices({choices:menuOne})
+  const buttonSetTwo = createChoices({choices:menuTwo})
+  
+  const address = await channel.send({content:'---',components:[buttonSetOne,buttonSetTwo]});
 
 
 }
