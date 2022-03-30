@@ -47,9 +47,10 @@ export const welcomeGuide = ({messageManager}:Params) => {
   const player = manager.getPlayer();
   const welcomeGuideBook = welcome({game, player});
   manager.setMaxPage(welcomeGuideBook.length);
+  const footer = `Players who are ready: (${game.getPlayers().filter(p=>p.isReady()).length}/${game.getPlayers().length})`
 
   const description = welcomeGuideBook[page-1];
-  return createEmbed({ description });
+  return createEmbed({ description, footer });
 }
 
 export const playerRole = ({messageManager}:Params) => {
