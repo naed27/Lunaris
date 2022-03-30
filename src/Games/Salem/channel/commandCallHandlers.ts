@@ -6,12 +6,22 @@ import Action from "../action";
 import { createMenu } from "../../../Helpers/toolbox";
 import { Interaction } from "discord.js";
 
+export interface CommandParams {
+  game: Game;
+  args: string[];
+  user: Player;
+  command: Command;
+  performer: Player;
+  firstTarget: Player | "None";
+  secondTarget: Player | "None";
+}
+
 export const processAction = async ({ command, game, player, ARGS }:{
   command: Command, game: Game, player: Player, ARGS: string[] }) => {
 
   const performer = command.performer({game: game, user: player});
 
-  const params = {
+  const commandParams: CommandParams = {
     game: game,
     args: ARGS,
     user: player,
@@ -21,14 +31,12 @@ export const processAction = async ({ command, game, player, ARGS }:{
     secondTarget: player.getSecondActionTarget(),
   }
   
-  if(command.priority === 0){
-    await command.run(params)
-    return
-  }
+  if(command.priority === 0)
+    return await command.run(commandParams)
+    
+  game.pushAction(new Action(commandParams))
 
-  game.pushAction(new Action(params))
-
-  const response = await command.callResponse(params)
+  const response = await command.callResponse(commandParams)
 
   if(typeof response === 'string') 
     player.sendMarkDownToChannel(response)
@@ -64,7 +72,7 @@ export const singleTargetMenu = async ({ command, game, player: user, ARGS }:{
     menu
   });
 
-  if(!address) return
+  if(!address) return []
 
   const filter = (i:Interaction) => i.user.id === user.getId();
   const collector = address.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });
@@ -106,7 +114,7 @@ export const doubleTargetMenu = async ({ command, game, player: user, ARGS }:{
     menu
   });
 
-  if(!addressOne || !addressTwo) return
+  if(!addressOne || !addressTwo) return []
 
   const filter = (i:Interaction) => i.user.id === user.getId();
   const collectorOne = addressOne.createMessageComponentCollector({ filter,componentType:'SELECT_MENU' });

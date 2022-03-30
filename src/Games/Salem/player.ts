@@ -1,10 +1,12 @@
-import { CacheType, Collection, Guild, GuildMember, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from 'discord.js';
+import { ButtonInteraction, CacheType, Collection, Guild, GuildMember, Interaction, InteractionCollector, Message, MessageActionRow, MessageEmbed, MessageReaction, Role as DiscordRole, SelectMenuInteraction, TextChannel, User } from 'discord.js';
 import roles, { SalemRoleName } from './roles';
 import Role from './role';
 import Game, { JudgementChoices } from './game';
-import { arrayContainsElement, createEmbed, jsonWrap, delay } from '../../Helpers/toolbox';
+import { arrayContainsElement, createEmbed, jsonWrap, delay, createChoices } from '../../Helpers/toolbox';
 import PlayerChannelManager from './channel/playerChannelManager';
 import Notif from './notif';
+import Command from './command';
+import { CommandParams } from './channel/commandCallHandlers';
 
 interface ConstructorParams{
   game: Game,
@@ -16,6 +18,9 @@ interface ConstructorParams{
 
 type PlayerBuff = 'Vest' | 'Heal' | 'Protect' | 'Alert'
 type PlayStatus = 'Ready' | 'Not Ready' | 'Playing' | 'Disconnected'
+type InteractionCollectorType = 
+  InteractionCollector<ButtonInteraction<CacheType> | ButtonInteraction<"cached">> |
+  InteractionCollector<SelectMenuInteraction<CacheType> | SelectMenuInteraction<'cached'>>;
 
 export default class Player{
 
@@ -33,9 +38,11 @@ export default class Player{
 
 
   channel: TextChannel;
+  linebreak = `‎\n`;
   channelManager: PlayerChannelManager;
-  interactionCollectors: InteractionCollector<SelectMenuInteraction<CacheType> 
-  | SelectMenuInteraction<'cached'>>[] = [];
+  interactionCollectors: InteractionCollectorType[] = [];
+  skillMessage: Message;
+  voteMessage: Message;
 
   role: Role;
   maskRole: Role;
@@ -63,8 +70,8 @@ export default class Player{
   killerNotes = [];
   notifs: Notif[] = [];
   executionerTarget: Player;
-  firstActionTarget: Player | undefined 
-  secondActionTarget: Player | undefined 
+  firstActionTarget: Player | 'None' = 'None';
+  secondActionTarget: Player | 'None' = 'None';
 
 
   constructor({ game, listnumber, channel, role, discord }: ConstructorParams){
@@ -224,14 +231,68 @@ export default class Player{
   getAvailableSkillCommands = () => this.getAvailableCommands().filter( c => c.getType() === 'Skill Command');
   getAvailableActionCommands = () => this.getAvailableCommands().filter( c => c.getType() === 'Action Command');
 
-  sendMessageToChannel = (message: string) => this.getChannel().send(message).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
-  sendMarkDownToChannel = (message: string) => this.getChannel().send(jsonWrap(message)).catch(() => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`))
-  sendEmbedToChannel = (embed: MessageEmbed) => this.getChannel().send({embeds:[embed]}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
+  sendMessageCatcher = () => console.log(`Error: Could not send message to ${this.getUsername()}'s channel.`)
+  sendMessageToChannel = async (message: string) =>  await this.getChannel().send(`${this.linebreak}${message}`).catch(this.sendMessageCatcher)
+  sendMarkDownToChannel = async (message: string) =>  await this.getChannel().send(jsonWrap(message)).catch(this.sendMessageCatcher)
+  sendEmbedToChannel = async (embed: MessageEmbed) =>  await this.getChannel().send({embeds:[embed]}).catch(this.sendMessageCatcher)
+
+  sendCallResponse = async ({command, commandParams}: {command: Command, commandParams: CommandParams}) => {
+    const response = await command.callResponse(commandParams)
+    const isSkillCommand = command.getType() === 'Skill Command';
+    const isVoteCommand = command.getName() === 'vote';
+
+    if(typeof response === 'string'){
+      const buttonLabel = (()=>{
+        if(isSkillCommand) return 'Cancel'
+        if(isVoteCommand) return 'Unvote'
+        return 'Null'
+      })()
+      const button = buttonLabel!== 'Null' ? [createChoices({choices:[buttonLabel]})] : [];
+      
+      const message = await this.getChannel()
+      .send({content:jsonWrap(response),components: [...button]})
+      .catch(this.sendMessageCatcher)
+
+      if(!message) return
+      const filter = (i:Interaction) => i.user.id === this.getId();
+      const collector = message.createMessageComponentCollector({ filter, componentType: 'BUTTON' });
+      collector.on('collect', async (i) => {
+        i.deferUpdate()
+        const choice = i.customId;
+        switch(choice){
+          case 'Cancel':
+            this.game.removeActionOf(this)
+            this.alert('Your action has been cancelled.')
+            break;
+          case 'Unvote': 
+            this.game.removeVoteOf(this)
+            this.alert('Your vote has been removed.')
+            break;
+          default: return
+        }
+      });
+      this.pushInteractionCollector(collector)
+      if(isVoteCommand) this.updateVoteMessage(message);
+      if(isSkillCommand) this.updateSkillMessage(message);
+    }
+  }
+
+  updateSkillMessage = (message:Message) => {
+    if(this.skillMessage)
+      this.skillMessage.edit({components:[]})
+    this.skillMessage = message
+  }
+
+  updateVoteMessage = (message:Message) => {
+    if(this.voteMessage)
+      this.voteMessage.edit({components:[]})
+    this.voteMessage = message
+  }
 
   alert = async (msg: string) => await this.sendEmbedToChannel(createEmbed({description: msg}))
 
   sendEmbedWithMenu = async ({description, menu}:{description: string, menu: MessageActionRow}) =>
-    await this.getChannel().send({content:`‎\n`,embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
+    await this.getChannel().send({content:this.linebreak,embeds: [createEmbed({description})], components: [menu],}).catch(() => console.log(`Error: Could not send embed to ${this.getUsername()}'s channel.`))
   
   messagePlayers = async (msg:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(msg))
 
@@ -466,9 +527,9 @@ export default class Player{
   alignmentIs = (a: string) => this.getRole().getAlignment() === a;
   alignmentIsNot = (a: string) => this.getRole().getAlignment() !== a;
 
-  setFirstActionTarget = (a: Player | undefined) => this.firstActionTarget = a
+  setFirstActionTarget = (a:  Player | 'None') => this.firstActionTarget = a
 
-  setSecondActionTarget = (a: Player | undefined) => this.secondActionTarget = a
+  setSecondActionTarget = (a:  Player | 'None') => this.secondActionTarget = a
 
   getFirstActionTarget = () => this.firstActionTarget
   
@@ -486,9 +547,12 @@ export default class Player{
     this.secondActionTarget = null
   }
 
-  setInteractionCollectors = ( collectors : InteractionCollector<SelectMenuInteraction<CacheType> 
-    | SelectMenuInteraction<'cached'>>[]) =>{
+  setInteractionCollectors = ( collectors : InteractionCollectorType[]) => {
     this.interactionCollectors = collectors;
+  }
+
+  pushInteractionCollector = ( collector : InteractionCollectorType) => {
+    this.interactionCollectors.push(collector)
   }
 
   getInteractionCollectors = () => this.interactionCollectors;
