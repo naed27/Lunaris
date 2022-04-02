@@ -26,7 +26,7 @@ const commands: SalemCommand[] =  [
       return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
     },
     callResponse: () => null,
-    run: ({performer}) => performer.getChannelManager().manageClock().create(),
+    run: async ({performer}) => await performer.getChannelManager().manageClock().create(),
   },
   
   {
