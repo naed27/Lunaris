@@ -164,9 +164,8 @@ export const createEmbed = ({
 export const jsonWrap = (message:string)=>{
   const wrapper = `\`\`\``;
   const format = `json\n`;
-  const linebreak = `‎`
 
-  const result = `${linebreak}${wrapper}${format}${message}${wrapper}`;
+  const result = `${wrapper}${format}${message}${wrapper}`;
 
   return result;
 }

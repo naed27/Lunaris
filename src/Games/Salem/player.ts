@@ -236,6 +236,7 @@ export default class Player{
   sendMarkDownToChannel = async (message: string) =>  await this.getChannel().send(jsonWrap(message)).catch(this.sendMessageCatcher)
   sendEmbedToChannel = async (embed: MessageEmbed) =>  await this.getChannel().send({embeds:[embed]}).catch(this.sendMessageCatcher)
 
+
   sendCallResponse = async ({command, commandParams}: {command: Command, commandParams: CommandParams}) => {
     const response = await command.callResponse(commandParams)
     const isSkillCommand = command.getType() === 'Skill Command';
@@ -250,8 +251,8 @@ export default class Player{
       const button = buttonLabel!== 'Null' ? [createChoices({choices:[buttonLabel]})] : [];
       
       const message = await this.getChannel()
-      .send({content:jsonWrap(response),components: [...button]})
-      .catch(this.sendMessageCatcher)
+        .send({content:jsonWrap(response),components: [...button]})
+        .catch(this.sendMessageCatcher)
 
       if(!message) return
       const filter = (i:Interaction) => i.user.id === this.getId();
@@ -262,8 +263,9 @@ export default class Player{
         switch(choice){
           case 'Cancel': this.game.removeActionOf(this) && this.alert('Your action has been cancelled.');break;
           case 'Unvote': this.game.removeVoteOf(this) && this.alert('Your vote has been removed.');break;
-          default: return
+          default: break;
         }
+        message.edit({ components: [] });
       });
       this.pushInteractionCollector(collector)
       if(isVoteCommand) this.updateVoteMessage(message);

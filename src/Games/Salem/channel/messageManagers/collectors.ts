@@ -133,6 +133,7 @@ export const phaseCommandsButtons: ReactCollector = async ({messageManager}) => 
   menuCollector.on('collect',async (i)=>{
     i.deferUpdate();
     const command = availableCommands.find(c => c.name === i.values[0].toLowerCase());
+    if(!command) return
     const menuParams = { ARGS: [], command, game, player }
     player.endAllActionInteractions();
     if(command.targetCount===0){

@@ -5,6 +5,31 @@ import { SalemCommand } from './roles';
 const commands: SalemCommand[] =  [
 
   {
+    name:'clock',
+    guide:'clock',
+    description:'Displays the game clock.',
+    priority:0,
+    stocks:99,
+    type:'Universal Command',
+    queue:'Instant',
+    targetCount:0,
+    phase:['Discussion','Voting','Reporting','Defense','Judgement','Execution','Final Words','Night'],
+    requiredStatus:['Alive','Dead'],
+    lethal: false,
+    hasMenu: false,
+    hasArguments: false,
+    inputSeparator:' ',
+    performer:({ user: user }) => user,
+    visitsTarget:() => false,
+    defaultTarget:() => [],        
+    targetables: ({game,user: user}) => {
+      return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
+    },
+    callResponse: () => null,
+    run: ({performer}) => performer.getChannelManager().manageClock().create(),
+  },
+  
+  {
     name:'vote',
     guide:'vote <player>',
     description:'Votes the target.',
@@ -25,61 +50,12 @@ const commands: SalemCommand[] =  [
     targetables: ({game,user: user}) => {
       return game.getPlayers().filter(player => player.isAlive() && player.getId() !== user.getId())
     },
-    callResponse: () => null,
-    run: ({performer,game,firstTarget: target}) => {
-      if(target==='None') return game.removeVoteOf(performer);
-      game.pushVote({voter: performer, voted: target})
+    callResponse: async ({performer,game,firstTarget: target}) => {
+      if(target!=='None') 
+        return game.pushVote({voter: performer, voted: target})
+      game.removeVoteOf(performer)
     },
-  },
-  {
-    name:'unvote',
-    guide:'unvote <Player>',
-    description:'Cancels your vote.',
-    priority:0,
-    stocks:99,
-    type:'Action Command',
-    queue:'Instant',
-    targetCount:0,
-    phase:['Voting'],
-    requiredStatus:['Alive'],
-    lethal: false,
-    hasMenu: false,
-    hasArguments: false,
-    inputSeparator:' ',
-    performer:({ user: user }) => user,
-    visitsTarget:() => false,
-    defaultTarget:() => [],        
-    targetables: () => [],
-    callResponse: () => null,
-    run:({user,game}) => game.removeVoteOf(user) ? user.alert('Your vote has been removed.') : user.alert('You have not voted yet.'),
-  },
-
-  {
-    name:'cancel',
-    guide:'cancel',
-    description:'Cancels your action.',
-    priority:0,
-    stocks:99,
-    type:'Universal Command',
-    queue:'Instant',
-    targetCount:0,
-    phase:['Night','Voting', 'Discussion', 'Judgement'],
-    requiredStatus:['Alive','Dead'],
-    lethal: false,
-    hasMenu: false,
-    hasArguments: false,
-    inputSeparator:' ',
-    performer:({ user: user }) => user,
-    visitsTarget:() => false,
-    defaultTarget:() => [],        
-    targetables: () => [],
-    callResponse: () => null,
-    run: async ({user,game})=>{
-      const phase = game.getClock().getPhase().name;
-      if(phase !=='Night' && phase !=='Voting') return
-      phase !== 'Voting' && game.removeActionOf(user) ? user.alert('Your action has been cancelled.') : user.alert('You have not made any actions yet.')
-      phase === 'Voting' && game.removeVoteOf(user) ? user.alert('Your vote has been cancelled.') : user.alert('You have not voted yet.')
-    }
+    run: () => null,
   },
 
   {

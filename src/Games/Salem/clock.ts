@@ -105,14 +105,6 @@ class Clock{
 			this.game.lockPlayerChannels();
 		else 
 			this.game.unlockPlayerChannels();
-
-		this.game.getPlayers().map( async (player)=> {
-			await player.getChannelManager().managePhaseMenu().delete()
-			if ( this.phase.showPhaseMenu ){
-				await player.getChannelManager().managePhaseMenu().create()
-				player.getChannelManager().managePhaseMenu().applyReactionCollector(phaseCommandsButtons);
-			}
-		})
 		
 		this.nextPhase = this.findPhase(this.phase.next.normal);
 		
@@ -158,11 +150,13 @@ class Clock{
 			const message2 = jsonWrap(`Day ${this.round}: The Discussion.\nDuration: ${this.secondsRemaining}s`);
 			await this.game.getFunctions().messagePlayers(message2);
 		}
+		this.game.managePlayerPhaseMenus();
 	}
 
 	playVoting  = async () => {
 		const message = jsonWrap(`Day ${this.round}: The ${this.phase.name}.\nDuration: ${this.secondsRemaining}s\nType ".vote" to vote someone!`);
 		await this.game.getFunctions().messagePlayers(message);
+		this.game.managePlayerPhaseMenus();
 	}
 
 	playDefense = async () => {
@@ -200,8 +194,9 @@ class Clock{
 	playExecution = async () => {
 		const message1 = jsonWrap(`Day ${this.round}: ${this.game.getVotedUp().getUsername()}'s ${this.phase.name}.`);
 		await this.game.getFunctions().messagePlayers(message1);
+		this.game.managePlayerPhaseMenus();
 		await delay(3000);
-
+		
 		const message2 = jsonWrap(`After placing the rope around the neck, they took away the wooden footrest...`);
 		await this.game.getFunctions().messagePlayers(message2);
 		await delay(5000);
@@ -235,8 +230,8 @@ class Clock{
 		const message = jsonWrap(`${this.phase.name} ${this.round}.\nDuration: ${this.secondsRemaining}s`);
 		await this.game.getFunctions().messagePlayers(message);
 		await this.game.getFunctions().promoteAGodfather();
-
 		this.game.processActions();
+		this.game.managePlayerPhaseMenus();
 		await this.game.unlockPlayerChannels();
 	}
 
@@ -245,14 +240,13 @@ class Clock{
 	}
 
 	playReportingCalculation = async () => {
-		const someoneWon = this.game.listenForWinners();
-		if(someoneWon === false && this.peaceCount!==this.maxPeaceCount) return
+		this.game.listenForWinners();
+		this.game.listenForDraw();
 		this.game.resetDay();
 		this.skipPhase();
 	}
 
 	playExecutionCalculation = async () =>{
-		console.log('exe calc-ing')
 		this.game.listenForWinners();
 		this.skipPhase();
 	}
@@ -348,6 +342,9 @@ class Clock{
 
 	getPeaceCount = () => this.peaceCount
 	setPeaceCount  = (a:number) => this.peaceCount= a
+
+	getMaxPeaceCount = () => this.maxPeaceCount
+	setMaxPeaceCount = (a:number) => this.maxPeaceCount = a
 
 	getRemindTime = () => this.remindTime
 	setRemindTime = (a:boolean) => this.remindTime = a

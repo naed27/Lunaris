@@ -5,7 +5,7 @@ import PlayerChannelManager from '../playerChannelManager';
 import { ReactCollector } from './collectors';
 
 interface CardGenerator{
-  ({messageManager}:{messageManager:MessageManager}): MessageEmbed
+  ({messageManager}:{messageManager:MessageManager}): MessageEmbed | null
 };
 
 interface ConstructorParams{
@@ -47,7 +47,8 @@ export default class MessageManager{
     this.delete();
     this.page = 1;
     const embed = this.generateEmbed(messageEmbed);
-    this.message = await this.channel.send({content: this.linebreak,embeds:[embed]}).catch(() => console.log( 'Error: Could not delete message' )); 
+    const embedArray = embed === null ? [] : [embed]
+    this.message = await this.channel.send({content: this.linebreak,embeds:embedArray}).catch(() => console.log( 'Error: Could not delete message' )); 
   }
 
   delete = async () => { 
@@ -83,7 +84,8 @@ export default class MessageManager{
   update = async (messageEmbed?: MessageEmbed) => {
     if(this.message === null || this.message === undefined) return await this.create()
     const embed = messageEmbed ? messageEmbed : this.cardGenerator({messageManager:this})
-    this.message && await this.edit({ embeds:[embed] }).catch(() => console.log( 'Error: Could not edit message' ));
+    const embedArray = embed === null ? [] : [embed]
+    this.message && await this.edit({ embeds:embedArray }).catch(() => console.log( 'Error: Could not edit message' ));
   }
 
   edit = async (a:MessageOptions | string) => {

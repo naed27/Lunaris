@@ -10,6 +10,7 @@ import { SalemRole } from './roles';
 import SalemServer from '../../Servers/SalemServer';
 import { Guild, Role as DiscordRole } from 'discord.js';
 import { createEmbed, delay, jsonWrap } from '../../Helpers/toolbox';
+import { phaseCommandsButtons } from './channel/messageManagers/collectors';
 
 export type JudgementChoices = 'Abstain' | 'Guilty' | 'Innocent'
 
@@ -86,6 +87,14 @@ export default class Game{
 		await this.clock.playLobby();
 	}
 
+	managePlayerPhaseMenus = () => this.getPlayers().map( async (player)=> {
+		await player.getChannelManager().managePhaseMenu().delete()
+		if ( this.clock.phase.showPhaseMenu ){
+			await player.getChannelManager().managePhaseMenu().create()
+			player.getChannelManager().managePhaseMenu().applyReactionCollector(phaseCommandsButtons);
+		}
+	})
+		
 	updateWerewolf = () => {
 		const round = this.clock.getRound();
 		const werewolves = this.getPlayersWithRole('Werewolf');
@@ -163,9 +172,15 @@ export default class Game{
 				witches.map(w => w.setWinStatus(true));
 			}
 			this.clock.setNextPhase('Game Over');
-			return true
 		}
-		return false
+	}
+
+	listenForDraw = () => {
+		const peaceCount = this.clock.getPeaceCount();
+		const maxPeaceCount = this.clock.getMaxPeaceCount();
+		if(peaceCount === maxPeaceCount){
+			this.clock.setNextPhase('Game Over');
+		}
 	}
 
 	processActions(){
@@ -277,34 +292,32 @@ export default class Game{
 		const { voter, voted } = vote;
 		const oldVote = this.votes.find(v => v.voter.getId() === voter.getId());
 		if(oldVote){
-			if(oldVote.voted.getId() !== voted.getId()){
-				const i = this.votes.indexOf(oldVote);
-				const vote = { voter:voter, voted:voted }
-				this.votes[i] = vote;   
-			}else{
-				return `**${voter.getUsername()}**, you can't vote the same person twice!`;
-			}
+			if(oldVote.voted.getId() === voted.getId()) return null
+			this.votes[ this.votes.indexOf(oldVote) ] = { voter:voter, voted:voted }   
 		}else{
 			this.votes.push(vote);
 		}
 
-		let voteCount=0;
 		const ballots = this.votes.filter(v=>v.voted.getId()===voted.getId());
-		ballots.forEach(b => voteCount += b.voter.getVoteCount()); // could use reduce function
-
+		const voteCount = ballots.reduce(( total,vote ) => total += vote.voter.getVoteCount(), 0);
 		const grammar = voteCount > 1 ? 'votes' : 'vote';
-		const aliveCount = this.players.filter(p=>p.isAlive()).length;
+		const aliveCount = this.getAlivePlayers().length;
 		const goal = (aliveCount % 2 === 0) ? ( aliveCount / 2 ) + 1 : ( aliveCount + 1 ) / 2;
 		// const goal = 1;
 
-		const msg = jsonWrap(`${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})`)
-		this.functions.messagePlayers(msg);
-		if(voteCount==goal){
+		const msg = `${voter.getUsername()} has voted against ${voted.getUsername()}. (${voteCount}/${goal} ${grammar})`
+		
+		if(voteCount===goal){
+			this.functions.messagePlayers(jsonWrap(msg));
 			this.clock.setNextPhase('Defense');
 			this.clock.setExcessDuration(this.clock.getSecondsRemaining());
 			this.clock.skipPhase();
 			this.setVotedUp(voted);
+			return null
 		}
+		
+		this.functions.messageOtherPlayers(voter,jsonWrap(msg));
+		return msg
 	}
 
 	removeVoteOf = async (voter: Player) => {

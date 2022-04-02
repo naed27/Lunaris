@@ -37,7 +37,7 @@ export const phaseCommandsMenu = ({messageManager}:Params) => {
   const player = manager.getPlayer();
   const string = `Name: ${player.getUsername()} (${player.getStatus()})\nRole: ${player.getRoleName()}`
 
-  return createEmbed({ description: string });
+  return null
 }
 
 export const welcomeGuide = ({messageManager}:Params) => {

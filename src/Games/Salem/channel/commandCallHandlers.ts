@@ -32,9 +32,10 @@ export const processAction = async ({ command, game, player, ARGS }:{
   }
   
   if(command.priority === 0)
-    return await command.run(commandParams)
-    
-  game.pushAction(new Action(commandParams))
+    await command.run(commandParams)
+  
+  if(command.priority !==0)
+    game.pushAction(new Action(commandParams))
 
   player.sendCallResponse({command, commandParams})
 }

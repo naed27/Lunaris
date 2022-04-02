@@ -46,7 +46,12 @@ export default class Functions{
     });
   }
 
-  messagePlayers = async (a:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(a))
+  messagePlayers = async (m:string) => this.game.getPlayers().map((p)=>p.getChannelManager().sendString(m))
+  
+  messageOtherPlayers = async (exception:Player, message: string) => 
+    this.game.getPlayers()
+      .filter(( player ) => player.getId() !== exception.getId())
+      .map(( player ) => player.getChannelManager().sendString(message))
 
   messageGhosts = async (message: string) => {
     this.game.getPlayers().map((p)=>p.getStatus()=='Dead' && p.getChannelManager().sendString(message))
@@ -106,6 +111,7 @@ export default class Functions{
   }
 
   promoteAGodfather = async () =>{
+    if(this.game.getClock().phase.name !== 'Night') return
     if(this.game.roleExists('Godfather')) return
 
     const mafias = this.game.getAliveMafias();
@@ -122,6 +128,7 @@ export default class Functions{
   }
 
   promoteAMafioso = async () => {
+    if(this.game.getClock().phase.name !== 'Night') return
     if(this.game.roleExists('Mafioso')) return
 
     const subordinates = this.game.getAliveMafias().filter((m) => m.getRoleName() !== 'Godfather');
