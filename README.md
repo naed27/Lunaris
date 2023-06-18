@@ -13,6 +13,7 @@ To get started with the bot, you'll need to follow these steps:
 5. Create a `.env` file in the root directory of the project with the following variables:
 
 DISCORD_BOT_TOKEN=<your_bot_token>
+
 6. Start the bot by running `npm run start`.
 
 ## How to Play
